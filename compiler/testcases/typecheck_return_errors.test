@@ -1,0 +1,11 @@
+
+
+fun foo(bar:Int)->String
+    if bar=1
+        return 2
+    else
+        return
+
+@--------------------------
+testcases/typecheck_return_errors.test 5.16-5.16:- Got type 'Int' when expecting type 'String'
+testcases/typecheck_return_errors.test 7.9-7.14:- return should return String

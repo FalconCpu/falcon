@@ -1,0 +1,26 @@
+
+fun foo(a:Int)->Int
+    var x = 0
+    while x<a
+        x=x+1
+    return x
+
+@--------------------
+Symbol table [foo:FUNC:(Int)->Int  ]
+FUNCTION foo
+   DECL a
+      SYMBOL Int
+   Symbol table [a:VAR:Int  x:VAR:Int  ]
+   DECL x Int
+      INTLIT 0 Int
+   WHILE
+      BINOP < Bool
+         SYMBOL x Int
+         SYMBOL a Int
+      ASSIGN
+         SYMBOL x Int
+         BINOP + Int
+            SYMBOL x Int
+            INTLIT 1 Int
+   RETURN
+      SYMBOL x Int

@@ -1,0 +1,19 @@
+
+fun test()
+    val a = 1 + 2/3
+    val b = "hello "+"world"
+
+@-------------------
+Symbol table [test:FUNC:()->Void  ]
+FUNCTION test
+   Symbol table [a:VAR:Int  b:VAR:String  ]
+   DECL a Int
+      BINOP + Int
+         INTLIT 1 Int
+         BINOP / Int
+            INTLIT 2 Int
+            INTLIT 3 Int
+   DECL b String
+      BINOP + String
+         STRLIT "hello " String
+         STRLIT "world" String

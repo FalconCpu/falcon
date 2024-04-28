@@ -1,0 +1,16 @@
+
+
+fun fred(a:Int[])
+    val b = a[2]
+
+@------------------
+Symbol table [fred:FUNC:(Int[])->Void  ]
+FUNCTION fred
+   DECL a
+      INDEX
+         SYMBOL Int
+   Symbol table [a:VAR:Int[]  b:VAR:Int  ]
+   DECL b Int
+      INDEX
+         SYMBOL a Int[]
+         INTLIT 2 Int

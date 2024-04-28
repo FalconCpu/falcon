@@ -1,0 +1,17 @@
+
+fun fred(a:Int, b:String)->String   
+    val c = a+b
+val c=1
+
+@------------------
+FUNCTION fred
+   DECL a
+      SYMBOL Int
+   DECL b
+      SYMBOL String
+   DECL c
+      BINOP +
+         SYMBOL a
+         SYMBOL b
+DECL c
+   INTLIT 1 Int

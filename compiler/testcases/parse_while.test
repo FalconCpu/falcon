@@ -1,0 +1,18 @@
+
+while a<10
+    a=a+1
+a=0
+
+@-------------------
+WHILE
+   BINOP <
+      SYMBOL a
+      INTLIT 10 Int
+   ASSIGN
+      SYMBOL a
+      BINOP +
+         SYMBOL a
+         INTLIT 1 Int
+ASSIGN
+   SYMBOL a
+   INTLIT 0 Int

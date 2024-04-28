@@ -1,0 +1,25 @@
+
+struct Cat(name:String, legs:Int, eyes:Int)
+
+fun count(cat:Cat)->Int
+    return cat.eyes + cat.legs
+
+@-------------------------
+Symbol table [Cat:TYPE:Cat  count:FUNC:(Cat)->Int  ]
+STRUCT Cat
+   DECL name
+      SYMBOL String
+   DECL legs
+      SYMBOL Int
+   DECL eyes
+      SYMBOL Int
+FUNCTION count
+   DECL cat
+      SYMBOL Cat
+   Symbol table [cat:VAR:Cat  ]
+   RETURN
+      BINOP + Int
+         MEMBER eyes Int
+            SYMBOL cat Cat
+         MEMBER legs Int
+            SYMBOL cat Cat

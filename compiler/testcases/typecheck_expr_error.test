@@ -1,0 +1,6 @@
+
+fun a(a:Int)
+    val b = a + "hello"
+
+@-----------------------
+testcases/typecheck_expr_error.test 3.15-3.15:- No operation defined for Int + String

@@ -1,0 +1,19 @@
+var a=5
+b=a+1
+a[2]=v*3
+
+@-------------
+DECL a
+   INTLIT 5 Int
+ASSIGN
+   SYMBOL b
+   BINOP +
+      SYMBOL a
+      INTLIT 1 Int
+ASSIGN
+   INDEX
+      SYMBOL a
+      INTLIT 2 Int
+   BINOP *
+      SYMBOL v
+      INTLIT 3 Int

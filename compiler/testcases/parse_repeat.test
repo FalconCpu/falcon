@@ -1,0 +1,19 @@
+
+a=0
+repeat
+    a=a+1
+until a=10
+
+@------------------
+ASSIGN
+   SYMBOL a
+   INTLIT 0 Int
+REPEAT
+   BINOP =
+      SYMBOL a
+      INTLIT 10 Int
+   ASSIGN
+      SYMBOL a
+      BINOP +
+         SYMBOL a
+         INTLIT 1 Int

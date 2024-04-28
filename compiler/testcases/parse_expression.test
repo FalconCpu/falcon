@@ -1,0 +1,47 @@
+
+val a = 1+2*3<4/5
+var b = 8/(a+b) and c
+var x = a[4&7]
+val z = p.f
+val g = -a+1
+val func = a(2,3,4)
+
+@---------
+DECL a
+   BINOP <
+      BINOP +
+         INTLIT 1 Int
+         BINOP *
+            INTLIT 2 Int
+            INTLIT 3 Int
+      BINOP /
+         INTLIT 4 Int
+         INTLIT 5 Int
+DECL b
+   BINOP and
+      BINOP /
+         INTLIT 8 Int
+         BINOP +
+            SYMBOL a
+            SYMBOL b
+      SYMBOL c
+DECL x
+   INDEX
+      SYMBOL a
+      BINOP &
+         INTLIT 4 Int
+         INTLIT 7 Int
+DECL z
+   MEMBER f
+      SYMBOL p
+DECL g
+   BINOP +
+      UNARY -
+         SYMBOL a
+      INTLIT 1 Int
+DECL func
+   FUNCCALL
+      SYMBOL a
+      INTLIT 2 Int
+      INTLIT 3 Int
+      INTLIT 4 Int
