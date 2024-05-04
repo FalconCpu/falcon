@@ -124,3 +124,14 @@ Function block_find_enclosing_function(Block this) {
     return 0;
 }
 
+// ===========================================================================
+//                           code_gen
+// ===========================================================================
+
+Symbol code_gen_block(Function func, Block this) {
+    AST stmt;
+    foreach_statement(stmt, this)
+        if (stmt->kind!=AST_FUNCTION)
+            code_gen(func, stmt);
+    return 0;
+}

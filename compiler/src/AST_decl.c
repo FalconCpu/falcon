@@ -64,3 +64,24 @@ void AST_decl_print(AST_decl this, int indent) {
     AST_print(this->ast_value, indent+1);
 }
 
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_decl(Function func, AST_decl this) {
+    get_codegen_symbol(func, this->symbol); // make sure stack space is allocated for symbol if needed
+
+    if (this->ast_value==0)
+        return 0;
+
+    if (is_scalar_type(this->symbol->type)) {
+        Symbol rhs = code_gen(func, this->ast_value);
+        AST lhs = new_ASTnode_id_from_symbol(this->symbol);
+        //add_instr(func, new_Instr(INSTR_MOV, 0, this->symbol, rhs, 0));
+        code_gen_lvalue(func, lhs, rhs);
+    } else {
+        Symbol addr = get_aggregate_address(func, this->symbol);
+        code_gen_aggregate_rhs(func, this->ast_value, addr);
+    }
+    return 0;
+}

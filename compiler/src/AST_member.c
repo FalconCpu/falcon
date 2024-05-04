@@ -98,3 +98,33 @@ void AST_typecheck_member(AST_member this, Block scope) {
     }
 }
 
+// ============================================================================
+//                         code_gen
+// ============================================================================
+
+Symbol code_gen_member(Function func, AST_member this) {
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+    Symbol ret = new_tempvar(func, this->type);
+
+    if (!is_scalar_type(this->type))
+        fatal("code_gen called with non scalar type");
+
+    int size = get_sizeof(this->type);
+    add_instr(func, new_Instr(INSTR_LOAD, size, ret, lhs, make_constant_symbol(func, this->symbol->offset)));
+    // } else {
+    //     add_instr(func, new_Instr(INSTR_ALU, ALU_ADD_I, ret, lhs, make_constant_symbol(func, this->symbol->offset)));
+    // }
+    return ret;
+}
+
+
+// ============================================================================
+//                           code_gen_lvalue
+// ============================================================================
+
+void code_gen_lvalue_member(Function func, AST_member this, Symbol value) {
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+
+    int size = get_sizeof(this->type);
+    add_instr(func, new_Instr(INSTR_STORE, size, value, lhs, make_constant_symbol(func, this->symbol->offset)));
+}

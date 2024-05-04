@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "fpl.h"
 #include "AST.h"
+#include "instr.h"
 
 
 // ============================================================================
@@ -147,42 +148,41 @@ void AST_typecheck_binop(AST_binop this, Block scope) {
 //                           code_gen
 // ---------------------------------------------------------------------------------
 
-// static Symbol code_gen_binop(Function func, AST_binop this) {
-//     Symbol lhs = code_gen(func, this->lhs);
-//     Symbol rhs = code_gen(func, this->rhs);
-//     Symbol ret = new_tempvar(func, this->type);
-//     add_instr(func, new_Instr(INSTR_ALU, this->op, ret, lhs, rhs));
-//     return ret;
-// }
+Symbol code_gen_binop(Function func, AST_binop this) {
+    Symbol lhs = code_gen(func, this->lhs);
+    Symbol rhs = code_gen(func, this->rhs);
+    Symbol ret = new_tempvar(func, this->type);
+    add_instr(func, new_Instr(INSTR_ALU, this->alu_op, ret, lhs, rhs));
+    return ret;
+}
 
 // ---------------------------------------------------------------------------------
 //                           code_gen_bool
 // ---------------------------------------------------------------------------------
 
-// static void  code_gen_bool_binop(Function func, AST_binop this, Symbol label_true, Symbol label_false) {
-//     if (this->op>=ALU_EQ_I && this->op<=ALU_GTE_I) {
-//         // comparison ops can be implemented as branch statements
-//         Symbol lhs = code_gen(func, this->lhs);
-//         Symbol rhs = code_gen(func, this->rhs);
-//         add_instr(func, new_Instr(INSTR_BRANCH, ALU_BEQ_I + (this->op-ALU_EQ_I), label_true, lhs, rhs));
-//         add_instr(func, new_Instr(INSTR_JUMP,  0, label_false,0, 0));
+void  code_gen_bool_binop(Function func, AST_binop this, Symbol label_true, Symbol label_false) {
+    if (this->alu_op>=ALU_EQ_I && this->alu_op<=ALU_GTE_I) {
+        // comparison ops can be implemented as branch statements
+        Symbol lhs = code_gen(func, this->lhs);
+        Symbol rhs = code_gen(func, this->rhs);
+        add_instr(func, new_Instr(INSTR_BRANCH, ALU_BEQ_I + (this->alu_op-ALU_EQ_I), label_true, lhs, rhs));
+        add_instr(func, new_Instr(INSTR_JUMP,  0, label_false,0, 0));
 
-//     } else if (this->op==ALU_AND_B) {
-//         Symbol lab = new_label(func);
-//         code_gen_bool(func, this->lhs, lab, label_false);
-//         add_instr(func, new_Instr(INSTR_LABEL, 0, lab, 0, 0));
-//         code_gen_bool(func, this->rhs, label_true, label_false);
-//     } else if (this->op==ALU_OR_B) {
-//         Symbol lab = new_label(func);
-//         code_gen_bool(func, this->lhs, label_true, lab);
-//         add_instr(func, new_Instr(INSTR_LABEL, 0, lab, 0, 0));
-//         code_gen_bool(func, this->rhs, label_true, label_false);
-//     } else {
-//         Symbol v = code_gen(func, asNode(this));
-//         add_instr(func, new_Instr(INSTR_BRANCH, ALU_BNE_I, label_true, v, make_constant_symbol(func, 0)));
-//         add_instr(func, new_Instr(INSTR_JUMP,  0, label_false, 0, 0));
+    } else if (this->alu_op==ALU_AND_B) {
+        Symbol lab = new_label(func);
+        code_gen_bool(func, this->lhs, lab, label_false);
+        add_instr(func, new_Instr(INSTR_LABEL, 0, lab, 0, 0));
+        code_gen_bool(func, this->rhs, label_true, label_false);
+    } else if (this->alu_op==ALU_OR_B) {
+        Symbol lab = new_label(func);
+        code_gen_bool(func, this->lhs, label_true, lab);
+        add_instr(func, new_Instr(INSTR_LABEL, 0, lab, 0, 0));
+        code_gen_bool(func, this->rhs, label_true, label_false);
+    } else {
+        Symbol v = code_gen(func, as_AST(this));
+        add_instr(func, new_Instr(INSTR_BRANCH, ALU_BNE_I, label_true, v, make_constant_symbol(func, 0)));
+        add_instr(func, new_Instr(INSTR_JUMP,  0, label_false, 0, 0));
 
-//     }
-
-// }
+    }
+}
 

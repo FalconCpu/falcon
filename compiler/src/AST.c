@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "fpl.h"
 #include "AST.h"
+#include "instr.h"
 
 // ---------------------------------------------------------------------------------
 //                         AST_print
@@ -140,7 +141,6 @@ void AST_typecheck(AST this, Block scope) {
         case AST_IF:        return AST_typecheck_if    (as_if(this), scope);
         case AST_CLAUSE:    return AST_typecheck_clause(as_clause(this), scope);
         case AST_MEMBER:    return AST_typecheck_member(as_member(this), scope);
-
         case AST_DECL:      return AST_typecheck_decl( as_decl(this), scope);
         case AST_FUNCTION:  return AST_typecheck_function( as_function(this), scope);
         case AST_BINOP:     return AST_typecheck_binop( as_binop(this), scope);
@@ -149,3 +149,132 @@ void AST_typecheck(AST this, Block scope) {
     }
 }
 
+// ---------------------------------------------------------------------------------
+//                         code_gen
+// ---------------------------------------------------------------------------------
+// Generate IR code
+
+Symbol code_gen(Function func, AST this) {
+    switch(this->kind) {
+        case AST_INTLIT:    return code_gen_intlit(func, as_intlit(this));
+        case AST_STRLIT:    TODO("");
+        case AST_SYMBOL:    return code_gen_symbol(func, as_symbol(this));
+        case AST_ASSIGN:    return code_gen_assign(func, as_assign(this));
+        case AST_INDEX:     return code_gen_index(func, as_index(this));
+        case AST_POINTER:   return code_gen_pointer(func, as_pointer(this));
+        case AST_FUNCCALL:  return code_gen_funccall(func, as_funccall(this));
+        case AST_WHILE:     return code_gen_while(func, as_while(this));
+        case AST_REPEAT:    return code_gen_repeat(func, as_repeat(this));
+        case AST_RETURN:    return code_gen_return(func, as_return(this));
+        case AST_IF:        return code_gen_if(func, as_if(this));
+        case AST_CLAUSE:    fatal("gen_code clause should not be called directly (only from if)");
+        case AST_MEMBER:    return code_gen_member(func, as_member(this));
+        case AST_DECL:      return code_gen_decl(func, as_decl(this));
+        case AST_FUNCTION:  return code_gen_function(as_function(this));
+        case AST_BINOP:     return code_gen_binop(func, as_binop(this));
+        case AST_UNARY:     TODO("");
+        case AST_STRUCT:    TODO("");
+    }
+}
+
+// ---------------------------------------------------------------------------------
+//                         code_gen_lvalue
+// ---------------------------------------------------------------------------------
+// Generate IR code for blocks on LHS of a scalar assignment
+
+void code_gen_lvalue(Function func, AST this, Symbol value) {
+    switch(this->kind) {
+        case AST_SYMBOL:    return code_gen_lvalue_symbol(func, as_symbol(this), value);
+        case AST_INDEX:     return code_gen_lvalue_index(func, as_index(this), value);
+        case AST_POINTER:   return code_gen_lvalue_pointer(func, as_pointer(this), value);
+        case AST_MEMBER:    return code_gen_lvalue_member(func, as_member(this), value);
+
+        case AST_INTLIT:    
+        case AST_STRLIT:    
+        case AST_ASSIGN:    
+        case AST_FUNCCALL:  
+        case AST_WHILE:     
+        case AST_REPEAT:    
+        case AST_RETURN:    
+        case AST_IF:        
+        case AST_CLAUSE:    
+        case AST_DECL:      
+        case AST_FUNCTION:  
+        case AST_BINOP:     
+        case AST_UNARY:     
+        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_lvalue", this->kind);
+    }
+}
+
+// ---------------------------------------------------------------------------------
+//                         code_gen_aggregate_rhs
+// ---------------------------------------------------------------------------------
+// Generate IR code for the RHS of an aggregate operation
+
+void code_gen_aggregate_rhs(Function func, AST this, Symbol value) {
+    switch(this->kind) {
+        case AST_SYMBOL:    return code_gen_aggregate_rhs_symbol(func, as_symbol(this), value);
+        case AST_INDEX:     return code_gen_aggregate_rhs_index(func, as_index(this), value);
+        case AST_POINTER:   TODO("");
+        case AST_MEMBER:    TODO("");
+        case AST_FUNCCALL:  return code_gen_aggregate_rhs_funccall(func, as_funccall(this), value);
+
+        case AST_INTLIT:    
+        case AST_STRLIT:    
+        case AST_ASSIGN:    
+        case AST_WHILE:     
+        case AST_REPEAT:    
+        case AST_RETURN:    
+        case AST_IF:        
+        case AST_CLAUSE:    
+        case AST_DECL:      
+        case AST_FUNCTION:  
+        case AST_BINOP:     
+        case AST_UNARY:     
+        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_rhs", this->kind);
+    }
+}
+
+// ---------------------------------------------------------------------------------
+//                         code_gen_aggregate_lhs
+// ---------------------------------------------------------------------------------
+// Generate IR code for the LHS of an aggregate operation
+
+Symbol code_gen_aggregate_lhs(Function func, AST this) {
+    (void) func;
+    switch(this->kind) {
+        case AST_SYMBOL:    return code_gen_aggregate_lhs_symbol(func, as_symbol(this));
+        case AST_INDEX:     return code_gen_aggregate_lhs_index(func, as_index(this));
+        case AST_POINTER:   TODO("");
+        case AST_MEMBER:    TODO("");
+
+        case AST_INTLIT:    
+        case AST_STRLIT:    
+        case AST_ASSIGN:    
+        case AST_FUNCCALL:  
+        case AST_WHILE:     
+        case AST_REPEAT:    
+        case AST_RETURN:    
+        case AST_IF:        
+        case AST_CLAUSE:    
+        case AST_DECL:      
+        case AST_FUNCTION:  
+        case AST_BINOP:     
+        case AST_UNARY:     
+        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_lhs", this->kind);
+    }
+}
+
+// ---------------------------------------------------------------------------------
+//                         code_gen_bool
+// ---------------------------------------------------------------------------------
+// Generate IR code for a branch context
+
+void code_gen_bool(Function func, AST this, Symbol lab_true, Symbol lab_false) {
+    if (this->kind==AST_BINOP)
+        return code_gen_bool_binop(func, as_binop(this), lab_true, lab_false);
+    
+    Symbol sym = code_gen(func, this);
+    add_instr(func, new_Instr(INSTR_BRANCH, ALU_BNE_I, lab_true, sym, SymbolList_get(func->all_vars, 0)));
+    add_instr(func, new_Instr(INSTR_JUMP,  0, lab_false,0, 0));
+}

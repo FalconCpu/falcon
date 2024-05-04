@@ -57,3 +57,17 @@ void AST_typecheck_return(AST_return this, Block scope) {
     else if (func->return_type!=type_void && this->retval!=0)
         check_type_compatible(func->return_type, this->retval);
 }
+
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_return(Function func, AST_return this) {
+
+    if (this->retval!=0) {
+        Symbol retval = code_gen(func, this->retval);
+        add_instr(func, new_Instr(INSTR_MOV, 0, SymbolList_get(func->all_vars,REG_RESULT), retval, 0));
+    }
+    add_instr(func, new_Instr(INSTR_JUMP, 0, func->end_label, 0, 0));
+    return 0;
+}

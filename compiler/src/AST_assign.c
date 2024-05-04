@@ -53,13 +53,13 @@ void AST_typecheck_assign(AST_assign this, Block scope) {
 //                           code_gen
 // ============================================================================
 
-// static Symbol code_gen_assign(Function func, AST_assign this) {
-//     if (is_scalar_type(this->rhs->type)) {
-//         Symbol rhs = code_gen(func, this->rhs);
-//         code_gen_lvalue(func, this->lhs, rhs);
-//     } else {
-//         Symbol lhs = code_gen_aggregate_lhs(func, this->lhs);
-//         code_gen_aggregate_rhs(func, this->rhs, lhs);
-//     }
-//     return 0;
-// }
+Symbol code_gen_assign(Function func, AST_assign this) {
+    if (is_scalar_type(this->rhs->type)) {
+        Symbol rhs = code_gen(func, this->rhs);
+        code_gen_lvalue(func, this->lhs, rhs);
+    } else {
+        Symbol lhs = code_gen_aggregate_lhs(func, this->lhs);
+        code_gen_aggregate_rhs(func, this->rhs, lhs);
+    }
+    return 0;
+}

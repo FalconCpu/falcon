@@ -47,3 +47,20 @@ void AST_typecheck_if(AST_if this, Block scope) {
     block_typecheck(this->clauses);
 }
 
+// ---------------------------------------------------------------------------------
+//                           code_gen
+// ---------------------------------------------------------------------------------
+
+Symbol code_gen_if(Function func, AST_if this) {
+    Symbol lab_next = new_label(func);
+    Symbol lab_end = new_label(func);
+
+    AST clause;
+    foreach_statement(clause, this->clauses) {
+        code_gen_clause(func, as_clause(clause), lab_next, lab_end);
+        add_instr(func, new_Instr(INSTR_LABEL , 0, lab_next, 0,0));
+        lab_next = new_label(func);
+    }
+    add_instr(func, new_Instr(INSTR_LABEL , 0, lab_end, 0,0));
+    return 0;
+}

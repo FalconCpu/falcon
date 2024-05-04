@@ -48,3 +48,22 @@ void AST_typecheck_clause(AST_clause this, Block scope) {
     }
     block_typecheck(this->body);
 }
+
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_clause(Function func, AST_clause this, Symbol lab_next, Symbol lab_end) {
+    if (this->condition) {
+        Symbol lab_body = new_label(func);
+        code_gen_bool(func, this->condition, lab_body, lab_next);
+        add_instr(func, new_Instr(INSTR_LABEL , 0, lab_body, 0,0));
+        code_gen_block(func, this->body);
+        add_instr(func, new_Instr(INSTR_JUMP , 0, lab_end, 0,0));
+    } else {
+        code_gen_block(func, this->body);
+        add_instr(func, new_Instr(INSTR_JUMP , 0, lab_end, 0,0));
+    }
+ 
+    return 0;
+}

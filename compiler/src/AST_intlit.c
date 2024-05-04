@@ -44,3 +44,13 @@ void AST_intlit_print(AST_intlit this, int indent) {
     printf("INTLIT %d %s\n", this->value, this->type->name);
 }
 
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_intlit(Function func, AST_intlit this) {
+    Symbol sym = make_constant_symbol(func, this->value);
+    Symbol ret = new_tempvar(func, this->type);
+    add_instr(func, new_Instr(INSTR_MOV, 0, ret, sym, 0));
+    return ret;
+}

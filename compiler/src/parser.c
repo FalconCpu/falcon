@@ -197,6 +197,9 @@ static AST parse_prefix() {
     if (lookahead->kind==TOK_MINUS || lookahead->kind==TOK_NOT) {
         Token t = next_token();
         return new_AST_unary(t->location, t->kind, parse_prefix());
+    } else if (lookahead->kind==TOK_STAR) {
+        Token t = next_token();
+        return new_AST_pointer(t->location, parse_prefix());
     } else
         return parse_postfix();
 }

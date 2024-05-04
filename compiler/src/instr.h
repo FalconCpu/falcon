@@ -1,3 +1,6 @@
+#ifndef INSTR_H
+#define INSTR_H
+
 #include "fpl.h"
 
 // =================================================================================
@@ -7,7 +10,7 @@
 // Represents one "Three Address Code" (TAC) instruction in the program
 
 
-typedef enum {
+enum AluOp{
     ALU_AND_I,
     ALU_OR_I,
     ALU_XOR_I,
@@ -55,9 +58,9 @@ typedef enum {
 
     ALU_AND_B,
     ALU_OR_B
-} AluOp;
+} ;
 
-typedef enum {
+enum InstrKind {
     INSTR_NOP,
     INSTR_MOV,
     INSTR_ALU,
@@ -71,7 +74,7 @@ typedef enum {
     INSTR_CHK,
     INSTR_START,
     INSTR_END
-} InstrKind;
+};
 
 struct Instr  {
     int       index;      // location of the instruction in the program
@@ -97,3 +100,5 @@ Instr new_Instr(InstrKind kind, AluOp op, Symbol dest, Symbol a, Symbol b);
 
 // convert an instr into a human readable form
 String instr_toString(Instr this);
+
+#endif

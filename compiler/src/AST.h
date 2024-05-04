@@ -22,6 +22,8 @@ AST_intlit as_intlit(AST this);
 
 void AST_typecheck_intlit(AST_intlit this, Block scope);
 
+Symbol code_gen_intlit(Function func, AST_intlit this);
+
 // -----------------------------------------------------------------------
 //                        AST_STRLIT
 // -----------------------------------------------------------------------
@@ -65,6 +67,13 @@ AST_symbol as_symbol(AST this);
 
 void AST_typecheck_symbol(AST_symbol this, Block scope);
 
+Symbol code_gen_symbol(Function func, AST_symbol this);
+
+void code_gen_lvalue_symbol(Function func, AST_symbol this, Symbol value);
+
+Symbol  code_gen_aggregate_lhs_symbol(Function func, AST_symbol this);
+
+void  code_gen_aggregate_rhs_symbol(Function func, AST_symbol this, Symbol dest);
 
 // -----------------------------------------------------------------------
 //                        AST_BINOP
@@ -89,6 +98,10 @@ AST_binop as_binop(AST this);
 
 void AST_typecheck_binop(AST_binop this, Block scope);
 
+void  code_gen_bool_binop(Function func, AST_binop this, Symbol label_true, Symbol label_false);
+
+Symbol code_gen_binop(Function func, AST_binop this);
+
 // -----------------------------------------------------------------------
 //                        AST_POINTER
 // -----------------------------------------------------------------------
@@ -109,7 +122,9 @@ AST_pointer as_pointer(AST this);
 
 void AST_typecheck_pointer(AST_pointer this, Block scope);
 
+Symbol code_gen_pointer(Function func, AST_pointer this);
 
+void code_gen_lvalue_pointer(Function func, AST_pointer this, Symbol value);
 
 // -----------------------------------------------------------------------
 //                        AST_UNARY
@@ -155,7 +170,13 @@ AST_index as_index(AST this);
 
 void AST_typecheck_index(AST_index this, Block scope);
 
+Symbol code_gen_index(Function func, AST_index this);
 
+void code_gen_lvalue_index(Function func, AST_index this, Symbol value);
+
+Symbol code_gen_aggregate_lhs_index(Function func, AST_index this);
+
+void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest);
 // -----------------------------------------------------------------------
 //                        AST_MEMBER
 // -----------------------------------------------------------------------
@@ -180,6 +201,9 @@ AST_member as_member(AST this);
 
 void AST_typecheck_member(AST_member this, Block scope);
 
+Symbol code_gen_member(Function func, AST_member this);
+
+void code_gen_lvalue_member(Function func, AST_member this, Symbol value);
 
 // -----------------------------------------------------------------------
 //                        AST_FUNCCALL
@@ -204,7 +228,9 @@ AST_funccall as_funccall(AST this);
 
 void AST_typecheck_funccall(AST_funccall this, Block scope);
 
+Symbol code_gen_funccall(Function func, AST_funccall this);
 
+void code_gen_aggregate_rhs_funccall(Function func, AST_funccall this, Symbol dest);
 // -----------------------------------------------------------------------
 //                        AST_DECL
 // -----------------------------------------------------------------------
@@ -230,6 +256,8 @@ AST_decl as_decl(AST this);
 
 void AST_typecheck_decl(AST_decl this, Block scope);
 
+Symbol code_gen_decl(Function func, AST_decl this);
+
 
 // -----------------------------------------------------------------------
 //                        AST_RETURN
@@ -250,6 +278,8 @@ void AST_return_print(AST_return this, int indent);
 AST_return as_return(AST this);
 
 void AST_typecheck_return(AST_return this, Block scope);
+
+Symbol code_gen_return(Function func, AST_return this);
 
 // -----------------------------------------------------------------------
 //                        AST_ASSIGN
@@ -272,6 +302,7 @@ AST_assign as_assign(AST this);
 
 void AST_typecheck_assign(AST_assign this, Block scope);
 
+Symbol code_gen_assign(Function func, AST_assign this);
 
 // -----------------------------------------------------------------------
 //                        AST_WHILE
@@ -294,6 +325,7 @@ AST_while as_while(AST this);
 
 void AST_typecheck_while(AST_while this, Block scope);
 
+Symbol code_gen_while(Function func, AST_while this);
 
 // -----------------------------------------------------------------------
 //                        AST_REPEAT
@@ -316,6 +348,7 @@ AST_repeat as_repeat(AST this);
 
 void AST_typecheck_repeat(AST_repeat this, Block scope);
 
+Symbol code_gen_repeat(Function func, AST_repeat this);
 
 // -----------------------------------------------------------------------
 //                        AST_CLAUSE
@@ -338,6 +371,8 @@ AST_clause as_clause(AST this);
 
 void AST_typecheck_clause(AST_clause this, Block scope);
 
+Symbol code_gen_clause(Function func, AST_clause this, Symbol lab_next, Symbol lab_end);
+
 
 // -----------------------------------------------------------------------
 //                        AST_IF
@@ -359,6 +394,7 @@ AST_if as_if(AST this);
 
 void AST_typecheck_if(AST_if this, Block scope);
 
+Symbol code_gen_if(Function func, AST_if this);
 
 // -----------------------------------------------------------------------
 //                        AST_STRUCT

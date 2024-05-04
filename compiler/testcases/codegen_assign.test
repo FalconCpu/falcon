@@ -1,0 +1,17 @@
+fun main()
+    val a = 1+2
+    val b = a*3
+
+@--------------
+
+main:
+0    start
+1    mov   #0, 1
+2    mov   #1, 2
+3    add_i #2, #0, #1
+4    mov   a, #2
+5    mov   #3, 3
+6    mul_i #4, a, #3
+7    mov   b, #4
+8    lab   @0
+9    end

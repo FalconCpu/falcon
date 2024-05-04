@@ -102,6 +102,21 @@ int main(int argc, String* argv) {
         return 0;
     }
 
+    //
+    // Generate IR code
+    //
+    Function func;
+    foreach_function(func)
+        code_gen(func, as_AST(func));
+    if (num_errors!=0)
+        return num_errors;
+    if (operation==OPERATION_CODE_GEN) {
+        foreach_function(func)
+            print_program(func);
+        return 0;
+    }
+
+
     printf("XXXX\n");
 
 }

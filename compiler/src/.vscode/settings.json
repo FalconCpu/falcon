@@ -4,6 +4,7 @@
         "location.C": "cpp",
         "lexer.C": "cpp",
         "token.C": "cpp",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "typeinfo": "c"
     }
 }

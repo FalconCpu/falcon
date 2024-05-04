@@ -18,8 +18,11 @@ typedef struct Function* Function;
 typedef struct TypeList* TypeList;
 typedef enum TokenKind TokenKind;
 typedef enum BinopKind BinopKind;
+typedef enum InstrKind InstrKind;
+typedef enum AluOp AluOp;
 typedef struct Instr* Instr;
 typedef union Value Value;
+typedef struct Bitmap* Bitmap;
 
 // ===========================================================================
 //                    Types
@@ -190,6 +193,7 @@ struct AST {
 AST new_AST_intlit(Location location, Type type, int value);
 AST new_AST_strlit(Location location, Type type, String value);
 AST new_AST_symbol(Location location, String name);
+AST new_ASTnode_id_from_symbol(Symbol sym);
 AST new_AST_binop(Location location, TokenKind op, AST lhs, AST rhs);
 AST new_AST_unary(Location location, TokenKind op, AST rhs);
 AST new_AST_index(Location location,  AST lhs, AST rhs);
@@ -219,6 +223,14 @@ int AST_get_constant_value(AST this);
 
 // runs the typechecking phase on any kind of AST node
 void AST_typecheck(AST this, Block scope);
+
+Symbol code_gen(Function func, AST this);
+
+Symbol code_gen_(Function func, AST this);
+void   code_gen_lvalue(Function func, AST this, Symbol value);
+Symbol code_gen_aggregate_lhs(Function func, AST this);
+void   code_gen_aggregate_rhs(Function func, AST this, Symbol lhs);
+void   code_gen_bool(Function func, AST this, Symbol lab_true, Symbol lab_false);
 
 
 #define as_AST(A) ((AST)(A))
@@ -266,6 +278,7 @@ void   block_print(Block this, int indent);
 void   block_add_symbol(Block block, Symbol sym);
 Symbol block_find_symbol(Block block, String name);
 Function block_find_enclosing_function(Block this);
+Symbol code_gen_block(Function func, Block this);
 
 #define foreach_statement(A,L)  for(int index=0; (((A)=block_get_statement(L,index))); index++)
 
@@ -288,18 +301,121 @@ struct Function {
     SymbolList parameters;  // Symbol for each parameter
     Type       return_type;
 
+    // for codegen
+    SymbolList  all_vars;          // Flattened list of all variables (including temporaries)
+    SymbolList  all_consts;        // All Constant values used
+    SymbolList  all_labels;        // All labels in the block
+    int         num_instr;
+    int         alloc_instr;
+    Instr*      instr;             // The instructions that make up the program
+    int         num_temps;         // number of temporary variables
+    Symbol      end_label;
+    Bitmap      livemap;            // which variables are live at each instruction. Set during peephole()
+    int         max_reg_no;         // maximum register number used
+    int         makes_calls;        // set to 1 if the block contains a call instruction (set in regalloc)
+    int         stack_vars;         // amount of stack space needed for variables
 };
 
 AST new_function(Location location, String name, AST_list params, AST ret_type_ast, Block body);
 
 Function as_function(AST this);
 
+// Add an instuction to the end of the program
+void add_instr(Function this, Instr inst);
+
+// create a new tempvar symbol
+Symbol new_tempvar(Function this, Type type);
+
+// check the given symbol is in the post codegen symbol table
+Symbol get_codegen_symbol(Function this, Symbol sym);
+
+// Find a symbol relating to a given constant
+Symbol make_constant_symbol(Function this, int value);
+
+// Find a symbol relating to a given string literal
+Symbol make_string_constant_symbol(Function this, String value);
+
+void print_program(Function this);
+void print_program_with_bitmap(Function this, Bitmap bm1, Bitmap bm2);
+
+// create a new label
+Symbol new_label(Function this);
+
+
+Symbol code_gen(Function func, AST this);
+Symbol code_gen_function(Function this);
+void code_gen_lvalue(Function func, AST this, Symbol value);
+void code_gen_aggregate_rhs(Function func, AST this, Symbol value);
+Symbol code_gen_aggregate_lhs(Function func, AST this);
+void code_gen_bool(Function func, AST this, Symbol lab_true, Symbol lab_false);
+
+Function get_function_by_index(int index);
+#define foreach_function(F) for(int index=0; ((F=get_function_by_index(index))); index++)
+
+// ===========================================================================
+//                instr.c
+// ===========================================================================
+
+Instr new_Instr(InstrKind kind, AluOp op, Symbol dest, Symbol a, Symbol b);
+
+#define foreach_instr(I,P) for(int index=0; index<P->num_instr ? (I=P->instr[index]) : 0; index++)
 
 // ===========================================================================
 //                parse.c
 // ===========================================================================
 
 void parse_top(Block block);
+
+// ===========================================================================
+//                      Stdlib
+// ===========================================================================
+// Code to emit Standard library functions
+
+struct Stdlib {
+    Symbol sdlib_malloc;
+    Symbol sdlib_bzero;
+    Symbol sdlib_memcpy;
+};
+
+extern struct Stdlib stdlib;
+void initialize_stdlib();
+
+void gen_memcopy(Function func, Symbol dest, Symbol source, int size);
+
+// =================================================================================
+//                                bitmap.c
+// =================================================================================
+
+typedef unsigned long long Ull;
+
+struct Bitmap {
+    int num_rows;
+    int num_cols;
+    int row_shift;
+    Ull* data;
+};
+
+// Create a new bitmap
+Bitmap new_Bitmap(int num_rows, int num_cols);
+
+// Set a bit in a bitmap
+void   bitmap_set(Bitmap bm, int row, int col);
+
+// Set a bit in a bitmap
+void   bitmap_clear(Bitmap bm, int row, int col);
+
+// Get a bit from a bitmap
+int    bitmap_get(Bitmap bm, int row, int col);
+
+// OR a row in one bitmap with a row in another bitmap
+// Returns 1 if any new bits are set in the destination bitmap
+int    bitmap_or_row(Bitmap dest_bm, int dest_row, Bitmap source_bm, int source_row);
+
+// combines the data in a row of the destination bitmap with a row from bitmap A AND'ed with a row from bitmap B
+void  bitmap_or_and_not_row(Bitmap dest_bm, int dest_row, Bitmap bm_a, int row_a, Bitmap bm_b, int row_b);
+
+void delete_Bitmap(Bitmap bm);
+
 
 // ===========================================================================
 //                Common utility functions - in util.c

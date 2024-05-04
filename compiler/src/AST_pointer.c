@@ -52,3 +52,38 @@ void AST_typecheck_pointer(AST_pointer this, Block scope) {
         return;
     }
 }
+
+// ---------------------------------------------------------------------------------
+//                         code_gen
+// ---------------------------------------------------------------------------------
+
+Symbol code_gen_pointer(Function func, AST_pointer this) {
+    Symbol rhs = code_gen(func, this->rhs);
+
+    Symbol ret = new_tempvar(func, this->type);
+
+    // for scalars we return the data, for aggregates we return the address
+    if (is_scalar_type(this->type)) {
+        int size = get_sizeof(this->type);
+        add_instr(func, new_Instr(INSTR_LOAD, size, ret, rhs, make_constant_symbol(func, 0)));
+    } else {
+        add_instr(func, new_Instr(INSTR_MOV, 0, ret, rhs, 0));
+    }
+    return ret;
+}
+
+
+// ---------------------------------------------------------------------------------
+//                           code_gen_lvalue
+// ---------------------------------------------------------------------------------
+
+void code_gen_lvalue_pointer(Function func, AST_pointer this, Symbol value) {
+    Symbol rhs = code_gen(func, this->rhs);
+
+    if (is_scalar_type(this->type)) {
+        int size = get_sizeof(this->type);
+        add_instr(func, new_Instr(INSTR_STORE, size, value, rhs, make_constant_symbol(func, 0)));
+    } else {
+        TODO("Writes to aggregate pointers");
+    }
+}

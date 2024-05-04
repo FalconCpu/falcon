@@ -47,3 +47,19 @@ void AST_typecheck_repeat(AST_repeat this, Block scope) {
     block_typecheck(this->body);
 }
 
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_repeat(Function func, AST_repeat this) {
+    Symbol lab_start = new_label(func);
+    Symbol lab_cond = new_label(func);
+    Symbol lab_end = new_label(func);
+
+    add_instr(func, new_Instr(INSTR_LABEL , 0, lab_start, 0,0));
+    code_gen_block(func, this->body);
+    add_instr(func, new_Instr(INSTR_LABEL , 0, lab_cond, 0,0));
+    code_gen_bool(func, this->condition, lab_start, lab_end);
+    add_instr(func, new_Instr(INSTR_LABEL , 0, lab_end, 0,0));
+    return 0;
+}

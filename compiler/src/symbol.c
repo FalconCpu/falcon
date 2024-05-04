@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "instr.h"
 #include "fpl.h"
 
 // ---------------------------------------------------------------------------------
@@ -57,19 +58,19 @@ String Symbol_toText(Symbol this) {
 // ---------------------------------------------------------------------------------
 // Generate code to find the address of a symbol
 
-// Symbol get_aggregate_address(Function func, Symbol this) {
-//     if (this->kind==SYM_AGGREGATE) {
-//         // We have an variable on our local stack
-//         Symbol ret = new_tempvar(func, this->type);
-//         Symbol sp = SymbolList_get(func->all_vars,REG_SP);
-//         Symbol offset = make_constant_symbol(func, this->offset);
-//         add_instr(func, new_Instr(INSTR_ALU, ALU_ADD_I, ret, sp, offset));
-//         return ret;
-//     } else {
-//         // We have an aggregate passed into us
-//         return this;
-//     }
-// }
+Symbol get_aggregate_address(Function func, Symbol this) {
+    if (this->kind==SYM_AGGREGATE) {
+        // We have an variable on our local stack
+        Symbol ret = new_tempvar(func, this->type);
+        Symbol sp = SymbolList_get(func->all_vars,REG_SP);
+        Symbol offset = make_constant_symbol(func, this->offset);
+        add_instr(func, new_Instr(INSTR_ALU, ALU_ADD_I, ret, sp, offset));
+        return ret;
+    } else {
+        // We have an aggregate passed into us
+        return this;
+    }
+}
 
 // -------------------------------------------------------------------------------
 // Structure to represent a list of symbols

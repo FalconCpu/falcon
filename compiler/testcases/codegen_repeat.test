@@ -1,0 +1,39 @@
+
+fun sum_array(a:Int[])->Int
+    var total = 0
+    var index = 0
+    repeat
+        total = total + a[index]
+        index=index+1
+    until index=a.size
+    return total
+
+@--------------
+
+sum_array:
+0    start
+1    mov   a, $1
+2    mov   #0, 0
+3    mov   total, #0
+4    mov   #1, 0
+5    mov   index, #1
+6    lab   @1
+7    ldw   #2, a[-4]
+8    chk   index, #2
+9    mul_i #3, index, 4
+10   add_i #4, a, #3
+11   ldw   #5, #4[0]
+12   add_i #6, total, #5
+13   mov   total, #6
+14   mov   #7, 1
+15   add_i #8, index, #7
+16   mov   index, #8
+17   lab   @2
+18   ldw   #9, a[-4]
+19   beq_i index, #9, @1
+20   jmp   @3
+21   lab   @3
+22   mov   $8, total
+23   jmp   @0
+24   lab   @0
+25   end

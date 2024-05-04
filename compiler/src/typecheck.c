@@ -108,13 +108,13 @@ Type resolve_AST_type(AST this, Block scope) {
         //     return make_type_pointer(base_type, 1);
         // }
 
-        // case AST_POINTER: {
-        //     AST_pointer this_pointer = asPointer(this);
-        //     Type base_type = resolve_AST_type(this_pointer->rhs, scope);
-        //     if (base_type==type_error)
-        //         return type_error;
-        //     return make_type_pointer(base_type, 0);
-        // }
+        case AST_POINTER: {
+            AST_pointer this_pointer = as_pointer(this);
+            Type base_type = resolve_AST_type(this_pointer->rhs, scope);
+            if (base_type==type_error)
+                return type_error;
+            return make_type_pointer(base_type, 0);
+        }
 
         case AST_BINOP: {
             AST_binop this_binop = as_binop(this);
