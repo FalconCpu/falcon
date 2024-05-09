@@ -2,6 +2,7 @@
 #include "fpl.h"
 #include "AST.h"
 #include "instr.h"
+#include "types.h"
 
 
 // ============================================================================
@@ -99,6 +100,13 @@ static struct binops binop_table[] = {
     {TOK_AND,       TYPE_BOOL, TYPE_BOOL,    ALU_AND_B,  TYPE_BOOL},
     {TOK_OR,        TYPE_BOOL, TYPE_BOOL,    ALU_OR_B,   TYPE_BOOL},
 
+    {TOK_EQ,        TYPE_POINTER,  TYPE_POINTER,  ALU_EQ_I,   TYPE_BOOL},
+    {TOK_NEQ,       TYPE_POINTER,  TYPE_POINTER,  ALU_NEQ_I,  TYPE_BOOL},
+    {TOK_EQ,        TYPE_POINTER,  TYPE_NULL,     ALU_EQ_I,   TYPE_BOOL},
+    {TOK_NEQ,       TYPE_POINTER,  TYPE_NULL,     ALU_NEQ_I,  TYPE_BOOL},
+    {TOK_EQ,        TYPE_NULL,     TYPE_POINTER,  ALU_EQ_I,   TYPE_BOOL},
+    {TOK_NEQ,       TYPE_NULL,     TYPE_POINTER,  ALU_NEQ_I,  TYPE_BOOL},
+
     {0,0,0,0,0}
 };
 
@@ -123,14 +131,19 @@ void AST_typecheck_binop(AST_binop this, Block scope) {
     }
 
     // perform automatic casts of char/short to int if used in arithmetic
-    // if (this->lhs->type==type_char || this->lhs->type==type_short) {
-    //     this->lhs = new_AST_cast(&this->location, this->lhs, 0);
-    //     this->lhs->type = type_int;
-    // }
-    // if (this->rhs->type==type_char || this->rhs->type==type_short) {
-    //     this->rhs = new_AST_cast(&this->location, this->rhs, 0);
-    //     this->rhs->type = type_int;
-    // }
+    if (this->lhs->type==type_char || this->lhs->type==type_short) {
+        this->lhs = new_AST_cast(this->location, this->lhs, 0);
+        this->lhs->type = type_int;
+    }
+    if (this->rhs->type==type_char || this->rhs->type==type_short) {
+        this->rhs = new_AST_cast(this->location, this->rhs, 0);
+        this->rhs->type = type_int;
+    }
+
+    // if types are pointers then check their base types are the same
+    if (this->lhs->type->kind==TYPE_POINTER && this->rhs->type->kind==TYPE_POINTER)
+        if (as_TypePointer(this->lhs->type)->base != as_TypePointer(this->rhs->type)->base)
+            error(this->location, "Pointer type mismatch, %s vs %s", this->lhs->type->name, this->rhs->type->name);
 
     struct binops *ptr;
     for(ptr=binop_table; ptr->op; ptr++)

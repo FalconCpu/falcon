@@ -1,0 +1,12 @@
+109876 543 21098 76543 21098765 43210
+010000 III DDDDD AAAAA ........ BBBBB   alu3 $d,$a,$b
+010001 III DDDDD AAAAA ######## #####   alu3 $d,$a,#s13
+010010 ZZZ DDDDD AAAAA ######## #####   ldz  $d,$a[#s13]
+010011 ZZZ ##### AAAAA ######## BBBBB   stz  $b,$a[#s13]
+010100 CCC ##### AAAAA ######## BBBBB   bcc  $a,$b,#s13
+010101 ### DDDDD ##### ######## #####   jmp  $d, #s21
+010110 ... DDDDD AAAAA ######## #####   jmp  $d, $a[#s13]
+010111 ### DDDDD ##### ######## #####   ld   $d, #21<<11
+011000 ### DDDDD ##### ######## #####   add  $d, $pc, #21
+011001 ### DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b
+011010 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg

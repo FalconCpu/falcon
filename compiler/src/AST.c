@@ -18,8 +18,10 @@ void AST_print(AST this, int indent) {
         case AST_SYMBOL:    AST_symbol_print(as_symbol(this), indent); break;
         case AST_BINOP:     AST_binop_print (as_binop (this), indent); break;
         case AST_UNARY:     AST_unary_print (as_unary (this), indent); break;
+        case AST_CAST:      AST_cast_print  (as_cast (this), indent); break;
         case AST_INDEX:     AST_index_print (as_index (this), indent); break;
         case AST_MEMBER:    AST_member_print(as_member(this), indent); break;
+        case AST_NEW:       AST_new_print   (as_new(this), indent); break;
         case AST_FUNCCALL:  AST_funccall_print(as_funccall(this), indent); break;
         case AST_DECL:      AST_decl_print  (as_decl  (this), indent); break;
         case AST_RETURN:    AST_return_print(as_return(this), indent); break;
@@ -31,6 +33,7 @@ void AST_print(AST this, int indent) {
         case AST_FUNCTION:  AST_function_print(as_function(this), indent); break;
         case AST_POINTER:   TODO("pointers");
         case AST_STRUCT:    AST_struct_print(as_struct(this), indent); break;
+        case AST_FOR:       AST_for_print(as_for(this), indent); break;
     }
 }
 
@@ -46,12 +49,15 @@ Block AST_get_block(AST this) {
         case AST_REPEAT:    return as_repeat(this)->body;
         case AST_IF:        return as_if(this)->clauses;
         case AST_CLAUSE:    return as_clause(this)->body;
-        case AST_STRUCT:    return 0;
+        case AST_FOR:       return as_for(this)->body;
+        case AST_STRUCT:    return as_struct(this)->body;
 
         case AST_INTLIT:    
         case AST_STRLIT:    
         case AST_SYMBOL:    
+        case AST_NEW:    
         case AST_BINOP:     
+        case AST_CAST:     
         case AST_UNARY:     
         case AST_INDEX:     
         case AST_MEMBER:    
@@ -133,6 +139,8 @@ void AST_typecheck(AST this, Block scope) {
         case AST_SYMBOL:    return AST_typecheck_symbol( as_symbol(this), scope);
         case AST_ASSIGN:    return AST_typecheck_assign( as_assign(this), scope);
         case AST_INDEX:     return AST_typecheck_index(  as_index(this), scope);
+        case AST_CAST:      return AST_typecheck_cast(  as_cast(this), scope);
+        case AST_NEW:       return AST_typecheck_new(   as_new(this), scope);
         case AST_POINTER:   return AST_typecheck_pointer(as_pointer(this), scope);
         case AST_FUNCCALL:  return AST_typecheck_funccall(as_funccall(this), scope);
         case AST_WHILE:     return AST_typecheck_while(as_while(this), scope);
@@ -146,6 +154,7 @@ void AST_typecheck(AST this, Block scope) {
         case AST_BINOP:     return AST_typecheck_binop( as_binop(this), scope);
         case AST_UNARY:    return  AST_typecheck_unary( as_unary(this), scope);
         case AST_STRUCT:    return AST_typecheck_struct( as_struct(this), scope);
+        case AST_FOR:       return AST_typecheck_for( as_for(this), scope);
     }
 }
 
@@ -157,10 +166,12 @@ void AST_typecheck(AST this, Block scope) {
 Symbol code_gen(Function func, AST this) {
     switch(this->kind) {
         case AST_INTLIT:    return code_gen_intlit(func, as_intlit(this));
-        case AST_STRLIT:    TODO("");
+        case AST_STRLIT:    return code_gen_strlit(func, as_strlit(this));
         case AST_SYMBOL:    return code_gen_symbol(func, as_symbol(this));
         case AST_ASSIGN:    return code_gen_assign(func, as_assign(this));
         case AST_INDEX:     return code_gen_index(func, as_index(this));
+        case AST_CAST:      return code_gen_cast(func, as_cast(this));
+        case AST_NEW:       return code_gen_new(func, as_new(this));
         case AST_POINTER:   return code_gen_pointer(func, as_pointer(this));
         case AST_FUNCCALL:  return code_gen_funccall(func, as_funccall(this));
         case AST_WHILE:     return code_gen_while(func, as_while(this));
@@ -172,9 +183,11 @@ Symbol code_gen(Function func, AST this) {
         case AST_DECL:      return code_gen_decl(func, as_decl(this));
         case AST_FUNCTION:  return code_gen_function(as_function(this));
         case AST_BINOP:     return code_gen_binop(func, as_binop(this));
-        case AST_UNARY:     TODO("");
+        case AST_UNARY:     return code_gen_unary(func, as_unary(this));
+        case AST_FOR:       return code_gen_for(func, as_for(this));
         case AST_STRUCT:    TODO("");
     }
+    fatal("Should not reach here");
 }
 
 // ---------------------------------------------------------------------------------
@@ -191,6 +204,8 @@ void code_gen_lvalue(Function func, AST this, Symbol value) {
 
         case AST_INTLIT:    
         case AST_STRLIT:    
+        case AST_CAST:    
+        case AST_NEW:    
         case AST_ASSIGN:    
         case AST_FUNCCALL:  
         case AST_WHILE:     
@@ -202,6 +217,7 @@ void code_gen_lvalue(Function func, AST this, Symbol value) {
         case AST_FUNCTION:  
         case AST_BINOP:     
         case AST_UNARY:     
+        case AST_FOR:     
         case AST_STRUCT:    fatal("Internal error - got %x in code_gen_lvalue", this->kind);
     }
 }
@@ -221,6 +237,8 @@ void code_gen_aggregate_rhs(Function func, AST this, Symbol value) {
 
         case AST_INTLIT:    
         case AST_STRLIT:    
+        case AST_CAST:    
+        case AST_NEW:    
         case AST_ASSIGN:    
         case AST_WHILE:     
         case AST_REPEAT:    
@@ -231,6 +249,7 @@ void code_gen_aggregate_rhs(Function func, AST this, Symbol value) {
         case AST_FUNCTION:  
         case AST_BINOP:     
         case AST_UNARY:     
+        case AST_FOR:     
         case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_rhs", this->kind);
     }
 }
@@ -246,10 +265,12 @@ Symbol code_gen_aggregate_lhs(Function func, AST this) {
         case AST_SYMBOL:    return code_gen_aggregate_lhs_symbol(func, as_symbol(this));
         case AST_INDEX:     return code_gen_aggregate_lhs_index(func, as_index(this));
         case AST_POINTER:   TODO("");
-        case AST_MEMBER:    TODO("");
+        case AST_MEMBER:    return code_gen_aggregate_lhs_member(func, as_member(this));
 
         case AST_INTLIT:    
         case AST_STRLIT:    
+        case AST_CAST:    
+        case AST_NEW:    
         case AST_ASSIGN:    
         case AST_FUNCCALL:  
         case AST_WHILE:     
@@ -261,6 +282,7 @@ Symbol code_gen_aggregate_lhs(Function func, AST this) {
         case AST_FUNCTION:  
         case AST_BINOP:     
         case AST_UNARY:     
+        case AST_FOR:     
         case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_lhs", this->kind);
     }
 }

@@ -1,0 +1,16 @@
+
+struct Cat(name:String, legs:Int)
+    fun greet()->Int
+        return legs+1
+
+@--------------------
+STRUCT Cat
+   DECL name
+      SYMBOL String
+   DECL legs
+      SYMBOL Int
+   FUNCTION greet
+      RETURN
+         BINOP +
+            SYMBOL legs
+            INTLIT 1 Int

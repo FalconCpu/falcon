@@ -43,8 +43,10 @@ struct Type_function {
 struct Type_struct {
     int        kind;   // will be TYPE_STRUCT
     String     name;
-    SymbolList members;
+    SymbolList params;  // the fields to be populated by the constructor
+    Block      body;    // the body of the struct
     int        size;    // calculated during type checking
+    Symbol     symbol;  // Symbol for the type descriptor
 };
 
 // primative types

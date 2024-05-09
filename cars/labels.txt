@@ -1,0 +1,13 @@
+000000ec uart_write_char.1
+000000f0 uart_write_char.2
+000000d4 wait_for_mouse.1
+000000d4 wait_for_mouse.2
+000000ac load_image.5
+000000ac load_image.4
+0000008c load_image.1
+000000ac load_image.2
+000000e0 uart_write_char
+000000cc wait_for_mouse
+00000054 load_image
+00000024 main.1
+00000000 main

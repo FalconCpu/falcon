@@ -13,6 +13,7 @@ STRUCT Cat
       SYMBOL Int
    DECL eyes
       SYMBOL Int
+   Symbol table [name:FIELD:String  legs:FIELD:Int  eyes:FIELD:Int  ]
 FUNCTION count
    DECL cat
       SYMBOL Cat

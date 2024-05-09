@@ -1,0 +1,52 @@
+struct HW_regs (
+    seven_seg        : Int,   # 6 digit 7-segment display
+    leds             : Int,   # 10 LEDs
+    mouse_x          : Int,   # current mouse x coordinate
+    mouse_y          : Int,   # current mouse y coordinate
+    mouse_buttons    : Int,   # mouse buttons, bit0=left button, 1=middle, 2=right
+    uart_tx          : Int,   # write sends a byte to uart. Read gives number of slots free in fifo.
+    uart_rx          : Int,   # read gets next byte from fifo, or -1 if no data availible
+                              # write flushes the read fifo
+    screen_blank     : Int,   # Set bit 8 to blank screen, bits 7:0 to the color
+    screen_addr      : Int,   # Start address of the screen display. Must be a multiple of 1024.
+    seven_seg_bright : Int)   # Brightness of
+
+
+# ############################################################################
+#                      uart_write_char
+# ############################################################################
+# Transmit a byte through the fifo
+
+fun uart_write_char(c:Char)
+    val hw_regs = (0xE0000000:HW_regs*)   # get the address of the memory mapped hw_regs
+
+    # wait for the fifo to have a slot
+    var busy_wait = 0
+    while hw_regs.uart_tx = 0
+        busy_wait = busy_wait + 1
+
+    hw_regs.uart_tx = (c:Int)
+
+# ############################################################################
+#                      kprint_*
+# ############################################################################
+# Transmit a byte through the fifo
+
+fun kprint_string(string:String)
+    for index in 0 to string.size-1
+        uart_write_char(string[index])
+
+fun kprint_newline()
+    uart_write_char('\n')
+
+fun kprint_hex(a:Int)
+    var number = a
+    for count in 0 to 7
+        var digit = number >> 28
+        if digit<10
+            digit = digit + '0'
+        else
+            digit = digit + 'A' - 10
+        uart_write_char((digit:Char))
+        number = number << 4
+end fun

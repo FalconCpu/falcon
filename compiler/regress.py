@@ -23,6 +23,8 @@ def run_test(test_name: str):
         command = f"../bin/fpl --typecheck {inname} >{outname}"
     elif test_name.startswith("codegen"):
         command = f"../bin/fpl --codegen {inname} >{outname}"
+    elif test_name.startswith("peephole"):
+        command = f"../bin/fpl --peephole {inname} >{outname}"
     else : 
         print("%-25s \033[0;31mUNDEFINED TYPE\033[0m"%test_name)
         return 0

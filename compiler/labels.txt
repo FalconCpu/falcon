@@ -1,0 +1,77 @@
+0000055c HW_regs
+00000554 TypeDescriptor
+0000054c MemChunk
+00000544 MemHeader
+00000514 kprint_hex.5
+0000050c kprint_hex.4
+000004f8 kprint_hex.1
+00000520 kprint_hex.2
+000004b4 kprint_newline
+00000484 kprint_string.1
+00000498 kprint_string.2
+00000444 uart_write_char.1
+00000448 uart_write_char.2
+00000438 uart_write_char
+000003f8 dumpMemoryList.20
+000003f8 dumpMemoryList.19
+000003fc dumpMemoryList.17
+000003bc dumpMemoryList.14
+000003bc dumpMemoryList.13
+000003c0 dumpMemoryList.11
+00000404 dumpMemoryList.5
+00000398 dumpMemoryList.8
+00000398 dumpMemoryList.7
+0000039c dumpMemoryList.4
+00000458 kprint_string
+000004d0 kprint_hex
+00000344 dumpMemoryList.1
+00000414 dumpMemoryList.2
+00000314 dumpMemoryList
+00000310 isBlockOnFreeList.0
+00000304 isBlockOnFreeList.4
+000002f8 isBlockOnFreeList.1
+00000308 isBlockOnFreeList.2
+000002ec isBlockOnFreeList
+000002e0 _delete.0
+000002b4 _delete
+00000270 free.15
+0000026c free.14
+0000025c free.12
+00000248 free.10
+00000250 free.11
+0000022c free.5
+00000228 free.7
+0000027c free.0
+000001f4 malloc.18
+00000208 free
+000001f4 malloc.17
+000001b8 malloc.13
+000001b0 malloc.12
+00000198 malloc.8
+00000184 malloc.5
+00000198 malloc.6
+000001f8 malloc.0
+00000168 malloc.1
+00000150 malloc
+00000070 abs.0
+0000006c abs.1
+00000060 abs
+00000074 Point.distance_to
+00000280 _new
+0000053c Point
+000000d4 initialize_memory
+00000000 main
+00000568 "HW_regs"
+00000574 "TypeDescriptor"
+00000588 "MemChunk"
+00000598 "MemHeader"
+000005a8 "Point"
+000005b4 "
+"
+000005bc "Unknown memchunk"
+000005d4 " ERROR ON FREE LIST"
+000005ec "ERROR ON FREE LIST"
+00000604 " ALLOC "
+00000610 "ERROR NOT ON FREE LIST"
+0000062c " FREE "
+00000638 " "

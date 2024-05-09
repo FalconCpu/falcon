@@ -92,6 +92,18 @@ static AST parse_intlit() {
 }
 
 // ===========================================================================
+//                         parse_charlit
+// ===========================================================================
+
+static AST parse_charlit() {
+    Token tok = expect(TOK_CHARLIT);
+
+    return new_AST_intlit(tok->location, type_char, tok->text[1]);
+
+}
+
+
+// ===========================================================================
 //                         parse_strlit
 // ===========================================================================
 
@@ -118,6 +130,11 @@ static AST parse_id() {
 static AST parse_bracket() {
     expect(TOK_OPENB);
     AST ret = parse_expression();
+    if (lookahead->kind==TOK_COLON) {
+        Token loc = next_token();
+        AST type_expr = parse_type_expr();
+        ret = new_AST_cast(loc->location, ret, type_expr);
+    } 
     expect(TOK_CLOSEB);
     return ret;
 }
@@ -131,6 +148,7 @@ static AST parse_primary() {
     switch(lookahead->kind) {
         case TOK_INTLIT: return parse_intlit();
         case TOK_STRLIT: return parse_strlit();
+        case TOK_CHARLIT: return parse_charlit();
         case TOK_ID:     return parse_id();
         case TOK_OPENB:  return parse_bracket();
         default:         error(lookahead->location,"Got '%s' when expecting primary expression", lookahead->text);
@@ -194,12 +212,15 @@ static AST parse_postfix() {
 // ===========================================================================
 
 static AST parse_prefix() {
-    if (lookahead->kind==TOK_MINUS || lookahead->kind==TOK_NOT) {
+    if (lookahead->kind==TOK_MINUS || lookahead->kind==TOK_NOT || lookahead->kind==TOK_AMPERSAND) {
         Token t = next_token();
         return new_AST_unary(t->location, t->kind, parse_prefix());
     } else if (lookahead->kind==TOK_STAR) {
         Token t = next_token();
         return new_AST_pointer(t->location, parse_prefix());
+    } else if (lookahead->kind==TOK_NEW) {
+        Token t = next_token();
+        return new_AST_new(t->location, parse_postfix());
     } else
         return parse_postfix();
 }
@@ -332,6 +353,7 @@ static AST parse_return_statement() {
 static AST parse_assign_statement() {
     AST lhs = parse_prefix();
     if (lookahead->kind==TOK_EOL) {
+        expect_eol();
         if (lhs->kind!=AST_FUNCCALL)
             warn(lhs->location, "Expression has no effect");
         return lhs;
@@ -371,6 +393,28 @@ static AST parse_while_statement() {
         block->enclosing_statement = ret;
     return ret;
 }
+
+// ===========================================================================
+//                         parse_for
+// ===========================================================================
+
+static AST parse_for_statement() {
+    Token loc = expect(TOK_FOR);
+    Token id = expect(TOK_ID);
+    expect(TOK_IN);
+    AST start = parse_expression();
+    expect(TOK_TO);
+    AST end = parse_expression();
+    expect_eol();
+    Block block = parse_block(loc->location, TOK_FOR);
+    check_end(TOK_FOR);
+
+    AST ret = new_AST_for(loc->location, id->text, start, end, block );
+    if (block)
+        block->enclosing_statement = ret;
+    return ret;
+}
+
 
 
 // ===========================================================================
@@ -491,6 +535,23 @@ static AST parse_function_statement() {
 }
 
 // ===========================================================================
+//                         parse_extern_function
+// ===========================================================================
+
+static AST parse_extern_function_statement() {
+    expect(TOK_EXTERN);
+    Token loc = expect(TOK_FUN);
+    Token name = expect(TOK_ID);
+    AST_list params = parse_param_list();
+    AST ret_type = can_take(TOK_ARROW) ? parse_type_expr() : 0;
+    expect_eol();
+
+    AST ret = new_function(loc->location, name->text, params, ret_type, 0);
+    return ret;
+}
+
+
+// ===========================================================================
 //                         parse_struct
 // ===========================================================================
 
@@ -499,11 +560,30 @@ static AST parse_struct_statement() {
     Token name = expect(TOK_ID);
     AST_list params = parse_param_list();
     expect_eol();
+    Block body;
+    if (lookahead->kind==TOK_INDENT) {
+        body = parse_block(loc->location, TOK_STRUCT);
+        check_end(TOK_STRUCT);
+    } else {
+        body = new_block(current_block);
+    }
 
-    AST ret = new_AST_struct(loc->location, name->text, params);
+    AST ret = new_AST_struct(loc->location, name->text, params, body);
+    body->enclosing_statement = ret;
     return ret;
 }
 
+// ===========================================================================
+//                         parse_type_primary
+// ===========================================================================
+static AST parse_type_bracket() {
+    // TODO - add support for functions
+
+    expect(TOK_OPENB);
+    AST ret = parse_type_expr();
+    expect(TOK_CLOSEB);
+    return ret;
+}
 
 
 // ===========================================================================
@@ -511,7 +591,9 @@ static AST parse_struct_statement() {
 // ===========================================================================
 
 static AST parse_type_primary() {
-    // TODO - add support for brackets
+    if (lookahead->kind==TOK_OPENB)
+        return parse_type_bracket();
+
     Token tok = expect(TOK_ID);
     return new_AST_symbol(tok->location, tok->text);
 }
@@ -555,12 +637,15 @@ static AST parse_statement() {
         case TOK_VAR:       return parse_decl_statement();
         case TOK_RETURN:    return parse_return_statement();
         case TOK_ID:     
+        case TOK_STAR:
         case TOK_OPENB:     return parse_assign_statement();
         case TOK_WHILE:     return parse_while_statement();
+        case TOK_FOR:       return parse_for_statement();
         case TOK_REPEAT:    return parse_repeat_statement();
         case TOK_IF:        return parse_if_statement();
         case TOK_FUN:       return parse_function_statement();
         case TOK_STRUCT:    return parse_struct_statement();
+        case TOK_EXTERN:    return parse_extern_function_statement();
         default:            error(lookahead->location,"Got '%s' when expecting statement", lookahead->text);
                             skip_to_eol();
                             return 0;

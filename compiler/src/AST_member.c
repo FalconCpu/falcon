@@ -52,8 +52,7 @@ void AST_typecheck_member(AST_member this, Block scope) {
 
     // special case (for now). Can be applied to string or array to get size
     if ((this->lhs->type->kind==TYPE_STRING || this->lhs->type->kind==TYPE_ARRAY) && !strcmp(this->name,"size")) {
-        this->symbol = new_Symbol(0, SYM_VARIABLE, "size", type_int, 0);
-        this->symbol->offset = -4;
+        this->symbol = stdlib.size;
         this->type = type_int;
         return;
     }
@@ -85,7 +84,7 @@ void AST_typecheck_member(AST_member this, Block scope) {
         return;
     }
 
-    this->symbol = SymbolList_find(struct_type->members, this->name);
+    this->symbol = block_find_symbol(struct_type->body, this->name);
 
     if (this->symbol==0)
         this->type = make_type_error(this->location,"Struct '%s' has no member named '%s'", struct_type->name, this->name);
@@ -110,7 +109,7 @@ Symbol code_gen_member(Function func, AST_member this) {
         fatal("code_gen called with non scalar type");
 
     int size = get_sizeof(this->type);
-    add_instr(func, new_Instr(INSTR_LOAD, size, ret, lhs, make_constant_symbol(func, this->symbol->offset)));
+    add_instr(func, new_Instr(INSTR_LOAD, size, ret, lhs, this->symbol));
     // } else {
     //     add_instr(func, new_Instr(INSTR_ALU, ALU_ADD_I, ret, lhs, make_constant_symbol(func, this->symbol->offset)));
     // }
@@ -128,3 +127,17 @@ void code_gen_lvalue_member(Function func, AST_member this, Symbol value) {
     int size = get_sizeof(this->type);
     add_instr(func, new_Instr(INSTR_STORE, size, value, lhs, make_constant_symbol(func, this->symbol->offset)));
 }
+
+// ============================================================================
+//                           code_gen_aggregate_lhs_member
+// ============================================================================
+
+Symbol code_gen_aggregate_lhs_member(Function func, AST_member this) {
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+    Symbol ret = new_tempvar(func, this->type);
+
+    add_instr(func, new_Instr(INSTR_ALU, ALU_ADD_I, ret, lhs, make_constant_symbol(func, this->symbol->offset)));
+    return ret;
+}
+
+

@@ -1,5 +1,7 @@
 #ifndef FPL_H
 #define FPL_H
+#include <stdio.h>
+
 
 // ===========================================================================
 //                    Main types used in the program
@@ -56,7 +58,7 @@ Type make_type_error(Location location, String Message, ...);
 Type make_type_pointer(Type base, int nullable);
 Type make_type_function(TypeList parameter_type, Type return_type);
 Type make_type_array(Type base, int size);
-Type make_type_struct(String name);
+Type make_type_struct(String name, Block body);
 Type get_type_from_code(int code);
 
 // Checks to see if an expression is assignment compatible with a given type
@@ -90,6 +92,8 @@ void AST_typecheck_value(AST this, Block scope);
 
 int is_type_expr(AST this);
 
+void output_type_descriptors(FILE *fh);
+
 // ---------------------------------------------------------------------------------
 //                         Value
 // ---------------------------------------------------------------------------------
@@ -114,6 +118,7 @@ typedef enum {
     SYM_TYPEREF,
     SYM_GLOBALVAR,
     SYM_AGGREGATE,
+    SYM_FIELD,
     SYM_LABEL,
     SYM_REG
 } SymbolKind;
@@ -140,6 +145,7 @@ extern String symbol_kind_name[];
 Symbol new_Symbol(Location loc, int kind, String name, Type type, int mutable);
 String Symbol_toText(Symbol this);
 Symbol get_aggregate_address(Function func, Symbol this);
+int symbol_is_member_function(Symbol s);
 
 // ---------------------------------------------------------------------------------
 //                     Symbol List
@@ -170,6 +176,7 @@ typedef enum  {
     AST_BINOP,
     AST_UNARY,
     AST_INDEX,
+    AST_CAST,
     AST_POINTER,
     AST_MEMBER,
     AST_FUNCCALL,
@@ -181,7 +188,9 @@ typedef enum  {
     AST_IF,
     AST_CLAUSE,
     AST_FUNCTION,
-    AST_STRUCT
+    AST_STRUCT,
+    AST_FOR,
+    AST_NEW
 } ASTkind;
 
 struct AST {
@@ -193,12 +202,14 @@ struct AST {
 AST new_AST_intlit(Location location, Type type, int value);
 AST new_AST_strlit(Location location, Type type, String value);
 AST new_AST_symbol(Location location, String name);
+AST new_AST_cast(Location location, AST expr, AST type_expr);
 AST new_ASTnode_id_from_symbol(Symbol sym);
 AST new_AST_binop(Location location, TokenKind op, AST lhs, AST rhs);
 AST new_AST_unary(Location location, TokenKind op, AST rhs);
 AST new_AST_index(Location location,  AST lhs, AST rhs);
 AST new_AST_pointer(Location location,  AST rhs);
 AST new_AST_member(Location location,  AST lhs, String name, int null_coalese);
+AST new_AST_new(Location location,  AST rhs);
 AST new_AST_funccall(Location location,  AST lhs, AST_list rhs);
 AST new_AST_decl(Location location, String name, AST ast_type, AST ast_value, int mutable);
 AST new_AST_return(Location location, AST retval);
@@ -206,8 +217,9 @@ AST new_AST_assign(Location location, AST lhs, AST rhs);
 AST new_AST_while(Location location, AST condition, Block body);
 AST new_AST_repeat(Location location, AST condition, Block body);
 AST new_AST_if(Location location, Block clauses);
+AST new_AST_for(Location loc, String name, AST start_expr, AST end_expr, Block body);
 AST new_AST_clause(Location location, AST condition, Block body);
-AST new_AST_struct(Location location, String name, AST_list members);
+AST new_AST_struct(Location location, String name, AST_list members, Block body);
 
 
 void  AST_print(AST this, int indent);
@@ -300,6 +312,8 @@ struct Function {
     // filled in at type checking
     SymbolList parameters;  // Symbol for each parameter
     Type       return_type;
+    Symbol     this_sym;    // if this func is a member function then the 'this' symbol
+    Symbol     sym;         // symbol in symbol table to represent the function
 
     // for codegen
     SymbolList  all_vars;          // Flattened list of all variables (including temporaries)
@@ -375,6 +389,9 @@ struct Stdlib {
     Symbol sdlib_malloc;
     Symbol sdlib_bzero;
     Symbol sdlib_memcpy;
+    Symbol stdlib_new;
+    Symbol stdlib_delete;
+    Symbol size;   // implicit field for strings/array size
 };
 
 extern struct Stdlib stdlib;
@@ -415,6 +432,18 @@ int    bitmap_or_row(Bitmap dest_bm, int dest_row, Bitmap source_bm, int source_
 void  bitmap_or_and_not_row(Bitmap dest_bm, int dest_row, Bitmap bm_a, int row_a, Bitmap bm_b, int row_b);
 
 void delete_Bitmap(Bitmap bm);
+
+// ===========================================================================
+//                Peephole
+// ===========================================================================
+
+void peephole(Function func);
+
+void gen_livemap(Function func);
+
+void register_allocation(Function func);
+
+void generate_assembly(Function func, FILE *file_out);
 
 
 // ===========================================================================

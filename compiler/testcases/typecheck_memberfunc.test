@@ -1,0 +1,19 @@
+
+struct Cat(name:String, legs:Int)
+    fun greet()->Int
+        return legs+1
+
+@--------------------
+Symbol table [Cat:TYPE:Cat  ]
+STRUCT Cat
+   DECL name
+      SYMBOL String
+   DECL legs
+      SYMBOL Int
+   Symbol table [name:FIELD:String  legs:FIELD:Int  greet:FUNC:()->Int  ]
+   FUNCTION greet
+      Symbol table [this:VAR:Cat*  ]
+      RETURN
+         BINOP + Int
+            SYMBOL legs Int
+            INTLIT 1 Int

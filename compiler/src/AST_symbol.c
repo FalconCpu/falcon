@@ -68,12 +68,32 @@ void AST_typecheck_symbol(AST_symbol this, Block scope) {
 // ---------------------------------------------------------------------------------
 
 Symbol code_gen_symbol(Function func, AST_symbol this) {
-    if (this->symbol->kind==SYM_GLOBALVAR) {
-        Symbol ret = new_tempvar(func, this->type);
-        add_instr(func, new_Instr(INSTR_LOAD, get_sizeof(this->type), ret, SymbolList_get(func->all_vars,REG_GLOBALS), this->symbol));
-        return ret;
-    } else
-        return get_codegen_symbol(func, this->symbol);
+
+    switch(this->symbol->kind) {
+        case SYM_GLOBALVAR: {
+            Symbol ret = new_tempvar(func, this->type);
+            add_instr(func, new_Instr(INSTR_LOAD, get_sizeof(this->type), ret, SymbolList_get(func->all_vars,REG_GLOBALS), this->symbol));
+            return ret;
+        }
+
+        case SYM_CONSTANT:
+            if (this->type==type_null || this->type==type_bool || this->type==type_char || this->type==type_int)
+                return make_constant_symbol(func, this->symbol->value.int_val);
+            else
+                return this->symbol;
+
+        case SYM_VARIABLE:
+            return get_codegen_symbol(func, this->symbol);
+
+        case SYM_FIELD: {
+            Symbol ret = new_tempvar(func, this->type);
+            add_instr(func, new_Instr(INSTR_LOAD, get_sizeof(this->type), ret, func->this_sym, this->symbol));
+            return ret;
+        }
+
+        default:
+            fatal("Got kind %x in code_gen_symbol", this->symbol->kind);
+    }
 }
 
 // ---------------------------------------------------------------------------------
@@ -81,11 +101,23 @@ Symbol code_gen_symbol(Function func, AST_symbol this) {
 // ---------------------------------------------------------------------------------
 
 void code_gen_lvalue_symbol(Function func, AST_symbol this, Symbol value) {
-    if (this->symbol->kind==SYM_GLOBALVAR) {
-        add_instr(func, new_Instr(INSTR_STORE, get_sizeof(this->type), value, SymbolList_get(func->all_vars,REG_GLOBALS), this->symbol));
-    } else {
-        Symbol sym = get_codegen_symbol(func, this->symbol);
-        add_instr(func, new_Instr(INSTR_MOV, 0, sym, value, 0));
+    switch(this->symbol->kind) {
+        case SYM_GLOBALVAR:
+            add_instr(func, new_Instr(INSTR_STORE, get_sizeof(this->type), value, SymbolList_get(func->all_vars,REG_GLOBALS), this->symbol));
+            break;
+
+        case SYM_VARIABLE: {
+            Symbol sym = get_codegen_symbol(func, this->symbol);
+            add_instr(func, new_Instr(INSTR_MOV, 0, sym, value, 0));
+            break;
+        }
+
+        case SYM_FIELD:
+            add_instr(func, new_Instr(INSTR_STORE, get_sizeof(this->type), value, func->this_sym, this->symbol));
+            break;
+
+        default:
+            fatal("Got kind %x in code_gen_symbol", this->symbol->kind);
     }
 }
 

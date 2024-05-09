@@ -61,3 +61,21 @@ void AST_typecheck_unary(AST_unary this, Block scope) {
         this->type = make_type_error(this->location, "No operation defined for %s %s", token_kind_names[this->op], this->rhs->type);
     }
 }
+
+// ---------------------------------------------------------------------------------
+//                           code_gen
+// ---------------------------------------------------------------------------------
+
+Symbol code_gen_unary(Function func, AST_unary this) {
+    Symbol ret = new_tempvar(func, this->type);
+    if (this->op==TOK_MINUS && this->type==type_int) {
+        Symbol rhs = code_gen(func, this->rhs);
+        add_instr(func, new_Instr(INSTR_ALU, ALU_SUB_I, ret, make_constant_symbol(func, 0), rhs));
+    } else if (this->op==TOK_MINUS && this->type==type_int) {
+        Symbol rhs = code_gen(func, this->rhs);
+        add_instr(func, new_Instr(INSTR_ALU, ALU_SUB_F, ret, make_constant_symbol(func, 0), rhs));
+    } else if (this->op==TOK_AMPERSAND) {
+        TODO("Code_gen for address of");
+    }
+    return ret;
+}

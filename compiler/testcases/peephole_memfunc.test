@@ -1,0 +1,19 @@
+
+fun main()->Int
+    initialize_memory()
+    val p1 = new Point(1,2)
+    val p2 = new Point(3,4)
+    return p1.distance_to(p2)
+
+fun abs(a:Int)->Int 
+    if (a>=0)
+        return a
+    else
+        return -a
+
+struct Point(x:Int, y:Int)
+    fun distance_to(other:Point*)->Int
+        return abs(x-other.x)+abs(y-other.y)
+
+
+@------------------

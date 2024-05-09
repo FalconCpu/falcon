@@ -1,0 +1,484 @@
+0000           main:
+0000 46FFE008  sub  $sp, $sp, 8
+0004 4D03E009  stw  $9, $sp[0]
+0008 4D13E01E  stw  $30, $sp[4]
+000C 5478001E  jmp  $30, initialize_memory
+0010 6005800A  ldpc $1 , "
+0014 5478E01D  jmp  $30, kprint_string
+0018 5478A00B  jmp  $30, dumpMemoryList
+001C 4484000A  ld   $1, 10
+0020 54782018  jmp  $30, malloc
+0024 4484000A  ld   $1, 10
+0028 54782016  jmp  $30, malloc
+002C 40A50000  ld   $9, $8
+0030 6005200F  ldpc $1 , Cat
+0034 5478601F  jmp  $30, _new
+0038 6005601D  ldpc $1 , "Pootle"
+003C 4D010001  stw  $1, $8[0]
+0040 44840004  ld   $1, 4
+0044 4D110001  stw  $1, $8[4]
+0048 40852000  ld   $1, $9
+004C 5478401B  jmp  $30, free
+0050 5C042000  ld   $1, 65536
+0054 5478200B  jmp  $30, malloc
+0058 6005600C  ldpc $1 , "
+005C 5478E00B  jmp  $30, kprint_string
+0060 54788019  jmp  $30, dumpMemoryList
+0064 4484000A  ld   $1, 10
+0068 54782006  jmp  $30, malloc
+006C 60056000  ldpc $1 , "
+0070 5478E006  jmp  $30, kprint_string
+0074 54788014  jmp  $30, dumpMemoryList
+0078 4927E000  ldw  $9, $sp[0]
+007C 497BE004  ldw  $30, $sp[4]
+0080 467FE008  add  $sp, $sp, 8
+0084 5803C000  ret
+0088           initialize_memory:
+0088 448403FC  ld   $1, 1020
+008C 5F8AE07F  ld   $2, 66582528
+0090 448847FC  or   $2, $2, 2044
+0094 408C0000  ld   $3, 0
+0098 40900000  ld   $4, 0
+009C 40940000  ld   $5, 0
+00A0 4598A002  lsl  $6, $5, 2
+00A4 42146006  add  $5, $3, $6
+00A8 4D00A004  stw  $4, $5[0]
+00AC 40900000  ld   $4, 0
+00B0 44940001  ld   $5, 1
+00B4 4598A002  lsl  $6, $5, 2
+00B8 42146006  add  $5, $3, $6
+00BC 4D00A004  stw  $4, $5[0]
+00C0 40900000  ld   $4, 0
+00C4 44940002  ld   $5, 2
+00C8 4598A002  lsl  $6, $5, 2
+00CC 42146006  add  $5, $3, $6
+00D0 4D00A004  stw  $4, $5[0]
+00D4 40900000  ld   $4, 0
+00D8 44940003  ld   $5, 3
+00DC 4598A002  lsl  $6, $5, 2
+00E0 42146006  add  $5, $3, $6
+00E4 4D00A004  stw  $4, $5[0]
+00E8 469043FC  sub  $4, $2, 1020
+00EC 4D406004  stw  $4, $3[16]
+00F0 4D506001  stw  $1, $3[20]
+00F4 468C43FC  sub  $3, $2, 1020
+00F8 4D002003  stw  $3, $1[0]
+00FC 4D102000  stw  0, $1[4]
+0100 5803C000  ret
+0104           malloc:
+0104 46FFE008  sub  $sp, $sp, 8
+0108 4D03E009  stw  $9, $sp[0]
+010C 4D13E01E  stw  $30, $sp[4]
+0110 51080001  blt  0, $1, malloc.1
+0114 40A00000  ld   $8, 0
+0118 54002004  jmp  0, malloc.0
+011C           malloc.1:
+011C 46082003  add  $2, $1, 3
+0120 448C4007  or   $3, $2, 7
+0124 46046001  add  $1, $3, 1
+0128 40880000  ld   $2, 0
+012C 408C0000  ld   $3, 0
+0130 49244014  ldw  $9, $2[20]
+0134 54000005  jmp  0, malloc.6
+0138           malloc.5:
+0138 408D2000  ld   $3, $9
+013C 49252004  ldw  $9, $9[4]
+0140 50892000  bne  $9, 0, malloc.6
+0144 40A00000  ld   $8, 0
+0148 54000018  jmp  0, malloc.0
+014C           malloc.6:
+014C           malloc.8:
+014C 49112000  ldw  $4, $9[0]
+0150 51649FE1  blt  $4, $1, malloc.5
+0154 508C6000  bne  $3, 0, malloc.12
+0158 490D2004  ldw  $3, $9[4]
+015C 4D504003  stw  $3, $2[20]
+0160 54000002  jmp  0, malloc.13
+0164           malloc.12:
+0164 49112004  ldw  $4, $9[4]
+0168 4D106004  stw  $4, $3[4]
+016C           malloc.13:
+016C 490C4010  ldw  $3, $2[16]
+0170 49112000  ldw  $4, $9[0]
+0174 42946004  sub  $5, $3, $4
+0178 4D404005  stw  $5, $2[16]
+017C 490D2000  ldw  $3, $9[0]
+0180 42886001  sub  $2, $3, $1
+0184 448C2001  or   $3, $1, 1
+0188 4D012003  stw  $3, $9[0]
+018C 50184000  beq  $2, 0, malloc.17
+0190 420D2001  add  $3, $9, $1
+0194 44844001  or   $1, $2, 1
+0198 4D006001  stw  $1, $3[0]
+019C 46046004  add  $1, $3, 4
+01A0 54780006  jmp  $30, free
+01A4 54000000  jmp  0, malloc.17
+01A8           malloc.17:
+01A8           malloc.18:
+01A8 46212004  add  $8, $9, 4
+01AC           malloc.0:
+01AC 4927E000  ldw  $9, $sp[0]
+01B0 497BE004  ldw  $30, $sp[4]
+01B4 467FE008  add  $sp, $sp, 8
+01B8 5803C000  ret
+01BC           free:
+01BC 50702000  beq  $1, 0, free.0
+01C0 46882004  sub  $2, $1, 4
+01C4 49044000  ldw  $1, $2[0]
+01C8 51102000  blt  $1, 0, free.7
+01CC 49044000  ldw  $1, $2[0]
+01D0 440C2007  and  $3, $1, 7
+01D4 44840001  ld   $1, 1
+01D8 50046001  beq  $3, $1, free.5
+01DC           free.7:
+01DC 54000014  jmp  0, free.0
+01E0           free.5:
+01E0 490C4000  ldw  $3, $2[0]
+01E4 46846001  sub  $1, $3, 1
+01E8 4D004001  stw  $1, $2[0]
+01EC 408C0000  ld   $3, 0
+01F0 40900000  ld   $4, 0
+01F4 49146014  ldw  $5, $3[20]
+01F8 54000002  jmp  0, free.11
+01FC           free.10:
+01FC 4090A000  ld   $4, $5
+0200 4914A004  ldw  $5, $5[4]
+0204           free.11:
+0204 5008A000  beq  $5, 0, free.12
+0208 4918A000  ldw  $6, $5[0]
+020C 516CDFE1  blt  $6, $1, free.10
+0210           free.12:
+0210 4D104005  stw  $5, $2[4]
+0214 50088000  beq  $4, 0, free.14
+0218 4D108002  stw  $2, $4[4]
+021C 54000001  jmp  0, free.15
+0220           free.14:
+0220 4D506002  stw  $2, $3[20]
+0224           free.15:
+0224 49086010  ldw  $2, $3[16]
+0228 42104001  add  $4, $2, $1
+022C 4D406004  stw  $4, $3[16]
+0230           free.0:
+0230 5803C000  ret
+0234           _new:
+0234 46FFE008  sub  $sp, $sp, 8
+0238 4D03E009  stw  $9, $sp[0]
+023C 4D13E01E  stw  $30, $sp[4]
+0240 40A42000  ld   $9, $1
+0244 49052000  ldw  $1, $9[0]
+0248 57FBBFEE  jmp  $30, malloc
+024C 46850004  sub  $1, $8, 4
+0250 46092002  add  $2, $9, 2
+0254 4D002002  stw  $2, $1[0]
+0258 4927E000  ldw  $9, $sp[0]
+025C 497BE004  ldw  $30, $sp[4]
+0260 467FE008  add  $sp, $sp, 8
+0264 5803C000  ret
+0268           _delete:
+0268 46FFE004  sub  $sp, $sp, 4
+026C 4D03E01E  stw  $30, $sp[0]
+0270 50202000  beq  $1, 0, _delete.0
+0274 46882004  sub  $2, $1, 4
+0278 49104000  ldw  $4, $2[0]
+027C 46940008  sub  $5, 0, 8
+0280 400C8005  and  $3, $4, $5
+0284 49106000  ldw  $4, $3[0]
+0288 448C8001  or   $3, $4, 1
+028C 4D004003  stw  $3, $2[0]
+0290 57FBDFEA  jmp  $30, free
+0294           _delete.0:
+0294 497BE000  ldw  $30, $sp[0]
+0298 467FE004  add  $sp, $sp, 4
+029C 5803C000  ret
+02A0           isBlockOnFreeList:
+02A0 40880000  ld   $2, 0
+02A4 490C4014  ldw  $3, $2[20]
+02A8 54000004  jmp  0, isBlockOnFreeList.2
+02AC           isBlockOnFreeList.1:
+02AC 50886001  bne  $3, $1, isBlockOnFreeList.4
+02B0 44A00001  ld   $8, 1
+02B4 54000003  jmp  0, isBlockOnFreeList.0
+02B8           isBlockOnFreeList.4:
+02B8 490C6004  ldw  $3, $3[4]
+02BC           isBlockOnFreeList.2:
+02BC 50EC7FE0  bne  $3, 0, isBlockOnFreeList.1
+02C0 40A00000  ld   $8, 0
+02C4           isBlockOnFreeList.0:
+02C4 5803C000  ret
+02C8           dumpMemoryList:
+02C8 46FFE018  sub  $sp, $sp, 24
+02CC 4D03E009  stw  $9, $sp[0]
+02D0 4D13E00A  stw  $10, $sp[4]
+02D4 4D23E00B  stw  $11, $sp[8]
+02D8 4D33E00C  stw  $12, $sp[12]
+02DC 4D43E00D  stw  $13, $sp[16]
+02E0 4D53E01E  stw  $30, $sp[20]
+02E4 448403FC  ld   $1, 1020
+02E8 5FA6E07F  ld   $9, 66582528
+02EC 44A527FC  or   $9, $9, 2044
+02F0 40A82000  ld   $10, $1
+02F4 54002014  jmp  0, dumpMemoryList.2
+02F8           dumpMemoryList.1:
+02F8 40854000  ld   $1, $10
+02FC 54786001  jmp  $30, kprint_hex
+0300 6004A019  ldpc $1 , " "
+0304 54784001  jmp  $30, kprint_string
+0308 49054000  ldw  $1, $10[0]
+030C 46880008  sub  $2, 0, 8
+0310 402C2002  and  $11, $1, $2
+0314 49054000  ldw  $1, $10[0]
+0318 44302003  and  $12, $1, 3
+031C 40856000  ld   $1, $11
+0320 54784018  jmp  $30, kprint_hex
+0324 40854000  ld   $1, $10
+0328 57FBDFFD  jmp  $30, isBlockOnFreeList
+032C 40B50000  ld   $13, $8
+0330 509D8000  bne  $12, 0, dumpMemoryList.4
+0334 6004A009  ldpc $1 , " FREE "
+0338 54782014  jmp  $30, kprint_string
+033C 508DA000  bne  $13, 0, dumpMemoryList.7
+0340 6004801F  ldpc $1 , "ERROR NOT ON FREE LIST"
+0344 54782011  jmp  $30, kprint_string
+0348 54000000  jmp  0, dumpMemoryList.7
+034C           dumpMemoryList.7:
+034C           dumpMemoryList.8:
+034C 5400001A  jmp  0, dumpMemoryList.5
+0350           dumpMemoryList.4:
+0350 44840001  ld   $1, 1
+0354 509D8001  bne  $12, $1, dumpMemoryList.11
+0358 60048016  ldpc $1 , " ALLOC "
+035C 5478200B  jmp  $30, kprint_string
+0360 500DA000  beq  $13, 0, dumpMemoryList.13
+0364 6004800D  ldpc $1 , "ERROR ON FREE LIST"
+0368 54782008  jmp  $30, kprint_string
+036C 54000000  jmp  0, dumpMemoryList.13
+0370           dumpMemoryList.13:
+0370           dumpMemoryList.14:
+0370 54000011  jmp  0, dumpMemoryList.5
+0374           dumpMemoryList.11:
+0374 44840002  ld   $1, 2
+0378 50B58001  bne  $12, $1, dumpMemoryList.17
+037C 6004801A  ldpc $1 , " "
+0380 54782002  jmp  $30, kprint_string
+0384 49056004  ldw  $1, $11[4]
+0388 54782000  jmp  $30, kprint_string
+038C 49056000  ldw  $1, $11[0]
+0390 46082003  add  $2, $1, 3
+0394 44844007  or   $1, $2, 7
+0398 462C2001  add  $11, $1, 1
+039C 500DA000  beq  $13, 0, dumpMemoryList.19
+03A0 60046018  ldpc $1 , " ERROR ON FREE LIST"
+03A4 54780019  jmp  $30, kprint_string
+03A8 54000000  jmp  0, dumpMemoryList.19
+03AC           dumpMemoryList.19:
+03AC           dumpMemoryList.20:
+03AC 54000002  jmp  0, dumpMemoryList.5
+03B0           dumpMemoryList.17:
+03B0 6004600E  ldpc $1 , "Unknown memchunk"
+03B4 54780015  jmp  $30, kprint_string
+03B8           dumpMemoryList.5:
+03B8 6004600A  ldpc $1 , "
+03BC 54780013  jmp  $30, kprint_string
+03C0 40854000  ld   $1, $10
+03C4 4228200B  add  $10, $1, $11
+03C8           dumpMemoryList.2:
+03C8 50AD5FC9  bne  $10, $9, dumpMemoryList.1
+03CC 4927E000  ldw  $9, $sp[0]
+03D0 492BE004  ldw  $10, $sp[4]
+03D4 492FE008  ldw  $11, $sp[8]
+03D8 4933E00C  ldw  $12, $sp[12]
+03DC 4937E010  ldw  $13, $sp[16]
+03E0 497BE014  ldw  $30, $sp[20]
+03E4 467FE018  add  $sp, $sp, 24
+03E8 5803C000  ret
+03EC           uart_write_char:
+03EC 5C081C00  ld   $2, -536870912
+03F0 408C0000  ld   $3, 0
+03F4 54000001  jmp  0, uart_write_char.2
+03F8           uart_write_char.1:
+03F8 460C6001  add  $3, $3, 1
+03FC           uart_write_char.2:
+03FC 49104014  ldw  $4, $2[20]
+0400 50749FE0  beq  $4, 0, uart_write_char.1
+0404 4D504001  stw  $1, $2[20]
+0408 5803C000  ret
+040C           kprint_string:
+040C 46FFE010  sub  $sp, $sp, 16
+0410 4D03E009  stw  $9, $sp[0]
+0414 4D13E00A  stw  $10, $sp[4]
+0418 4D23E00B  stw  $11, $sp[8]
+041C 4D33E01E  stw  $30, $sp[12]
+0420 40A42000  ld   $9, $1
+0424 40840000  ld   $1, 0
+0428 49093FFC  ldw  $2, $9[-4]
+042C 46A84001  sub  $10, $2, 1
+0430 40AC2000  ld   $11, $1
+0434 54000005  jmp  0, kprint_string.2
+0438           kprint_string.1:
+0438 49053FFC  ldw  $1, $9[-4]
+043C 4209200B  add  $2, $9, $11
+0440 48044000  ldb  $1, $2[0]
+0444 57FBFFE9  jmp  $30, uart_write_char
+0448 462D6001  add  $11, $11, 1
+044C           kprint_string.2:
+044C 51E95FEB  bge  $10, $11, kprint_string.1
+0450 4927E000  ldw  $9, $sp[0]
+0454 492BE004  ldw  $10, $sp[4]
+0458 492FE008  ldw  $11, $sp[8]
+045C 497BE00C  ldw  $30, $sp[12]
+0460 467FE010  add  $sp, $sp, 16
+0464 5803C000  ret
+0468           kprint_newline:
+0468 46FFE004  sub  $sp, $sp, 4
+046C 4D03E01E  stw  $30, $sp[0]
+0470 4484000A  ld   $1, 10
+0474 57FBDFFD  jmp  $30, uart_write_char
+0478 497BE000  ldw  $30, $sp[0]
+047C 467FE004  add  $sp, $sp, 4
+0480 5803C000  ret
+0484           kprint_hex:
+0484 46FFE010  sub  $sp, $sp, 16
+0488 4D03E009  stw  $9, $sp[0]
+048C 4D13E00A  stw  $10, $sp[4]
+0490 4D23E00B  stw  $11, $sp[8]
+0494 4D33E01E  stw  $30, $sp[12]
+0498 40A42000  ld   $9, $1
+049C 40840000  ld   $1, 0
+04A0 44A80007  ld   $10, 7
+04A4 40AC2000  ld   $11, $1
+04A8 5400000A  jmp  0, kprint_hex.2
+04AC           kprint_hex.1:
+04AC 45853FFC  lsr  $1, $9, -4
+04B0 4488000A  ld   $2, 10
+04B4 51882002  bge  $1, $2, kprint_hex.4
+04B8 46042030  add  $1, $1, 48
+04BC 54000002  jmp  0, kprint_hex.5
+04C0           kprint_hex.4:
+04C0 46082041  add  $2, $1, 65
+04C4 4684400A  sub  $1, $2, 10
+04C8           kprint_hex.5:
+04C8 57FBDFE8  jmp  $30, uart_write_char
+04CC 45A52004  lsl  $9, $9, 4
+04D0 462D6001  add  $11, $11, 1
+04D4           kprint_hex.2:
+04D4 51D55FEB  bge  $10, $11, kprint_hex.1
+04D8 4927E000  ldw  $9, $sp[0]
+04DC 492BE004  ldw  $10, $sp[4]
+04E0 492FE008  ldw  $11, $sp[8]
+04E4 497BE00C  ldw  $30, $sp[12]
+04E8 467FE010  add  $sp, $sp, 16
+04EC 5803C000  ret
+04F0           Cat:
+04F0 00000008  reserved
+04F4 FFFF055C  reserved
+04F8           MemHeader:
+04F8 00000018  reserved
+04FC FFFF054C  reserved
+0500           MemChunk:
+0500 00000008  reserved
+0504 FFFF053C  reserved
+0508           TypeDescriptor:
+0508 00000008  reserved
+050C FFFF0528  reserved
+0510           HW_regs:
+0510 00000028  reserved
+0514 FFFF051C  reserved
+0518 00000007  reserved
+051C           "HW_regs":
+051C 725F5748  reserved
+0520 00736765  reserved
+0524 0000000E  reserved
+0528           "TypeDescriptor":
+0528 65707954       $28, $3, $20
+052C 63736544  ldpc $28 , 001572C0H
+0530 74706972  reserved
+0534 0000726F  reserved
+0538 00000008  reserved
+053C           "MemChunk":
+053C 436D654D  clt  $27, $11, $13
+0540 6B6E7568  invalid sysreg
+0544 00000000  reserved
+0548 00000009  reserved
+054C           "MemHeader":
+054C 486D654D  ldb  $27, $11[1357]
+0550 65646165       $25, $3, $5
+0554 00000072  reserved
+0558 00000003  reserved
+055C           "Cat":
+055C 00746143  reserved
+0560 00000001  reserved
+0564           ":
+0564           ":
+0564 0000000A  reserved
+0568 00000010  reserved
+056C           "Unknown memchunk":
+056C 6E6B6E55  sys  3669
+0570 206E776F  reserved
+0574 636D656D  ldpc $27 , 0015EB2CH
+0578 6B6E7568  invalid sysreg
+057C 00000000  reserved
+0580 00000013  reserved
+0584           " ERROR ON FREE LIST":
+0584 52524520  bltu $18, 0, 00001A58H
+0588 4F20524F  blt  $15, $2[-3512]
+058C 5246204E  bltu $17, $14, 000006D4H
+0590 4C204545  stb  $5, $2[1352]
+0594 00545349  reserved
+0598 00000012  reserved
+059C           "ERROR ON FREE LIST":
+059C 4F525245  blt  $5, $18[-3500]
+05A0 4E4F2052  beq  $18, $25[83]
+05A4 45524620  xor  $20, $18, 1568
+05A8 494C2045  ldw  $19, $1[69]
+05AC 00005453  reserved
+05B0 00000007  reserved
+05B4           " ALLOC ":
+05B4 4C4C4120  stb  0, $2[307]
+05B8 0020434F  reserved
+05BC 00000016  reserved
+05C0           "ERROR NOT ON FREE LIST":
+05C0 4F525245  blt  $5, $18[-3500]
+05C4 4F4E2052  blt  $18, $17[83]
+05C8 4E4F2054  beq  $20, $25[83]
+05CC 45524620  xor  $20, $18, 1568
+05D0 494C2045  ldw  $19, $1[69]
+05D4 00005453  reserved
+05D8 00000006  reserved
+05DC           " FREE ":
+05DC 45524620  xor  $20, $18, 1568
+05E0 00002045  reserved
+05E4 00000001  reserved
+05E8           " ":
+05E8 00000020  reserved
+05EC 00000017  reserved
+05F0           ":
+05F0 7466410A  reserved
+05F4 6F207265  sys  -3483
+05F8 6D20656E  sys  1390
+05FC 2065726F  reserved
+0600 6C6C616D  sys  365
+0604 000A636F  reserved
+0608 0000001E  reserved
+060C           ":
+060C 7466410A  reserved
+0610 34207265  reserved
+0614 6C616D20  sys  3360
+0618 73636F6C  reserved
+061C 646E6120  mul  $27, $19, 0
+0620 656E6F20       $27, $19, 0
+0624 65726620       $28, $19, 0
+0628 00000A65  reserved
+062C 00000006  reserved
+0630           "Pootle":
+0630 746F6F50  reserved
+0634 0000656C  reserved
+0638 00000018  reserved
+063C           ":
+063C           "Initial memory contents:
+063C 74696E49  reserved
+0640 206C6169  reserved
+0644 6F6D656D  sys  1389
+0648 63207972  ldpc $8 , 0FFE5E814H
+064C 65746E6F       $29, $3, $15
+0650 0A73746E  reserved
+0654 00000000  reserved

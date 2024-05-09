@@ -1,0 +1,5 @@
+
+extern fun draw_text(char:Char, x:Int, y:Int, color:Int)
+
+fun main() 
+    draw_text('C', 10, 10, 5)

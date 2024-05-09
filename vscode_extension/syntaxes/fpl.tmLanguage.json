@@ -1,0 +1,68 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "fpl",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#types"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [{
+				"name": "comment.line.fpl",
+				"match": "#.*"
+			}]
+		},
+		"operators": {
+			"patterns": [{
+				"name": "keyword.operator.fpl",
+				"match": "(\\+|\\-|\\*|\\/|=|>|<|>=|<=|,|&|\\||%|!|\\^|\\?|to|in)"
+			}]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.fpl",
+				"match": "\\b(if|while|for|return|fun|var|val|struct|end|new|extern|repeat|until|select|case|)\\b"
+			}]
+		},
+		"types": {
+			"patterns": [{
+				"name": "storage.type.fpl",
+				"match": "\\b(Void|Bool|Char|Int|Real|String)\\b"
+			}]
+		},
+		"numbers": {
+			"patterns": [{
+				"name": "constant.numeric.fpl",
+				"match": "\\b(([0-9]+)|(0[xX][0-9a-fA-F]+))\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.fpl",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.fpl",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.fpl"
+}

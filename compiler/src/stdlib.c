@@ -27,6 +27,22 @@ void initialize_stdlib() {
     TypeList_add(params, type_int);
     func_type = make_type_function(params, type_void);
     stdlib.sdlib_memcpy = new_Symbol(0, SYM_FUNCTION, "memcpy", func_type, 0);
+
+    // new(type_desctiptor)
+    params = new_TypeList();
+    TypeList_add(params, type_voidstar);
+    func_type = make_type_function(params, type_voidstar);
+    stdlib.stdlib_new = new_Symbol(0, SYM_FUNCTION, "_new", func_type, 0);
+
+    // delete(voidstar)
+    params = new_TypeList();
+    TypeList_add(params, type_voidstar);
+    func_type = make_type_function(params, type_void);
+    stdlib.stdlib_delete = new_Symbol(0, SYM_FUNCTION, "_delete", func_type, 0);
+
+    // size fields for strings/arrays
+    stdlib.size = new_Symbol(0, SYM_VARIABLE, "size", type_int, 0);
+    stdlib.size->offset = -4;
 }
 
 

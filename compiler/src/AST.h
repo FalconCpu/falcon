@@ -44,6 +44,7 @@ AST_strlit as_strlit(AST this);
 
 void AST_typecheck_strlit(AST_strlit this, Block scope);
 
+Symbol code_gen_strlit(Function func, AST_strlit this);
 
 // -----------------------------------------------------------------------
 //                        AST_SYMBOL
@@ -102,6 +103,53 @@ void  code_gen_bool_binop(Function func, AST_binop this, Symbol label_true, Symb
 
 Symbol code_gen_binop(Function func, AST_binop this);
 
+
+// -----------------------------------------------------------------------
+//                        AST_NEW
+// -----------------------------------------------------------------------
+
+typedef struct AST_new* AST_new;
+
+struct AST_new {
+    Location  location;
+    ASTkind   kind;
+    Type      type;
+
+    AST       rhs;
+};
+
+void AST_new_print(AST_new this, int indent);
+
+AST_new as_new(AST this);
+
+void AST_typecheck_new(AST_new this, Block scope);
+
+Symbol code_gen_new(Function func, AST_new this);
+
+
+// -----------------------------------------------------------------------
+//                        AST_CAST
+// -----------------------------------------------------------------------
+
+typedef struct AST_cast* AST_cast;
+
+struct AST_cast {
+    Location  location;
+    ASTkind   kind;
+    Type      type;
+    AST       expr;
+    AST       type_expr;
+};
+
+void AST_cast_print(AST_cast this, int indent);
+
+AST_cast as_cast(AST this);
+
+void AST_typecheck_cast(AST_cast this, Block scope);
+
+Symbol code_gen_cast(Function func, AST_cast this);
+
+
 // -----------------------------------------------------------------------
 //                        AST_POINTER
 // -----------------------------------------------------------------------
@@ -147,6 +195,8 @@ AST_unary as_unary(AST this);
 
 void AST_typecheck_unary(AST_unary this, Block scope);
 
+Symbol code_gen_unary(Function func, AST_unary this);
+
 // -----------------------------------------------------------------------
 //                        AST_INDEX
 // -----------------------------------------------------------------------
@@ -177,6 +227,7 @@ void code_gen_lvalue_index(Function func, AST_index this, Symbol value);
 Symbol code_gen_aggregate_lhs_index(Function func, AST_index this);
 
 void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest);
+
 // -----------------------------------------------------------------------
 //                        AST_MEMBER
 // -----------------------------------------------------------------------
@@ -204,6 +255,8 @@ void AST_typecheck_member(AST_member this, Block scope);
 Symbol code_gen_member(Function func, AST_member this);
 
 void code_gen_lvalue_member(Function func, AST_member this, Symbol value);
+
+Symbol code_gen_aggregate_lhs_member(Function func, AST_member this);
 
 // -----------------------------------------------------------------------
 //                        AST_FUNCCALL
@@ -409,6 +462,7 @@ struct AST_struct {
 
     String    name;
     AST_list  members;
+    Block     body;
 };
 
 void AST_struct_print(AST_struct this, int indent);
@@ -417,8 +471,32 @@ AST_struct as_struct(AST this);
 
 void AST_typecheck_struct(AST_struct this, Block scope);
 
+// -----------------------------------------------------------------------
+//                        AST_FOR
+// -----------------------------------------------------------------------
 
+typedef struct AST_for* AST_for;
 
+struct AST_for{
+    Location location;
+    ASTkind  kind;       // AST_FOR
+    Type     type;
+    String   id_name;
+    AST      start_expr;
+    AST      end_expr;
+    Block    body;
+
+    // filled in at typecheck
+    Symbol   iterator;  // Symbol for iterator
+};
+
+void AST_for_print(AST_for this, int indent);
+
+AST_for as_for(AST this);
+
+void AST_typecheck_for(AST_for this, Block scope);
+
+Symbol code_gen_for(Function func, AST_for this);
 
 // -----------------------------------------------------------------------
 //                        FUNCTION

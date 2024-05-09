@@ -44,3 +44,13 @@ void AST_strlit_print(AST_strlit this, int indent) {
     printf("STRLIT %s %s\n", this->value, this->type->name);
 }
 
+// ============================================================================
+//                           code_gen
+// ============================================================================
+
+Symbol code_gen_strlit(Function func, AST_strlit this) {
+    Symbol str = make_string_constant_symbol(func,this->value);
+    Symbol ret = new_tempvar(func, type_string);
+    add_instr(func, new_Instr(INSTR_LEA, 0, ret, str, 0));
+    return ret;
+}

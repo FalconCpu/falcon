@@ -18,7 +18,7 @@ sum_array:
 4    mov   #1, 0
 5    mov   index, #1
 6    lab   @1
-7    ldw   #2, a[-4]
+7    ldw   #2, a[size]
 8    chk   index, #2
 9    mul_i #3, index, 4
 10   add_i #4, a, #3
@@ -29,9 +29,9 @@ sum_array:
 15   add_i #8, index, #7
 16   mov   index, #8
 17   lab   @2
-18   ldw   #9, a[-4]
-19   beq_i index, #9, @1
-20   jmp   @3
+18   ldw   #9, a[size]
+19   beq_i index, #9, @3
+20   jmp   @1
 21   lab   @3
 22   mov   $8, total
 23   jmp   @0

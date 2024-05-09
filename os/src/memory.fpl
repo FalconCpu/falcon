@@ -1,0 +1,187 @@
+
+# This memory struct will be located at the start of memory
+struct MemHeader(
+    zero : Int[4],      # Don't use the first 4 locations - in case software accidentally dereferences a null pointer
+    memFree: Int,       # Count of number of bytes free
+    freeChunk : MemChunk*) # pointer to first free chunk
+
+# MemChunks are always allocated as a multiple of 8 bytes long (including the size header)
+# and allocated at a 4 byte offset from a multiple of 8. This makes the data payload always be aligned to an 8 byte boundary.
+#
+# Since the chunk sizes are always multiples of 8 - the 3 lsb's of the size are always zero
+# we can use this to use bit zero as the is_allocated flag
+
+struct MemChunk(        # Linked list of free chunks, sorted in asending size
+    size : Int,         # size of block (multiple of 8), LSB = set to indicate allocated
+    # for allocated chunk user data starts here
+    # for a free chunk we have the pointer to the next free chunk
+    next : MemChunk*
+)
+
+struct TypeDescriptor(
+    size : Int,
+    name : String)
+    # possibly more fields here later
+
+
+
+fun initialize_memory() 
+    val memStart=0x3fc    # leave 1kB free memory at the start for system variables
+    val memEnd= 0x3F7FFFC # leave 512kB at top of memory for the screen buffer
+
+    val memHeader = (0 : MemHeader*)
+    val memChunk = (memStart: MemChunk*)
+    memHeader.zero[0] = 0
+    memHeader.zero[1] = 0
+    memHeader.zero[2] = 0
+    memHeader.zero[3] = 0
+    memHeader.memFree = memEnd-memStart
+    memHeader.freeChunk = memChunk
+
+    memChunk.size = memEnd-memStart
+    memChunk.next = null
+end fun
+
+fun malloc(size:Int) -> (Void*)
+    if (size<=0)
+        return null
+
+    # add the header, and round up to next multiple of 8
+    val sizeWithHeader = ((size+3) | 7)+1
+
+    # walk along the free memory list to find the first chunk that is big enough
+    val memHeader = (0 : MemHeader*)
+    var prev = (null:MemChunk*)
+    var this = memHeader.freeChunk
+    while this.size < sizeWithHeader
+        prev = this
+        this = this.next
+        if this=null
+            return null
+
+    # unlink the node from the free list
+    if prev=null
+        memHeader.freeChunk = this.next
+    else
+        prev.next = this.next
+
+    # update the free memory count
+    memHeader.memFree = memHeader.memFree - this.size
+
+    # find the size of the remnant of this chunk after we allocate the block
+    # since all blocks are a multiple of 8, and minimum block size is 8
+    # if there is anything remaining we can build a new chunk with it
+    val sizeRemaining = this.size - sizeWithHeader
+    this.size = sizeWithHeader | 1
+    
+    if sizeRemaining!=0
+        # when we split a chunk, we make the tail fragment look like an allocated
+        # chunk, then we can add it back into the free pool using the normal
+        # free function
+        val remainder = (((this:Int) + sizeWithHeader) : MemChunk*)
+        remainder.size = sizeRemaining | 1  
+        free (((remainder:Int)+4 : Void*))
+
+    return ( (this:Int)+4 : Void*)   # add offset of 4 to get pointer to the users data area
+end fun
+
+fun free(block:Void*)
+    if block=null 
+        return
+    val blockAsChunk = ((block:Int)-4 : MemChunk*)
+
+    # do a sanity check that the pointer we have been given does correspond to a valid chunk
+    # it should have a positive size, and the size should be a multiple of 8 +1
+    if blockAsChunk.size<0 or blockAsChunk.size & 7 != 1
+        return  # should abort here into the kernal to indicate memory corruption
+    
+    val sizeWithHeader = blockAsChunk.size-1
+    blockAsChunk.size = sizeWithHeader
+
+    # walk the free list to find the first block whose size >= our size
+    val memHeader = (0 : MemHeader*)
+    var prev = (null:MemChunk*)
+    var this = memHeader.freeChunk
+    while this!=null and this.size < sizeWithHeader
+        prev = this
+        this = this.next
+
+    blockAsChunk.next = this
+    if prev!=null
+        prev.next = blockAsChunk
+    else
+        memHeader.freeChunk = blockAsChunk
+    memHeader.memFree = memHeader.memFree + sizeWithHeader
+end fun
+
+fun _new(td:TypeDescriptor*)->(Void*)
+    val ret = malloc(td.size)  # need to add error handling in here - once I have defined exceptions in this language
+    val memChunk = ((ret:Int)-4:MemChunk*)
+    memChunk.size = (td:Int)+2
+    return ret
+
+fun _delete(obj:Void*)
+    if obj=null
+        return
+    val memChunk = ((obj:Int)-4:MemChunk*)
+    # if memChunk.size&7 != 2
+    #     throw()     # need to define exception handling
+
+    # some code here to handle destructors could go here
+
+    val typeDescriptor = ((memChunk.size & -8) : TypeDescriptor*)
+    memChunk.size = typeDescriptor.size | 1  # +1 to mark block as allocated
+
+    free(obj)
+
+
+fun isBlockOnFreeList(block:MemChunk*)->Bool
+    val memHeader = (0 : MemHeader*)
+    var this = memHeader.freeChunk
+    while this!=null
+        if this=block
+            return true
+        this=this.next
+    return false
+
+fun dumpMemoryList()
+    # walk through memory checking all blocks look good
+    val memStart=(0x3fc : MemChunk*)    # leave 1kB free memory at the start for system variables
+    val memEnd= (0x3F7FFFC : MemChunk*) # leave 512kB at top of memory for the screen buffer
+
+    var this = memStart
+    while this!=memEnd
+        kprint_hex((this:Int))
+        kprint_string(" ");
+        var size = this.size & -8
+        val kind = this.size & 3
+        kprint_hex(size)
+        val isOnFreeList = isBlockOnFreeList(this)
+        if kind = 0
+            kprint_string(" FREE ")
+            if isOnFreeList=false
+                kprint_string("ERROR NOT ON FREE LIST")
+        elsif kind=1
+            kprint_string(" ALLOC ")
+            if isOnFreeList
+                kprint_string("ERROR ON FREE LIST")
+        elsif kind=2
+            val typeDescriptor = (size:TypeDescriptor*)
+            kprint_string(" ")
+            kprint_string(typeDescriptor.name)
+            size = ((typeDescriptor.size+3)|7)+1
+            if isOnFreeList
+                kprint_string(" ERROR ON FREE LIST")
+        else
+            kprint_string("Unknown memchunk")
+        kprint_string("\n")
+        this = ((this:Int) + size : MemChunk*)
+end fun
+
+
+
+
+
+
+    
+

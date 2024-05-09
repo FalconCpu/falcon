@@ -18,8 +18,9 @@ void AST_identify_structs(Block this) {
     foreach_statement(stmt, this) {
         if (stmt->kind==AST_STRUCT) {
             AST_struct ast = as_struct(stmt);
-            ast->type = make_type_struct(ast->name);
+            ast->type = make_type_struct(ast->name, ast->body);
             Symbol sym = new_Symbol(ast->location, SYM_TYPEREF, ast->name, ast->type, 0);
+            as_TypeStruct(ast->type)->symbol = sym;
             block_add_symbol(this, sym);
         }
 
@@ -188,8 +189,15 @@ static void AST_identify_funcs_and_fields(Block block) {
                 // We have found a function definition. Populate its fields and add a reference to our symbol table
                 Function this_func = as_function(stmt);
                 resolve_function_type(this_func, block);
-                Symbol sym = new_Symbol(this_func->location, SYM_FUNCTION, this_func->name, this_func->type, 0);
-                block_add_symbol(block, sym);
+                this_func->sym = new_Symbol(this_func->location, SYM_FUNCTION, this_func->name, this_func->type, 0);
+                this_func->sym->value.function = this_func;
+                block_add_symbol(block, this_func->sym);
+
+                // if its a member function then add the 'this' symbol
+                if (block->enclosing_statement && block->enclosing_statement->kind==AST_STRUCT) {
+                    this_func->this_sym = new_Symbol(this_func->location, SYM_VARIABLE, unique_string("this"), make_type_pointer(block->enclosing_statement->type,0), 0);
+                    block_add_symbol(this_func->body, this_func->this_sym);
+                }
                 break;
             }
 
@@ -197,14 +205,12 @@ static void AST_identify_funcs_and_fields(Block block) {
                 // we have reached a struct definition. Populate its fields.
                 AST_struct this_struct = as_struct(stmt);
                 Type_struct type = as_TypeStruct(this_struct->type);
-                assert(type->members);
                 AST ast_field;
                 foreach(ast_field, this_struct->members) {
                     Symbol sym = resolve_AST_decl(ast_field, block);
-                    Symbol duplicate = SymbolList_find(type->members, sym->name);
-                    if (duplicate)
-                        error(ast_field->location, "Duplicate struct field '%s'", sym->name);
-                    SymbolList_add(type->members, sym);
+                    sym->kind = SYM_FIELD;
+                    block_add_symbol(this_struct->body, sym);
+                    SymbolList_add(type->params, sym);
                 }
                 break;
             }

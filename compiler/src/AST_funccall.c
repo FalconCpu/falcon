@@ -72,17 +72,17 @@ static void typecheck_constructor(AST_funccall this, Block scope) {
     }
 
     struct Type_struct* struct_type = (struct Type_struct*) this->lhs->type;
-    SymbolList members = struct_type->members;
+    SymbolList params = struct_type->params;
 
-    if (this->rhs->count != members->count) {
-        this->type = make_type_error(this->location, "Got %d arguments when expecting %d", this->rhs->count, members->count);
+    if (this->rhs->count != params->count) {
+        this->type = make_type_error(this->location, "Got %d arguments when expecting %d", this->rhs->count, params->count);
         return;
     }
 
     AST arg;
     foreach(arg, this->rhs) {
         AST_typecheck_value(arg, scope);
-        check_type_compatible(SymbolList_get(members,index)->type, arg);
+        check_type_compatible(SymbolList_get(params,index)->type, arg);
     }
 
     this->type = (Type) struct_type;
@@ -125,17 +125,33 @@ Symbol code_gen_funccall(Function func, AST_funccall this) {
     if (arg_list->count>7)
         fatal("Compiler currently only supports functions with <=7 parameters");
 
+
+    // member functions have an implicit this parameter. 
+    // if called using a.func() notation then get the argument for 'this' from the member function
+    // otherwise we pass our own 'this' symbol
+    Symbol implicit_this = func->this_sym;  
+
     // Find the function to call
     Symbol func_addr;
-    if (this->lhs->kind==AST_SYMBOL && as_symbol(this->lhs)->symbol->kind==SYM_FUNCTION)
+    if (this->lhs->kind==AST_MEMBER && as_member(this->lhs)->symbol->kind==SYM_FUNCTION) {
+        implicit_this = code_gen(func, as_member(this->lhs)->lhs);
+        func_addr = as_member(this->lhs)->symbol;
+    } else if (this->lhs->kind==AST_SYMBOL && as_symbol(this->lhs)->symbol->kind==SYM_FUNCTION)
         func_addr = as_symbol(this->lhs)->symbol;
     else {
         func_addr = code_gen(func, this->lhs);
     }
 
+    int param_no = 1;
+
+    // look to see if the function has an implicit this parameter
+    if (func_addr->kind==SYM_FUNCTION && func_addr->value.function->this_sym)
+        add_instr(func, new_Instr(INSTR_MOV, 0, SymbolList_get(func->all_vars, param_no++), implicit_this, 0));
+    
+    // and pass the rest of the arguments
     Symbol arg;
     foreach_symbol(arg, arg_list)
-        add_instr(func, new_Instr(INSTR_MOV, 0, SymbolList_get(func->all_vars, index+1), arg, 0));
+        add_instr(func, new_Instr(INSTR_MOV, 0, SymbolList_get(func->all_vars, param_no++), arg, 0));
     add_instr(func, new_Instr(INSTR_CALL, 0, 0, func_addr, 0));
 
     Symbol ret = 0;
@@ -155,10 +171,10 @@ void code_gen_aggregate_rhs_funccall(Function func, AST_funccall this, Symbol de
         Type_struct this_struct = as_TypeStruct(this->type);
         AST arg;
         foreach(arg, this->rhs) {
-            Symbol member = SymbolList_get(this_struct->members,index);
-            if (is_scalar_type(member->type)) {
+            Symbol param = SymbolList_get(this_struct->params,index);
+            if (is_scalar_type(param->type)) {
                 Symbol a = code_gen(func, arg);
-                add_instr(func, new_Instr(INSTR_STORE, get_sizeof(member->type), a, dest, make_constant_symbol(func, member->offset)));
+                add_instr(func, new_Instr(INSTR_STORE, get_sizeof(param->type), a, dest, param));
             } else {
                 TODO("Aggregate types inside struct");
             }

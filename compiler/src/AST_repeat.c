@@ -59,7 +59,7 @@ Symbol code_gen_repeat(Function func, AST_repeat this) {
     add_instr(func, new_Instr(INSTR_LABEL , 0, lab_start, 0,0));
     code_gen_block(func, this->body);
     add_instr(func, new_Instr(INSTR_LABEL , 0, lab_cond, 0,0));
-    code_gen_bool(func, this->condition, lab_start, lab_end);
+    code_gen_bool(func, this->condition, lab_end, lab_start);
     add_instr(func, new_Instr(INSTR_LABEL , 0, lab_end, 0,0));
     return 0;
 }

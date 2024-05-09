@@ -34,6 +34,7 @@ SymbolList builtin_types;
 static TypeList all_pointer_types;
 static TypeList all_function_types;
 static TypeList all_array_types;
+static TypeList all_struct_types;
 
 // Create a primative type,and add it to the table of builin types
 static Type make_primative_type(int kind, String name) {
@@ -71,9 +72,24 @@ void initialize_types() {
     all_pointer_types = new_TypeList();
     all_function_types = new_TypeList();
     all_array_types = new_TypeList();
+    all_struct_types = new_TypeList();
 
     type_voidstar = make_type_pointer(type_void, 0);
-    // initialize_stdlib();
+
+    // add symbols for known constants
+    Symbol sym_null = new_Symbol(0, SYM_CONSTANT, unique_string("null"), type_null, 0);
+    sym_null->value.int_val = 0;
+    SymbolList_add(builtin_types, sym_null);
+    
+    Symbol sym_false = new_Symbol(0, SYM_CONSTANT, unique_string("false"), type_bool, 0);
+    sym_false->value.int_val = 0;
+    SymbolList_add(builtin_types, sym_false);
+    
+    Symbol sym_true = new_Symbol(0, SYM_CONSTANT, unique_string("true"), type_bool, 0);
+    sym_true->value.int_val = 1;
+    SymbolList_add(builtin_types, sym_true);
+
+    initialize_stdlib();
 }
 
 // --------------------------------------------------------------------------------
@@ -191,11 +207,14 @@ struct Type_array* as_TypeArray(Type t) {
 //               make_type_struct
 // ---------------------------------------------------------------------------------
 
-Type make_type_struct(String name) {
+Type make_type_struct(String name, Block body) {
     struct Type_struct* ret = new(struct Type_struct);
     ret->name = name;
     ret->kind = TYPE_STRUCT;
-    ret->members = new_SymbolList();
+    ret->params = new_SymbolList();
+    ret->body = body;
+
+    TypeList_add(all_struct_types, (Type) ret);
     return (Type)ret;
 }
 
@@ -203,6 +222,15 @@ struct Type_struct* as_TypeStruct(Type t) {
     if (t->kind!=TYPE_STRUCT)
         fatal("Attempt to cast %s to Type_struct", t->name);
     return (struct Type_struct*)t;
+}
+
+void output_type_descriptors(FILE *fh) {
+    Type_struct t;
+    foreach_type(t, Type_struct, all_struct_types) {
+        fprintf(fh, "%s:\n", t->name);
+        fprintf(fh,"dcw %d\n", t->size);
+        fprintf(fh,"dcw \"%s\"\n", t->name);
+    }
 }
 
 // ------------------------------------------------------------------------------
@@ -223,6 +251,10 @@ void check_type_compatible(Type type, AST expression) {
         if (type_p->base == expr_p->base && type_p->nullable==1 && expr_p->nullable==0)
             return;
     }
+
+    // allow assigning null to a  nullable pointer
+    if (type->kind==TYPE_POINTER && expression->type==type_null) // && as_TypePointer(type)->nullable)
+        return;
 
     // Until we implement sub-types, we can check for type compatibilty by simply
     // comparing pointers

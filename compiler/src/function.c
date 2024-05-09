@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "fpl.h"
 #include "AST.h"
+#include "types.h"
 
 
 // ============================================================================
@@ -281,10 +282,19 @@ Symbol code_gen_function(Function this) {
     add_instr(this, new_Instr(INSTR_START, 0, 0, 0, 0));
     this->end_label = new_label(this);
 
+    // give the function a qualified name if it is a member function
+    if (this->this_sym) {
+        this->name = my_strcat3(as_TypePointer(this->this_sym->type)->base->name,".", this->name);
+        this->sym->name = this->name;
+    }
+
     // get the functions parameters
+    int param_no = 1;
+    if (this->this_sym!=0)
+        add_instr(this, new_Instr(INSTR_MOV, 0, get_codegen_symbol(this,this->this_sym), SymbolList_get(this->all_vars, param_no++), 0));
     Symbol s;
     foreach_symbol(s, this->parameters)
-        add_instr(this, new_Instr(INSTR_MOV, 0, s, SymbolList_get(this->all_vars, index+1), 0));
+        add_instr(this, new_Instr(INSTR_MOV, 0, s, SymbolList_get(this->all_vars, param_no++), 0));
 
     // generate code for body of the function
     code_gen_block(this, this->body);

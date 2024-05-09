@@ -1,0 +1,26 @@
+
+
+struct Cat(name:String, legs:Int)
+
+fun main()
+    initialize_memory()
+    kprint_string("Initial memory contents\n")
+    dumpMemoryList()
+
+
+    val b1 = malloc(10)
+    val b2 = malloc(10)
+    val b3 = new Cat("Pootle",4)
+    free(b2)
+    val b4 = malloc(65536)
+
+    kprint_string("\nAfter 4 mallocs and one free\n")
+    dumpMemoryList()
+
+    val b5 = malloc(10)
+    kprint_string("\nAfter one more malloc\n")
+    dumpMemoryList()
+
+
+
+@-----------------------

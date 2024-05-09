@@ -47,6 +47,7 @@ String Symbol_toText(Symbol this) {
             : this->kind==SYM_FUNCTION ? "FUNC"
             : this->kind==SYM_AGGREGATE? "AGGREGATE"
             : this->kind==SYM_GLOBALVAR? "GLOBAL"
+            : this->kind==SYM_FIELD    ? "FIELD"
             :                            "ERROR";
 
     sprintf(buf,"%s:%s:%s ",this->name, k, this->type ? this->type->name : "null");
@@ -70,6 +71,14 @@ Symbol get_aggregate_address(Function func, Symbol this) {
         // We have an aggregate passed into us
         return this;
     }
+}
+
+// -------------------------------------------------------------------------------
+//               symbol_is_member_function
+// -------------------------------------------------------------------------------
+
+int symbol_is_member_function(Symbol s) {
+    return s->kind==SYM_FUNCTION && s->value.function && s->value.function->this_sym!=0;
 }
 
 // -------------------------------------------------------------------------------

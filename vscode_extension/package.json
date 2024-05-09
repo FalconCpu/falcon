@@ -1,0 +1,37 @@
+{
+  "name": "fpl",
+  "displayName": "fpl",
+  "description": "fpl programming language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "fpl",
+        "aliases": [
+          "fpl",
+          "fpl"
+        ],
+        "extensions": [
+          "fpl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "fpl",
+        "scopeName": "source.fpl",
+        "path": "./syntaxes/fpl.tmLanguage.json"
+      }
+    ]
+  },
+  "dependencies": {
+    "vsce": "^2.15.0"
+  }
+}

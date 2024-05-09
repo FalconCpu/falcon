@@ -28,6 +28,7 @@ src/build
 src/.vscode
 f32/src/build
 f32/src/.vscode
+assembler/build
 
 # binaries
 bin

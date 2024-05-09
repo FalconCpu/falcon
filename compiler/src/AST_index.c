@@ -87,14 +87,14 @@ static Symbol get_array_bounds(Function func, Symbol lhs) {
 
     if (type->kind==TYPE_STRING) {
         bounds = new_tempvar(func, type_int);
-        add_instr(func, new_Instr(INSTR_LOAD, 4, bounds, lhs, make_constant_symbol(func, -4)));
+        add_instr(func, new_Instr(INSTR_LOAD, 4, bounds, lhs, stdlib.size));
     } else {
         struct Type_array* array_type = as_TypeArray(type);
         if (array_type->size!=0)
             bounds = make_constant_symbol(func, array_type->size);
         else {
             bounds = new_tempvar(func, type_int);
-            add_instr(func, new_Instr(INSTR_LOAD, 4, bounds, lhs, make_constant_symbol(func, -4)));
+            add_instr(func, new_Instr(INSTR_LOAD, 4, bounds, lhs, stdlib.size));
         }
     }
     return bounds;
@@ -189,7 +189,7 @@ void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest) {
         Symbol num_index = make_constant_symbol(func,as_TypeArray(this->type)->size);
         Symbol num_index_reg = new_tempvar(func,type_int);
         add_instr(func, new_Instr(INSTR_MOV, 0, num_index_reg, num_index, 0));
-        add_instr(func, new_Instr(INSTR_STORE, 4, num_index_reg, dest,  make_constant_symbol(func,-4)));
+        add_instr(func, new_Instr(INSTR_STORE, 4, num_index_reg, dest, stdlib.size));
 
     } else {
         Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);

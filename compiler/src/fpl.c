@@ -87,7 +87,7 @@ int main(int argc, String* argv) {
     if (operation==OPERATION_LEX_ONLY)
         return 0;
     if (operation==OPERATION_PARSE_ONLY) {
-        block_print(top_block, 0);
+        block_print(top_block,0);
         return num_errors;
     }
 
@@ -98,7 +98,7 @@ int main(int argc, String* argv) {
     if (num_errors!=0)
         return num_errors;
     if (operation==OPERATION_TYPE_CHECK) {
-        block_print(top_block, 0);
+        block_print(top_block,0);
         return 0;
     }
 
@@ -116,7 +116,40 @@ int main(int argc, String* argv) {
         return 0;
     }
 
+    // Run optimizer
+    foreach_function(func)
+        peephole(func);
+    if (num_errors!=0)
+        return num_errors;
+    if (operation==OPERATION_PEEPHOLE) {
+        foreach_function(func)
+            print_program(func);
+        return 0;
+    }
 
-    printf("XXXX\n");
+    // Run regalloc
+    foreach_function(func) {
+        register_allocation(func);
+        peephole(func);
+    }
+    if (num_errors!=0)
+        return num_errors;
+    if (operation==OPERATION_REGALLOC) {
+        foreach_function(func)
+            print_program(func);
+        return 0;
+    }
 
+    // Final output
+    FILE* outfile = fopen("a.f32","w");
+    if (outfile==0)
+        error(0,"Cannot open output file 'a.f32'");
+    if (num_errors!=0)
+        return num_errors;
+    fprintf(outfile,"org 0FFFF8000H\n");
+    foreach_function(func)
+        generate_assembly(func, outfile);
+    output_type_descriptors(outfile);
+    fclose(outfile);
+    return num_errors;
 }
