@@ -21,7 +21,7 @@ string file_name;
 static int* ram;
 static int finished;
 
-static int debug=3;   // 0 = nothing, 1=memory writes, 2=register writes, 3=instructions executed
+static int debug=0;   // 0 = nothing, 1=register writes, 2=instructions executed
 extern char* disassemble_line(int addr);
 
 int cycle_count = 0;
@@ -37,13 +37,13 @@ static int escratch = 0;
 static int null_as_exception=0;
 
 FILE *debug_trace;
+FILE *reg_trace;
 static void exception(int cause, int data);
 
 static void setReg(int reg, int value) {
     if (reg!=0  && !null_as_exception) {
-        if (debug==1)
-            fprintf(debug_trace,"$%-2d = %08x\n",reg,value);
-        else if (debug>=2)
+        fprintf(reg_trace,"$%2d = %08x\n",reg,value);
+        if (debug>=2)
             fprintf(debug_trace,"$%-2d=%08x",reg,value);
         regs[reg] = value;
     }
@@ -67,11 +67,6 @@ static int aluOp(int op, int a, int b, int c) {
     }
     return 0;
 }
-
-static void output(int c) {
-    printf("%c",c);
-}
-
 
 static void writeMemMappedReg(unsigned int addr, int value) {
     switch(addr) {
@@ -254,7 +249,7 @@ static void exception(int cause, int data) {
 }
 
 static void executeInstruction(int instr) {
-    if (debug>=1)
+    if (debug>=2)
          fprintf(debug_trace,"%-5d %08X: %-30s   ",cycle_count, pc-4, disassemble_line(pc-4));
     cycle_count++;
     null_as_exception = 0;
@@ -337,8 +332,7 @@ static void execute() {
         }
     }
 
-    if (debug) output_final_regs(debug_trace);
-    output_final_regs(stdout);
+    if (debug>=2) output_final_regs(debug_trace);
 }
 
 int main(int argc, string* argv)
@@ -366,6 +360,7 @@ int main(int argc, string* argv)
 
     if (debug)
         debug_trace = fopen("debug.log","w");
+    reg_trace = fopen("sim_regs.log","w");
 
     if (filename==0)
         fatal("No filename specified");

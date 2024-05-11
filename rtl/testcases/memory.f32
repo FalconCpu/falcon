@@ -1,0 +1,23 @@
+
+; Write a block of data to the SDRAM
+ld $1,0      ; $1 = start of block
+ld $2,100    ; $2 = end of block 
+ld $3,1234   ; $3 = data to write
+
+write_loop:
+stw $3, $1[0]
+add $1,4
+sub $3,1
+bne $1, $2, write_loop
+
+; and read it back
+ld $4,0
+ld $1,0
+
+read_loop:
+ldw $3, $1[0] 
+add $4, $3
+add $1, 4
+bne $1, $2, read_loop
+
+jmp 0[0]

@@ -1,0 +1,7 @@
+111 NOP      
+101 READ     
+100 WRITE    
+011 ACT      
+010 PRECHARGE
+001 REFRESH  
+000 MODE     

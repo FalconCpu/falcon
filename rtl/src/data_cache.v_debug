@@ -1,0 +1,156 @@
+module data_cache(
+    input            clock,
+    input            reset,
+
+    // connections to the cpu
+    input                cpu_request,   // cpu is making a requst on the bus
+    input                cpu_write,     // set for a write operation, clear for read
+    input  [31:0]        cpu_address,   // address for transaction
+    input  [31:0]        cpu_wdata,     // output data for transaction
+    input  [3:0]         cpu_byte_en,   // byte enables for write transaction
+    output reg [31:0]    cpu_rdata,      // received data
+    output reg           cpu_ack,
+
+    // connections to the memory
+    output reg           mem_request,   // cpu is making a requst on the bus
+    output reg           mem_write,     // set for a write operation, clear for read
+    output reg [31:0]    mem_address,   // address for transaction
+    output reg [31:0]    mem_wdata,     // output data for transaction
+    output reg [3:0]     mem_byte_en,   // byte enables for write transaction
+    input      [31:0]    mem_rdata,      // received data
+    input                mem_ack
+);
+
+// a 4kbyte cache = 1k words
+
+// 10987654321098765432 1098765432 10
+// Tag                  index      byte
+
+reg [31:0] data_ram[0:1023];
+reg [19:0] tag_ram[0:1023];
+reg        valid_ram[0:1023];
+
+// Lookup the requested data in the cache ram
+// also register the transaction (to allow for latency in doing lookup)
+
+reg                latched_read;
+reg                latched_write;
+reg  [31:0]        latched_address;
+reg  [31:0]        latched_wdata;
+reg  [3:0]         latched_byte_en;
+reg  [19:0]        cache_tag;
+reg  [31:0]        cache_data;
+reg                cache_valid;
+
+wire [9:0] cpu_address_index = cpu_address[11:2];
+
+always @(posedge clock) begin
+    latched_read    <= cpu_request && !cpu_write;
+    latched_write   <= cpu_request && cpu_write;
+    latched_address <= cpu_address;
+    latched_wdata   <= cpu_wdata;
+    latched_byte_en <= cpu_byte_en;
+    cache_tag       <= tag_ram[cpu_address_index];
+    cache_data      <= data_ram[cpu_address_index];
+    cache_valid     <= valid_ram[cpu_address_index];
+end
+
+// State machine
+parameter STATE_IDLE  = 2'b00;
+parameter STATE_READ  = 2'b01;
+parameter STATE_WRITE = 2'b10;
+reg [1:0] this_state, next_state;
+
+
+wire [19:0] latched_address_tag   = latched_address[31:12];
+wire [9:0] latched_address_index = latched_address[11:2];
+
+wire hit = latched_address_tag==cache_tag && cache_valid;
+
+always @(*) begin
+    cpu_rdata   = 32'b0;
+    cpu_ack     = 1'b0;
+    mem_request = 1'b0;
+    mem_write   = 1'b0;
+    mem_address = 32'b0;
+    mem_wdata   = 32'b0;
+    mem_byte_en = 4'b0;
+
+    next_state = this_state;
+
+    case(this_state) 
+        STATE_IDLE: begin
+            if (latched_read && hit) begin
+                // Got a hit - pass it through to the CPU
+                cpu_rdata = cache_data;
+                cpu_ack = 1'b1;
+
+            end else if (latched_read && !hit) begin
+                // Missed cache on a read - need to fetch data from main memory
+                mem_request = 1'b1;
+                mem_write   = 1'b0;
+                mem_address = latched_address;
+                mem_wdata   = 32'b0;
+                mem_byte_en = 4'b0;
+                next_state  = STATE_READ;
+            
+            end else if (latched_write) begin
+                // always pass writes through to the main memory
+                mem_request = 1'b1;
+                mem_write   = 1'b1;
+                mem_address = latched_address;
+                mem_wdata   = latched_wdata;
+                mem_byte_en = latched_byte_en;
+                next_state  = STATE_WRITE;
+            end
+        end
+
+        STATE_READ: begin
+            // Wait for ack from memory. Pass the data on to the cpu
+            mem_request = 1'b1;
+            mem_write   = 1'b0;
+            mem_address = latched_address;
+            mem_wdata   = 32'b0;
+            mem_byte_en = 4'b0;
+
+            if (mem_ack) begin
+                next_state = STATE_IDLE;
+                cpu_rdata = mem_rdata;
+                cpu_ack = 1'b1;
+            end
+        end
+
+        STATE_WRITE: begin
+            // Wait for ack from memory, then signal ack to the cpu
+            mem_request = 1'b1;
+            mem_write   = 1'b1;
+            mem_address = latched_address;
+            mem_wdata   = latched_wdata;
+            mem_byte_en = latched_byte_en;
+            if (mem_ack) begin
+                next_state = STATE_IDLE;
+                cpu_ack = 1'b1; 
+            end
+        end
+
+        default:
+            next_state = STATE_IDLE;
+    endcase
+
+end
+
+always @(posedge clock) begin
+    if (reset) begin
+        this_state <= STATE_IDLE;
+        
+    end else begin
+        this_state <= next_state;
+        if (mem_ack) begin
+            tag_ram[latched_address_index] <= latched_address_tag;
+            data_ram[latched_address_index] <= latched_write ? latched_wdata : mem_rdata;
+            valid_ram[latched_address_index] <= 1'b1;
+        end 
+    end
+end
+
+endmodule

@@ -1,0 +1,27 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat May 11 10:14:14 2024
+[*]
+[dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
+[dumpfile_mtime] "Sat May 11 10:01:55 2024"
+[dumpfile_size] 436680
+[savefile] "C:\Users\simon\falcon\rtl\gtkw.gtkw"
+[timestart] 0
+[size] 1920 1129
+[pos] -87 -87
+*-18.000000 816000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.chip_top_inst.
+[sst_width] 197
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 339
+@28
+tb.chip_top_inst.cpu_request
+tb.chip_top_inst.cpu_ack
+tb.chip_top_inst.hwregs_ack
+tb.chip_top_inst.hwregs_request
+@29
+tb.chip_top_inst.iram_request
+[pattern_trace] 1
+[pattern_trace] 0
