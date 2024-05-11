@@ -51,7 +51,7 @@ String Symbol_toText(Symbol this) {
             :                            "ERROR";
 
     sprintf(buf,"%s:%s:%s ",this->name, k, this->type ? this->type->name : "null");
-    return strdup(buf);
+    return _strdup(buf);
 }
 
 // ---------------------------------------------------------------------------------

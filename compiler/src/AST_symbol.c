@@ -122,11 +122,11 @@ void code_gen_lvalue_symbol(Function func, AST_symbol this, Symbol value) {
 }
 
 // ---------------------------------------------------------------------------------
-//                         code_gen_aggregate_lhs
+//                         code_gen_address_of
 // ---------------------------------------------------------------------------------
-// Run code generation on an AST - interpreting as the lhs of an aggregate operation
+// Run code generation on an AST 
 
-Symbol  code_gen_aggregate_lhs_symbol(Function func, AST_symbol this) {
+Symbol  code_gen_address_of_symbol(Function func, AST_symbol this) {
     Symbol s = get_codegen_symbol(func, this->symbol);
     switch(s->kind) {
         case SYM_AGGREGATE: {
@@ -151,16 +151,16 @@ Symbol  code_gen_aggregate_lhs_symbol(Function func, AST_symbol this) {
 
 
         default:
-            fatal("Got kind %x in code_gen_aggregate_lhs_id", s->kind);
+            fatal("Got kind %x in code_gen_address_of_id", s->kind);
     }
 }
 
 // ---------------------------------------------------------------------------------
-//                         code_gen_aggregate_rhs
+//                         code_gen_store_at
 // ---------------------------------------------------------------------------------
-// Run code generation on an AST - interpreting as the lhs of an aggregate operation
+// Run code generation on an AST - storing the result at an address
 
-void  code_gen_aggregate_rhs_symbol(Function func, AST_symbol this, Symbol dest) {
+void  code_gen_store_at_symbol(Function func, AST_symbol this, Symbol dest) {
     Symbol s = get_codegen_symbol(func, this->symbol);
 
     Symbol addr;
@@ -187,7 +187,7 @@ void  code_gen_aggregate_rhs_symbol(Function func, AST_symbol this, Symbol dest)
         }
 
         default:
-            fatal("Got kind %x in code_gen_aggregate_lhs_id", s->kind);
+            fatal("Got kind %x in code_gen_address_of_id", s->kind);
     }
 
     gen_memcopy(func, dest, addr,  get_sizeof(this->type));

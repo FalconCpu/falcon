@@ -9,7 +9,7 @@ static Block current_block;
 
 static AST parse_expression();
 static AST_list parse_expression_list();
-static Block parse_block();
+static Block parse_block(Location location, TokenKind kind);
 static AST parse_type_expr();
 
 // ===========================================================================
@@ -352,6 +352,7 @@ static AST parse_return_statement() {
 
 static AST parse_assign_statement() {
     AST lhs = parse_prefix();
+
     if (lookahead->kind==TOK_EOL) {
         expect_eol();
         if (lhs->kind!=AST_FUNCCALL)
@@ -359,11 +360,20 @@ static AST parse_assign_statement() {
         return lhs;
     }
 
-    Token loc = expect(TOK_EQ);
+    Token loc = next_token();
     AST rhs = parse_expression();
     expect_eol();
 
-    return new_AST_assign(loc->location, lhs, rhs);
+    switch(loc->kind) {
+        case TOK_EQ:     return new_AST_assign(loc->location, lhs, rhs);
+        
+        case TOK_MINUSEQ:
+        case TOK_PLUSEQ: return new_AST_assignOp(loc->location, loc->kind, lhs, rhs);
+
+        default: error(loc->location, "Got %s when expecting assignment operator");
+            return 0;
+    }
+
 }
 
 // ===========================================================================

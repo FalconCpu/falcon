@@ -128,6 +128,8 @@ String token_kind_names[] = {
     [TOK_COLON     ] = ":",
     [TOK_LEFT      ] = "<<",
     [TOK_RIGHT     ] = ">>",
+    [TOK_PLUSEQ    ] = "+=",
+    [TOK_MINUSEQ   ] = "-=",
     [TOK_ARROW     ] = "->",
     [TOK_OPENB     ] = "(",
     [TOK_OPENSQ    ] = "[",
@@ -174,7 +176,7 @@ static void initialize_hash_table() {
     hash_count = 0;
     hash_table = new_array(Hash_Element, hash_size);
 
-    for(TokenKind k=0; token_kind_names[k]; k++)
+    for(TokenKind k=TOK_EOF; token_kind_names[k]; k++)
         hash_add(token_kind_names[k], k);
     initialize_types();
 }
@@ -321,6 +323,8 @@ static String read_punctuation() {
     if ( (c=='<' && lookahead=='=') ||
          (c=='>' && lookahead=='=') ||
          (c=='!' && lookahead=='=') ||
+         (c=='+' && lookahead=='=') ||
+         (c=='-' && lookahead=='=') ||
          (c=='<' && lookahead=='<') ||
          (c=='>' && lookahead=='>') ||
          (c=='-' && lookahead=='>') ||

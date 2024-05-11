@@ -26,6 +26,7 @@ void AST_print(AST this, int indent) {
         case AST_DECL:      AST_decl_print  (as_decl  (this), indent); break;
         case AST_RETURN:    AST_return_print(as_return(this), indent); break;
         case AST_ASSIGN:    AST_assign_print(as_assign(this), indent); break;
+        case AST_ASSIGNOP:  AST_assignOp_print(as_assignOp(this), indent); break;
         case AST_WHILE:     AST_while_print (as_while(this), indent); break;
         case AST_REPEAT:    AST_repeat_print(as_repeat(this), indent); break;
         case AST_IF:        AST_if_print    (as_if(this), indent); break;
@@ -65,6 +66,7 @@ Block AST_get_block(AST this) {
         case AST_DECL:      
         case AST_RETURN:   
         case AST_POINTER: 
+        case AST_ASSIGNOP:
         case AST_ASSIGN:    return 0;
     }
 }
@@ -138,6 +140,7 @@ void AST_typecheck(AST this, Block scope) {
         case AST_STRLIT:    return AST_typecheck_strlit( as_strlit(this), scope);
         case AST_SYMBOL:    return AST_typecheck_symbol( as_symbol(this), scope);
         case AST_ASSIGN:    return AST_typecheck_assign( as_assign(this), scope);
+        case AST_ASSIGNOP:  return AST_typecheck_assignOp( as_assignOp(this), scope);
         case AST_INDEX:     return AST_typecheck_index(  as_index(this), scope);
         case AST_CAST:      return AST_typecheck_cast(  as_cast(this), scope);
         case AST_NEW:       return AST_typecheck_new(   as_new(this), scope);
@@ -169,6 +172,7 @@ Symbol code_gen(Function func, AST this) {
         case AST_STRLIT:    return code_gen_strlit(func, as_strlit(this));
         case AST_SYMBOL:    return code_gen_symbol(func, as_symbol(this));
         case AST_ASSIGN:    return code_gen_assign(func, as_assign(this));
+        case AST_ASSIGNOP:  return code_gen_assignOp(func, as_assignOp(this));
         case AST_INDEX:     return code_gen_index(func, as_index(this));
         case AST_CAST:      return code_gen_cast(func, as_cast(this));
         case AST_NEW:       return code_gen_new(func, as_new(this));
@@ -207,6 +211,7 @@ void code_gen_lvalue(Function func, AST this, Symbol value) {
         case AST_CAST:    
         case AST_NEW:    
         case AST_ASSIGN:    
+        case AST_ASSIGNOP:    
         case AST_FUNCCALL:  
         case AST_WHILE:     
         case AST_REPEAT:    
@@ -223,23 +228,24 @@ void code_gen_lvalue(Function func, AST this, Symbol value) {
 }
 
 // ---------------------------------------------------------------------------------
-//                         code_gen_aggregate_rhs
+//                         code_gen_store_at
 // ---------------------------------------------------------------------------------
-// Generate IR code for the RHS of an aggregate operation
+// Generate IR code to store aggregate data at a given address
 
-void code_gen_aggregate_rhs(Function func, AST this, Symbol value) {
+void code_gen_store_at(Function func, AST this, Symbol addr) {
     switch(this->kind) {
-        case AST_SYMBOL:    return code_gen_aggregate_rhs_symbol(func, as_symbol(this), value);
-        case AST_INDEX:     return code_gen_aggregate_rhs_index(func, as_index(this), value);
+        case AST_SYMBOL:    return code_gen_store_at_symbol(func, as_symbol(this), addr);
+        case AST_INDEX:     return code_gen_store_at_index(func, as_index(this), addr);
         case AST_POINTER:   TODO("");
         case AST_MEMBER:    TODO("");
-        case AST_FUNCCALL:  return code_gen_aggregate_rhs_funccall(func, as_funccall(this), value);
+        case AST_FUNCCALL:  return code_gen_store_at_funccall(func, as_funccall(this), addr);
 
         case AST_INTLIT:    
         case AST_STRLIT:    
         case AST_CAST:    
         case AST_NEW:    
         case AST_ASSIGN:    
+        case AST_ASSIGNOP:    
         case AST_WHILE:     
         case AST_REPEAT:    
         case AST_RETURN:    
@@ -250,28 +256,29 @@ void code_gen_aggregate_rhs(Function func, AST this, Symbol value) {
         case AST_BINOP:     
         case AST_UNARY:     
         case AST_FOR:     
-        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_rhs", this->kind);
+        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_store_at", this->kind);
     }
 }
 
 // ---------------------------------------------------------------------------------
-//                         code_gen_aggregate_lhs
+//                         code_gen_address_of
 // ---------------------------------------------------------------------------------
 // Generate IR code for the LHS of an aggregate operation
 
-Symbol code_gen_aggregate_lhs(Function func, AST this) {
+Symbol code_gen_address_of(Function func, AST this) {
     (void) func;
     switch(this->kind) {
-        case AST_SYMBOL:    return code_gen_aggregate_lhs_symbol(func, as_symbol(this));
-        case AST_INDEX:     return code_gen_aggregate_lhs_index(func, as_index(this));
+        case AST_SYMBOL:    return code_gen_address_of_symbol(func, as_symbol(this));
+        case AST_INDEX:     return code_gen_address_of_index(func, as_index(this));
         case AST_POINTER:   TODO("");
-        case AST_MEMBER:    return code_gen_aggregate_lhs_member(func, as_member(this));
+        case AST_MEMBER:    return code_gen_address_of_member(func, as_member(this));
 
         case AST_INTLIT:    
         case AST_STRLIT:    
         case AST_CAST:    
         case AST_NEW:    
         case AST_ASSIGN:    
+        case AST_ASSIGNOP:    
         case AST_FUNCCALL:  
         case AST_WHILE:     
         case AST_REPEAT:    
@@ -283,7 +290,7 @@ Symbol code_gen_aggregate_lhs(Function func, AST this) {
         case AST_BINOP:     
         case AST_UNARY:     
         case AST_FOR:     
-        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_aggregate_lhs", this->kind);
+        case AST_STRUCT:    fatal("Internal error - got %x in code_gen_address_of", this->kind);
     }
 }
 

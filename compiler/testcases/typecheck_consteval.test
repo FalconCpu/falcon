@@ -1,0 +1,9 @@
+
+fun fred()->Int
+    return 41+2-3
+
+@-----------------
+Symbol table [fred:FUNC:()->Int  ]
+FUNCTION fred
+   RETURN
+      INTLIT 40 Int

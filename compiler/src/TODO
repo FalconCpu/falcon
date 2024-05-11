@@ -1,0 +1,10 @@
+
+
+Parser:
+    Constant eval in prefix ops
+    += and -= operators
+    ENUMs
+
+Peephole:
+    Constant propagation to LHS of binops
+    

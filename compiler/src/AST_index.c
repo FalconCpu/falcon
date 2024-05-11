@@ -117,7 +117,7 @@ static Symbol calculate_address(Function func, int size, Symbol lhs, Symbol rhs)
 // ---------------------------------------------------------------------------------
 
 Symbol code_gen_index(Function func, AST_index this) {
-    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_address_of(func, this->lhs);
     Symbol rhs = code_gen(func, this->rhs);
 
     // For bounds checking we emit a pseudo CHK instruction here. Later code in the
@@ -138,11 +138,11 @@ Symbol code_gen_index(Function func, AST_index this) {
 
 
 // ---------------------------------------------------------------------------------
-//                           code_gen_aggregate_lhs_index
+//                           code_gen_address_of_index
 // ---------------------------------------------------------------------------------
 
-Symbol code_gen_aggregate_lhs_index(Function func, AST_index this) {
-    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+Symbol code_gen_address_of_index(Function func, AST_index this) {
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_address_of(func, this->lhs);
     Symbol rhs = code_gen(func, this->rhs);
 
     // For bounds checking we emit a pseudo CHK instruction here. Later code in the
@@ -161,7 +161,7 @@ Symbol code_gen_aggregate_lhs_index(Function func, AST_index this) {
 // ---------------------------------------------------------------------------------
 
 void code_gen_lvalue_index(Function func, AST_index this, Symbol value) {
-    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+    Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_address_of(func, this->lhs);
     Symbol rhs = code_gen(func, this->rhs);
 
     // For bounds checking we emit a pseudo CHK instruction here. Later code in the
@@ -176,10 +176,10 @@ void code_gen_lvalue_index(Function func, AST_index this, Symbol value) {
 }
 
 // ---------------------------------------------------------------------------------
-//                           code_gen_aggregate_rhs
+//                           code_gen_store_at_index
 // ---------------------------------------------------------------------------------
 
-void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest) {
+void  code_gen_store_at_index(Function func, AST_index this, Symbol dest) {
     if (this->is_constructor) {
         // TODO - allow dynamically configurable sizes
         int size = get_sizeof(this->type);
@@ -192,7 +192,7 @@ void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest) {
         add_instr(func, new_Instr(INSTR_STORE, 4, num_index_reg, dest, stdlib.size));
 
     } else {
-        Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_aggregate_lhs(func, this->lhs);
+        Symbol lhs = is_scalar_type(this->lhs->type) ? code_gen(func, this->lhs) : code_gen_address_of(func, this->lhs);
         Symbol rhs = code_gen(func, this->rhs);
         add_instr(func, new_Instr(INSTR_CHK, 0, 0, rhs, get_array_bounds(func,lhs)));
         int size = get_sizeof(this->type);

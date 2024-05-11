@@ -31,7 +31,7 @@ main:
 7    stw   #2, #0[legs]
 8    mov   c, #0
 9    mov   $1, c
-10   call  count_legs
+10   call  Cat.count_legs
 11   mov   #3, $8
 12   mov   $8, #3
 13   jmp   @0

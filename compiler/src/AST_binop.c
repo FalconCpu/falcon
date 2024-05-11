@@ -115,6 +115,38 @@ static struct binops binop_table[] = {
 // ---------------------------------------------------------------------------------
 // evaluate a binop at compile time if possible
 
+static void compiletime_eval(AST_binop this) {
+    if (this->lhs->kind!=AST_INTLIT || this->rhs->kind!=AST_INTLIT)
+        return;
+
+    int l = as_intlit(this->lhs)->value;
+    int r = as_intlit(this->rhs)->value;
+    int ret;
+    switch(this->alu_op) {
+        case ALU_ADD_I: ret = l + r; break;
+        case ALU_SUB_I: ret = l - r; break;
+        case ALU_MUL_I: ret = l * r; break;
+        case ALU_DIV_I: ret = l / r; break;
+        case ALU_MOD_I: ret = l % r; break;
+        case ALU_AND_I: ret = l & r; break;
+        case ALU_OR_I:  ret = l | r; break;
+        case ALU_XOR_I: ret = l ^ r; break;
+        case ALU_EQ_I:  ret = l == r; break;
+        case ALU_NEQ_I: ret = l != r; break;
+        case ALU_LT_I:  ret = l < r; break;
+        case ALU_LTE_I: ret = l <= r; break;
+        case ALU_GT_I:  ret = l > r; break;
+        case ALU_GTE_I: ret = l >= r; break;
+        default:  return;
+    }
+
+    // bit of an ugly hack here - but overwrite the AST_binop with an AST_intlit
+    AST_intlit this_intlit = (AST_intlit) this;
+    this_intlit->kind = AST_INTLIT;
+    this_intlit->value = ret;
+    return;
+}
+
 
 // ---------------------------------------------------------------------------------
 //                         typeCheck
@@ -150,6 +182,7 @@ void AST_typecheck_binop(AST_binop this, Block scope) {
         if (ptr->op==this->op && ptr->lhs_type==this->lhs->type->kind && ptr->rhs_type==this->rhs->type->kind) {
             this->alu_op = ptr->out_op;
             this->type = get_type_from_code(ptr->out_type);
+            compiletime_eval(this);
             return;
         }
 

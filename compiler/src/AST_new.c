@@ -67,6 +67,6 @@ Symbol code_gen_new(Function func, AST_new this) {
     add_instr(func, new_Instr(INSTR_LEA, 0, SymbolList_get(func->all_vars,1), ts->symbol, 0)); 
     add_instr(func, new_Instr(INSTR_CALL, 0, 0, stdlib.stdlib_new, 0));
     add_instr(func, new_Instr(INSTR_MOV, 0, ret, SymbolList_get(func->all_vars,REG_RESULT), 0)); 
-    code_gen_aggregate_rhs(func, this->rhs, ret);
+    code_gen_store_at(func, this->rhs, ret);
     return ret;
 }

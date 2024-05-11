@@ -1,0 +1,8 @@
+
+fun main(a:Int[10])
+    var v = 100
+    for index in 0 to 9
+        a[index] += v
+        v -= 1
+
+@-------------------

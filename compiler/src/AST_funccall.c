@@ -163,7 +163,7 @@ Symbol code_gen_funccall(Function func, AST_funccall this) {
 }
 
 
-void code_gen_aggregate_rhs_funccall(Function func, AST_funccall this, Symbol dest) {
+void code_gen_store_at_funccall(Function func, AST_funccall this, Symbol dest) {
     if (! this->is_constructor)
         TODO("Function calls with aggregate return type");
 

@@ -77,11 +77,10 @@ Symbol code_gen_decl(Function func, AST_decl this) {
     if (is_scalar_type(this->symbol->type)) {
         Symbol rhs = code_gen(func, this->ast_value);
         AST lhs = new_ASTnode_id_from_symbol(this->symbol);
-        //add_instr(func, new_Instr(INSTR_MOV, 0, this->symbol, rhs, 0));
         code_gen_lvalue(func, lhs, rhs);
     } else {
         Symbol addr = get_aggregate_address(func, this->symbol);
-        code_gen_aggregate_rhs(func, this->ast_value, addr);
+        code_gen_store_at(func, this->ast_value, addr);
     }
     return 0;
 }

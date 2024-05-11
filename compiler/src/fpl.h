@@ -1,5 +1,8 @@
 #ifndef FPL_H
 #define FPL_H
+
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 
 
@@ -183,6 +186,7 @@ typedef enum  {
     AST_DECL,
     AST_RETURN,
     AST_ASSIGN,
+    AST_ASSIGNOP,
     AST_WHILE,
     AST_REPEAT,
     AST_IF,
@@ -214,6 +218,7 @@ AST new_AST_funccall(Location location,  AST lhs, AST_list rhs);
 AST new_AST_decl(Location location, String name, AST ast_type, AST ast_value, int mutable);
 AST new_AST_return(Location location, AST retval);
 AST new_AST_assign(Location location, AST lhs, AST rhs);
+AST new_AST_assignOp(Location location, TokenKind op, AST lhs, AST rhs);
 AST new_AST_while(Location location, AST condition, Block body);
 AST new_AST_repeat(Location location, AST condition, Block body);
 AST new_AST_if(Location location, Block clauses);
@@ -240,8 +245,8 @@ Symbol code_gen(Function func, AST this);
 
 Symbol code_gen_(Function func, AST this);
 void   code_gen_lvalue(Function func, AST this, Symbol value);
-Symbol code_gen_aggregate_lhs(Function func, AST this);
-void   code_gen_aggregate_rhs(Function func, AST this, Symbol lhs);
+Symbol code_gen_address_of(Function func, AST this);
+void   code_gen_store_at_rhs(Function func, AST this, Symbol lhs);
 void   code_gen_bool(Function func, AST this, Symbol lab_true, Symbol lab_false);
 
 
@@ -359,8 +364,8 @@ Symbol new_label(Function this);
 Symbol code_gen(Function func, AST this);
 Symbol code_gen_function(Function this);
 void code_gen_lvalue(Function func, AST this, Symbol value);
-void code_gen_aggregate_rhs(Function func, AST this, Symbol value);
-Symbol code_gen_aggregate_lhs(Function func, AST this);
+void code_gen_store_at(Function func, AST this, Symbol addr);
+Symbol code_gen_address_of(Function func, AST this);
 void code_gen_bool(Function func, AST this, Symbol lab_true, Symbol lab_false);
 
 Function get_function_by_index(int index);

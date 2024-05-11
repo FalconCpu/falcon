@@ -72,9 +72,9 @@ Symbol code_gen_symbol(Function func, AST_symbol this);
 
 void code_gen_lvalue_symbol(Function func, AST_symbol this, Symbol value);
 
-Symbol  code_gen_aggregate_lhs_symbol(Function func, AST_symbol this);
+Symbol  code_gen_address_of_symbol(Function func, AST_symbol this);
 
-void  code_gen_aggregate_rhs_symbol(Function func, AST_symbol this, Symbol dest);
+void  code_gen_store_at_symbol(Function func, AST_symbol this, Symbol dest);
 
 // -----------------------------------------------------------------------
 //                        AST_BINOP
@@ -224,9 +224,9 @@ Symbol code_gen_index(Function func, AST_index this);
 
 void code_gen_lvalue_index(Function func, AST_index this, Symbol value);
 
-Symbol code_gen_aggregate_lhs_index(Function func, AST_index this);
+Symbol code_gen_address_of_index(Function func, AST_index this);
 
-void  code_gen_aggregate_rhs_index(Function func, AST_index this, Symbol dest);
+void  code_gen_store_at_index(Function func, AST_index this, Symbol dest);
 
 // -----------------------------------------------------------------------
 //                        AST_MEMBER
@@ -256,7 +256,7 @@ Symbol code_gen_member(Function func, AST_member this);
 
 void code_gen_lvalue_member(Function func, AST_member this, Symbol value);
 
-Symbol code_gen_aggregate_lhs_member(Function func, AST_member this);
+Symbol code_gen_address_of_member(Function func, AST_member this);
 
 // -----------------------------------------------------------------------
 //                        AST_FUNCCALL
@@ -283,7 +283,7 @@ void AST_typecheck_funccall(AST_funccall this, Block scope);
 
 Symbol code_gen_funccall(Function func, AST_funccall this);
 
-void code_gen_aggregate_rhs_funccall(Function func, AST_funccall this, Symbol dest);
+void code_gen_store_at_funccall(Function func, AST_funccall this, Symbol dest);
 // -----------------------------------------------------------------------
 //                        AST_DECL
 // -----------------------------------------------------------------------
@@ -356,6 +356,31 @@ AST_assign as_assign(AST this);
 void AST_typecheck_assign(AST_assign this, Block scope);
 
 Symbol code_gen_assign(Function func, AST_assign this);
+
+// -----------------------------------------------------------------------
+//                        AST_ASSIGNOp
+// -----------------------------------------------------------------------
+
+typedef struct AST_assignOp* AST_assignOp;
+
+struct AST_assignOp {
+    Location  location;
+    ASTkind   kind;
+    Type      type;
+
+    TokenKind op;
+    AST       lhs;
+    AST       rhs;
+};
+
+void AST_assignOp_print(AST_assignOp this, int indent);
+
+AST_assignOp as_assignOp(AST this);
+
+void AST_typecheck_assignOp(AST_assignOp this, Block scope);
+
+Symbol code_gen_assignOp(Function func, AST_assignOp this);
+
 
 // -----------------------------------------------------------------------
 //                        AST_WHILE
