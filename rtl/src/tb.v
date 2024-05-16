@@ -47,6 +47,9 @@ module tb;
   wire [35:0] GPIO_0;
   wire [35:0] GPIO_1;
 
+assign GPIO_0[35] = GPIO_0[34];
+
+
   chip_top chip_top_inst (
     .AUD_ADCDAT(AUD_ADCDAT),
     .AUD_ADCLRCK(AUD_ADCLRCK),
@@ -116,11 +119,35 @@ always begin
 end
 
 initial begin
-$dumpvars(6);
-#10000;
+//$dumpvars(6);
+#20000000;
 $display("TIMEOUT");
 $finish;
 end
 
+// write RGB file
+integer rgb_file;
+integer vga_x, vga_y;
+reg     last_hs;
+initial begin
+  rgb_file = $fopen("rgb.txt","w");
+  vga_x = 0;
+  vga_y = 0;
+end
+
+always @(posedge(VGA_CLK)) begin
+  if (VGA_VS==1'b0)
+    vga_y = 0;
+  if (VGA_HS==1'b1 && last_hs==1'b0) begin
+    vga_y = vga_y + 1;
+    vga_x = 0;
+  end
+  $fdisplay(rgb_file,"%d, %d, %d, %d, %d", vga_x, vga_y, VGA_R, VGA_G, VGA_B);
+  vga_x = vga_x + 1;
+  last_hs <= VGA_HS;
+end
+
+
+
       
-endmodule
+endmodule 

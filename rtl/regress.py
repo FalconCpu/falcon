@@ -26,7 +26,7 @@ def run_simulation(test_file):
   # Run CPU emulation
   sim_log = "sim_regs.log"
   sim_cmd = ["f32sim.exe", "-r", "rom.hex"]
-  subprocess.run(sim_cmd, check=True)
+  subprocess.run(sim_cmd, check=True,  stdout=vvplog)
 
   # color escape codes
   RED = "\033[1;31m"

@@ -88,7 +88,19 @@ wire [31:0]    cpu_address;
 wire [31:0]    cpu_wdata;
 wire [3:0]     cpu_byte_en;
 wire [31:0]    cpu_rdata;
-wire           cpu_ack;
+wire           cpu_burst = 1'b0;
+wire           cpu_valid;
+wire           cpu_complete;
+
+wire           gpu_request;
+wire           gpu_write;
+wire [31:0]    gpu_address;
+wire [31:0]    gpu_wdata;
+wire [3:0]     gpu_byte_en;
+wire [31:0]    gpu_rdata;
+wire           gpu_burst;
+wire           gpu_valid;
+wire           gpu_complete;
 
 wire           iram_request;
 wire           iram_write;
@@ -96,7 +108,7 @@ wire [15:0]    iram_address;
 wire [31:0]    iram_wdata;
 wire [3:0]     iram_byte_en;
 wire [31:0]    iram_rdata;
-wire           iram_ack;
+wire           iram_valid;
 
 wire           sdram_request;
 wire           sdram_write;
@@ -104,7 +116,9 @@ wire [25:0]    sdram_address;
 wire [31:0]    sdram_wdata;
 wire [3:0]     sdram_byte_en;
 wire [31:0]    sdram_rdata;
-wire           sdram_ack;
+wire           sdram_valid;
+wire           sdram_burst;
+wire           sdram_complete;
 
 wire           hwregs_request;
 wire           hwregs_write;
@@ -112,13 +126,60 @@ wire [15:0]    hwregs_address;
 wire [31:0]    hwregs_wdata;
 wire [3:0]     hwregs_byte_en;
 wire [31:0]    hwregs_rdata;
-wire           hwregs_ack;
+wire           hwregs_valid;
+
+wire           pram_request;
+wire           pram_write;
+wire [15:0]    pram_address;
+wire [31:0]    pram_wdata;
+wire [3:0]     pram_byte_en;
+wire [31:0]    pram_rdata;
+wire           pram_valid;
+
+wire           vga_request;
+wire [31:0]    vga_address;
+wire [31:0]    vga_rdata;
+wire           vga_valid;
+wire           vga_complete;
+
 
 // signals driven by hwregs
 wire [23:0]    seven_segment;
 wire [7:0]     seven_segment_brightness;
+wire           uart_tx_ready;      // Asserted to indicate data is ready to be transmitted
+wire [7:0]     uart_tx_word;       // The data to transmit
+
+wire [15:0] gpu_x;               // X location on screen
+wire [15:0] gpu_y;               // Y location on screen
+wire [15:0] gpu_width;           // Width of operation (in pixels)
+wire [15:0] gpu_height;          // Height of operation (in pixels)
+wire [15:0] gpu_pattern_offset;  // offset within pattern for pattern
+wire [7:0]  gpu_pattern_width;   // width of pattern in bytes
+wire [1:0]  gpu_pattern_depth;   // 1,2,4,8 bits per pixel
+wire [8:0]  gpu_color0;          // Background color (256=transparant)
+wire [8:0]  gpu_color1;          // Foreground color
+wire [7:0]  gpu_command;         // Action to perform
+wire        gpu_start;           // Start pulse
+wire [15:0] gpu_clip_x1;         // Clipping region
+wire [15:0] gpu_clip_y1;
+wire [15:0] gpu_clip_x2;
+wire [15:0] gpu_clip_y2;
+wire        gpu_busy;
 
 
+// signals driven by uart
+wire       uart_rx_complete;  // Pulsed to indicate a byte has been received from the channel
+wire [7:0] uart_rx_word;   
+wire       uart_tx_complete;   // Pulsd to indicate the byte has been transmitted
+wire [31:0] screen_address = 31'h03f80000;
+wire [8:0]  screen_blank = 0;
+
+// signals driven by mouse controller 
+wire [9:0] mouse_x, mouse_y;
+wire [2:0] mouse_buttons;
+
+
+// signals driven by VGA
 
 wire reset = !locked;
 
@@ -139,43 +200,68 @@ cpu  cpu_inst (
     .cpu_wdata(cpu_wdata),
     .cpu_byte_en(cpu_byte_en),
     .cpu_rdata(cpu_rdata),
-    .cpu_ack(cpu_ack),
+    .cpu_valid(cpu_valid),
     .instr_address(instr_address),
     .instr_data(instr_data)
   );
 
-bus_arbiter  bus_arbiter_inst (
-   .clock(clock),
-   .reset(reset),
-   .cpu_request(cpu_request),
-   .cpu_write(cpu_write),
-   .cpu_address(cpu_address),
-   .cpu_wdata(cpu_wdata),
-   .cpu_byte_en(cpu_byte_en),
-   .cpu_rdata(cpu_rdata),
-   .cpu_ack(cpu_ack),
-   .iram_request(iram_request),
-   .iram_write(iram_write),
-   .iram_address(iram_address),
-   .iram_wdata(iram_wdata),
-   .iram_byte_en(iram_byte_en),
-   .iram_rdata(iram_rdata),
-   .iram_ack(iram_ack),
-   .sdram_request(sdram_request),
-   .sdram_write(sdram_write),
-   .sdram_address(sdram_address),
-   .sdram_wdata(sdram_wdata),
-   .sdram_byte_en(sdram_byte_en),
-   .sdram_rdata(sdram_rdata),
-   .sdram_ack(sdram_ack),
-   .hwregs_request(hwregs_request),
-   .hwregs_write(hwregs_write),
-   .hwregs_address(hwregs_address),
-   .hwregs_wdata(hwregs_wdata),
-   .hwregs_byte_en(hwregs_byte_en),
-   .hwregs_rdata(hwregs_rdata),
-   .hwregs_ack(hwregs_ack)
- );
+  bus_arbiter  bus_arbiter_inst (
+    .clock(clock),
+    .reset(reset),
+    .cpu_request(cpu_request),
+    .cpu_write(cpu_write),
+    .cpu_address(cpu_address),
+    .cpu_burst(cpu_burst),
+    .cpu_wdata(cpu_wdata),
+    .cpu_byte_en(cpu_byte_en),
+    .cpu_rdata(cpu_rdata),
+    .cpu_valid(cpu_valid),
+    .cpu_complete(cpu_complete),
+    .vga_request(vga_request),
+    .vga_address(vga_address),
+    .vga_rdata(vga_rdata),
+    .vga_valid(vga_valid),
+    .vga_complete(vga_complete),
+    .gpu_request(gpu_request),
+    .gpu_write(gpu_write),
+    .gpu_address(gpu_address),
+    .gpu_wdata(gpu_wdata),
+    .gpu_burst(gpu_burst),
+    .gpu_byte_en(gpu_byte_en),
+    .gpu_rdata(gpu_rdata),
+    .gpu_valid(gpu_valid),
+    .gpu_complete(gpu_complete),
+    .iram_request(iram_request),
+    .iram_write(iram_write),
+    .iram_address(iram_address),
+    .iram_wdata(iram_wdata),
+    .iram_byte_en(iram_byte_en),
+    .iram_rdata(iram_rdata),
+    .iram_valid(iram_valid),
+    .sdram_request(sdram_request),
+    .sdram_write(sdram_write),
+    .sdram_address(sdram_address),
+    .sdram_wdata(sdram_wdata),
+    .sdram_byte_en(sdram_byte_en),
+    .sdram_rdata(sdram_rdata),
+    .sdram_valid(sdram_valid),
+    .sdram_burst(sdram_burst),
+    .sdram_complete(sdram_complete),
+    .hwregs_request(hwregs_request),
+    .hwregs_write(hwregs_write),
+    .hwregs_address(hwregs_address),
+    .hwregs_wdata(hwregs_wdata),
+    .hwregs_byte_en(hwregs_byte_en),
+    .hwregs_rdata(hwregs_rdata),
+    .hwregs_valid(hwregs_valid),
+    .pram_request(pram_request),
+    .pram_write(pram_write),
+    .pram_address(pram_address),
+    .pram_wdata(pram_wdata),
+    .pram_byte_en(pram_byte_en),
+    .pram_valid(pram_valid),
+    .pram_rdata(pram_rdata)
+  );
 
 instruction_ram  instruction_ram_inst (
     .clock(clock),
@@ -184,7 +270,7 @@ instruction_ram  instruction_ram_inst (
     .iram_address(iram_address),
     .iram_wdata(iram_wdata),
     .iram_byte_en(iram_byte_en),
-    .iram_ack(iram_ack),
+    .iram_valid(iram_valid),
     .iram_rdata(iram_rdata),
     .instr_address(instr_address),
     .instr_data(instr_data)
@@ -209,10 +295,12 @@ sdram_controller  sdram_controller_inst (
     .sdram_wdata(sdram_wdata),
     .sdram_byte_en(sdram_byte_en),
     .sdram_rdata(sdram_rdata),
-    .sdram_ack(sdram_ack)
+    .sdram_valid(sdram_valid),
+    .sdram_burst(sdram_burst),
+    .sdram_complete(sdram_complete)
   );
 
-hwregs  hwregs_inst (
+  hwregs  hwregs_inst (
     .clock(clock),
     .reset(reset),
     .hwregs_request(hwregs_request),
@@ -220,12 +308,33 @@ hwregs  hwregs_inst (
     .hwregs_address(hwregs_address),
     .hwregs_wdata(hwregs_wdata),
     .hwregs_byte_en(hwregs_byte_en),
-    .hwregs_ack(hwregs_ack),
+    .hwregs_valid(hwregs_valid),
     .hwregs_rdata(hwregs_rdata),
     .seven_segment(seven_segment),
-    .seven_segment_brightness(seven_segment_brightness)
+    .seven_segment_brightness(seven_segment_brightness),
+    .uart_rx_complete(uart_rx_complete),
+    .uart_rx_word(uart_rx_word),
+    .uart_tx_ready(uart_tx_ready),
+    .uart_tx_word(uart_tx_word),
+    .uart_tx_complete(uart_tx_complete),
+    .gpu_x(gpu_x),
+    .gpu_y(gpu_y),
+    .gpu_width(gpu_width),
+    .gpu_height(gpu_height),
+    .gpu_pattern_offset(gpu_pattern_offset),
+    .gpu_pattern_width(gpu_pattern_width),
+    .gpu_pattern_depth(gpu_pattern_depth),
+    .gpu_color0(gpu_color0),
+    .gpu_color1(gpu_color1),
+    .gpu_command(gpu_command),
+    .gpu_start(gpu_start),
+    .gpu_busy(gpu_busy),
+    .gpu_clip_x1(gpu_clip_x1),
+    .gpu_clip_y1(gpu_clip_y1),
+    .gpu_clip_x2(gpu_clip_x2),
+    .gpu_clip_y2(gpu_clip_y2),
+    .LEDR(LEDR[8:0])
   );
-
 seven_segment  seven_segment_inst (
     .clock(clock),
     .seven_segment(seven_segment),
@@ -237,6 +346,90 @@ seven_segment  seven_segment_inst (
     .HEX4(HEX4),
     .HEX5(HEX5)
   );
+
+uart  uart_inst (
+    .clock(clock),
+    .reset(reset),
+    .UART_RX(GPIO_0[35]),
+    .UART_TX(GPIO_0[34]),
+    .rx_complete(uart_rx_complete),
+    .rx_word(uart_rx_word),
+    .tx_ready(uart_tx_ready),
+    .tx_word(uart_tx_word),
+    .tx_complete(uart_tx_complete),
+    .uart_led(LEDR[9])
+  );
+  
+vga_output  vga_output_inst (
+    .clock(clock),
+    .reset(reset),
+    .screen_blank(screen_blank),
+    .screen_address(screen_address),
+    .VGA_BLANK_N(VGA_BLANK_N),
+    .VGA_B(VGA_B),
+    .VGA_CLK(VGA_CLK),
+    .VGA_G(VGA_G),
+    .VGA_HS(VGA_HS),
+    .VGA_R(VGA_R),
+    .VGA_SYNC_N(VGA_SYNC_N),
+    .VGA_VS(VGA_VS),
+    .vga_request(vga_request),
+    .vga_address(vga_address),
+    .vga_complete(vga_complete),
+    .vga_rdata(vga_rdata),
+    .vga_valid(vga_valid),
+    .mouse_x(mouse_x),
+    .mouse_y(mouse_y)
+  );
+
+mouse_interface  mouse_interface_inst (
+    .clock(clock),
+    .reset(reset),
+    .PS2_CLK(PS2_CLK),
+    .PS2_DAT(PS2_DAT),
+    .mouse_x(mouse_x),
+    .mouse_y(mouse_y),
+    .mouse_buttons(mouse_buttons)
+  );
+
+  gpu  gpu_inst (
+    .clock(clock),
+    .reset(reset),
+    .pram_request(pram_request),
+    .pram_write(pram_write),
+    .pram_address(pram_address),
+    .pram_wdata(pram_wdata),
+    .pram_byte_en(pram_byte_en),
+    .pram_valid(pram_valid),
+    .pram_rdata(pram_rdata),
+    .gpu_request(gpu_request),
+    .gpu_write(gpu_write),
+    .gpu_address(gpu_address),
+    .gpu_wdata(gpu_wdata),
+    .gpu_burst(gpu_burst),
+    .gpu_byte_en(gpu_byte_en),
+    .gpu_rdata(gpu_rdata),
+    .gpu_valid(gpu_valid),
+    .gpu_complete(gpu_complete),
+    .gpu_x(gpu_x),
+    .gpu_y(gpu_y),
+    .gpu_width(gpu_width),
+    .gpu_height(gpu_height),
+    .gpu_pattern_offset(gpu_pattern_offset),
+    .gpu_pattern_width(gpu_pattern_width),
+    .gpu_pattern_depth(gpu_pattern_depth),
+    .gpu_color0(gpu_color0),
+    .gpu_color1(gpu_color1),
+    .gpu_command(gpu_command),
+    .gpu_start(gpu_start),
+    .gpu_clip_x1(gpu_clip_x1),
+    .gpu_clip_y1(gpu_clip_y1),
+    .gpu_clip_x2(gpu_clip_x2),
+    .gpu_clip_y2(gpu_clip_y2),
+    .gpu_busy(gpu_busy),
+    .gpu_screen_address(screen_address)
+  );
+
 
 wire _unused_ok = &{1'b0, cpu_address, instr_address};
 endmodule

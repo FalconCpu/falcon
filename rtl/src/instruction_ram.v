@@ -10,7 +10,7 @@ module instruction_ram(
     input   [15:0]   iram_address,
     input   [31:0]   iram_wdata,
     input   [3:0]    iram_byte_en,
-    output reg       iram_ack,
+    output reg       iram_valid,
     output   [31:0]  iram_rdata,
 
     // connection to the instruction bus
@@ -21,20 +21,22 @@ module instruction_ram(
 reg [31:0] rdata;
 reg [31:0] instr_data_reg;
 reg        instr_valid;
+reg        iram_read;
 
 reg [31:0]  ram[0:16383];
 initial begin
     $readmemh("rom.hex",ram);
 end
 
-assign iram_rdata = iram_ack ? rdata : 32'b0;
+assign iram_rdata = iram_read ? rdata : 32'b0;
 assign instr_data = instr_valid ? instr_data_reg : 32'bx;
 
 always @(posedge clock) begin
     instr_data_reg <= {ram[instr_address[15:2]]};
     instr_valid <= instr_address[31:16]==16'hffff;
+    iram_read <= iram_request && !iram_write;
 
-    iram_ack <= iram_request;
+    iram_valid <= iram_request;
 
     // Have to use blocking assignment here - otherwise Quartus infers three port ram
     // verilator lint_off BLKSEQ  

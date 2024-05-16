@@ -113,7 +113,7 @@ always @(*) begin
         `INSTR_JUMP      : begin
             p2_op         = `OP_JMP;
             p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
+            p2_src_data_a = `SRC_PC;
             p2_src_data_b = `SRC_ZERO;
             p2_src_addr_a = `SRC_PC;
             p2_src_addr_b = `SRC_LIT;
@@ -146,8 +146,8 @@ always @(*) begin
         `INSTR_LDPC      : begin
             p2_op         = `OP_ADD;
             p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
-            p2_src_data_b = `SRC_ZERO;
+            p2_src_data_a = `SRC_PC;
+            p2_src_data_b = `SRC_LIT;
             p2_src_addr_a = `SRC_ZERO;
             p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = instr_d;                

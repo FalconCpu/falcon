@@ -18,14 +18,14 @@ module cpu_alu(
     output reg [31:0]    p3_jump_addr,  // address for a jump
 
     // cpu memory bus. 
-    // The CPU stalls once cpu_req gets asserted, until cpu_ack is received
+    // The CPU stalls once cpu_req gets asserted, until cpu_valid is received
     output reg           cpu_request,   // cpu is making a requst on the bus
     output reg           cpu_write,     // set for a write operation, clear for read
     output reg [31:0]    cpu_address,   // address for transaction
     output reg [31:0]    cpu_wdata,     // output data for transaction
     output reg [3:0]     cpu_byte_en,   // byte enables for write transaction
     input      [31:0]    cpu_rdata,      // received data
-    input                cpu_ack
+    input                cpu_valid
 );
 
 
@@ -45,7 +45,7 @@ always @(*) begin
     // -------------------------------------------------------------------
     //                    Memory operations
     // -------------------------------------------------------------------
-    cpu_request  = p3_op[6:4]==3'h1 && !cpu_ack;
+    cpu_request  = p3_op[6:4]==3'h1 && !cpu_valid;
     cpu_address  = p3_addr_a + p3_addr_b;
 
     case (p3_op) 
@@ -90,7 +90,7 @@ always @(*) begin
                 end
 
                 2'b11: begin
-                    cpu_wdata = {24'bx, p3_data_b[7:0]}; 
+                    cpu_wdata = {p3_data_b[7:0], 24'bx}; 
                     cpu_byte_en = 4'b1000;
                 end
             endcase
@@ -159,7 +159,7 @@ always @(*) begin
         `OP_OR     :  p3_out = p3_data_a | p3_data_b;
         `OP_XOR    :  p3_out = p3_data_a ^ p3_data_b;
         `OP_SHIFT  :  p3_out = (p3_opx==2'h0) ? p3_data_a << p3_data_b[4:0]
-                             : (p3_opx==2'h1) ? $unsigned(p3_data_a) >> p3_data_b[4:0]
+                             : (p3_opx==2'h3) ? $unsigned(p3_data_a) >> p3_data_b[4:0]
                              : (p3_opx==2'h2) ? $signed(p3_data_a) >> p3_data_b[4:0]
                              : 32'bx;
         `OP_ADD    :  p3_out = p3_data_a + p3_data_b;

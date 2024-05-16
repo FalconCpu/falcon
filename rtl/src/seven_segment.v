@@ -16,7 +16,7 @@ reg [7:0] counter=0;
 
 always @(posedge clock) begin
 
-    counter = counter + 1;
+    counter = counter + 1'b1;
 
     case (seven_segment[3:0]) 
         4'h0:    HEX0 = 7'b1000000;  // digit 0

@@ -1,0 +1,16 @@
+000001b8 draw_text_cpu.skip
+000001a8 draw_text_cpu.loop_x
+000001a0 draw_text_cpu.loop_y
+00000188 draw_text_cpu
+00000174 draw_text.wait_for_gpu
+0000010c load_font.loop
+000001d4 font
+000000ec draw_rectangle.wait_for_gpu
+000000b8 clear_screen.wait_for_gpu
+00000074 main.forever
+00000128 draw_text
+000000cc draw_rectangle
+00000100 load_font
+00000078 set_clip_region
+00000098 clear_screen
+00000000 main

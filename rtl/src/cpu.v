@@ -11,7 +11,7 @@ module cpu(
     output [31:0]  cpu_wdata,
     output [3:0]   cpu_byte_en,
     input  [31:0]  cpu_rdata,
-    input          cpu_ack,
+    input          cpu_valid,
     // instruction bus
     // TODO - make this a proper icache
     output [31:0]  instr_address,
@@ -48,7 +48,7 @@ wire [4:0]   p3_dest_reg;     // register to write data to
 
 
 // stall the cpu if memory transactions are pending
-wire stall = (cpu_request && !cpu_ack) && !reset;
+wire stall = (cpu_request && !cpu_valid) && !reset;
 
 
 cpu_pc  cpu_pc_inst (
@@ -121,7 +121,7 @@ cpu_alu  cpu_alu_inst (
     .cpu_wdata(cpu_wdata),
     .cpu_byte_en(cpu_byte_en),
     .cpu_rdata(cpu_rdata),
-    .cpu_ack(cpu_ack)
+    .cpu_valid(cpu_valid)
 );
 
 // synthesis translate_off
