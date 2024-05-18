@@ -12,6 +12,11 @@ typedef const char* string;
 #define MEM_SIZE 0x10000
 int prog[MEM_SIZE/4];
 int prog_length;
+
+int patt_ram[16384];
+
+
+
 token* all_labels;
 int line_number;
 string file_name;
@@ -102,6 +107,8 @@ static int readMem(unsigned int addr) {
     // TO DO - alignment check
     if (addr>=0 && addr<=(4*RAM_SIZE))
         return ram[addr>>2];
+    else if (addr>=0xE1000000 && addr<0xE1010000)
+        return patt_ram[(addr & 0xFFFF)>>2];
     else if (addr>=0xFFFF0000)
         return prog[(addr & 0xFFFF)>>2];
     else if (addr >= 0xE0000000 && addr<=0xE000FFFF)
@@ -112,14 +119,25 @@ static int readMem(unsigned int addr) {
 
 static void writeMem(unsigned int addr, int mask, int value) {
     // TO DO - alignment check
-    int a2 = addr>>2;
 
     if (addr>=0 && addr<=(4*RAM_SIZE)) {
+        int a2 = addr>>2;
         ram[a2] = (ram[a2] & ~mask) | (value & mask);
         if (debug>=2)
             fprintf(debug_trace,"[%08x]=%x",addr,ram[a2]);
-    } else if (addr >= 0xE0000000 && addr<=0xE000FFFF)
+    } else if (addr >= 0xE0000000 && addr<=0xE000FFFF) {
         writeMemMappedReg(addr, value);
+    } else if (addr >= 0xE1000000 && addr<0xE1010000) {
+        int a2 = (addr&0xffff) >> 2;
+        patt_ram[a2] = (patt_ram[a2] & ~mask) | (value & mask);
+        if (debug>=2)
+            fprintf(debug_trace,"[%08x]=%x",addr,patt_ram[a2]);
+    } else if (addr >= 0xFFFF0000) {
+        int a2 = (addr&0xffff) >> 2;
+        prog[a2] = (prog[a2] & ~mask) | (value & mask);
+        if (debug>=2)
+            fprintf(debug_trace,"[%08x]=%x",addr,prog[a2]);
+    }
 }
 
 static int read(int addr, int size) {
@@ -129,8 +147,10 @@ static int read(int addr, int size) {
     int lsb = (addr & 3) *8;
     int mem = readMem(addr);
     switch(size) {
-        case 0:  return (mem>>lsb) & 0xff;
-        case 1:  return (mem>>lsb) & 0xffff;
+        case 0:  mem = (mem>>lsb) & 0xff;
+                 return (mem & 0x80) ? mem | 0xffffff00 : mem; 
+        case 1:  mem = (mem>>lsb) & 0xffff;
+                 return (mem & 0x8000) ? mem | 0xffff0000 : mem; 
         case 2:  return mem;
         default: return 0;
     }
@@ -143,7 +163,7 @@ static void write(int addr, int size, int value) {
     int lsb = (addr & 3) * 8;
     switch(size) {
         case 0:  writeMem(addr&0xfffffffc, 0xff<<lsb, (value&0xff)<<lsb); break;
-        case 1:  writeMem(addr&0xfffffffc, 0xffff<<lsb, (value&0xfff)<<lsb); break;
+        case 1:  writeMem(addr&0xfffffffc, 0xffff<<lsb, (value&0xffff)<<lsb); break;
         case 2:  writeMem(addr&0xfffffffc, 0xffffffff, value); break;
     }
 }
@@ -164,10 +184,10 @@ static int comp(int op, int a, int b) {
 static int mult_op(int op, int a, int b) {
     switch(op) {
         case MULT_MULT:    return a * b;
-        case MULT_DIVS:    return a / b;
-        case MULT_MODS:    return a % b;
-        case MULT_DIVU:    return (unsigned)a / (unsigned)b;
-        case MULT_MODU:    return (unsigned)a % (unsigned)b;
+        case MULT_DIVS:    return (b==0) ? -1 : a / b;
+        case MULT_MODS:    return (b==0) ? a  : a % b;
+        case MULT_DIVU:    return (b==0) ? -1 : (unsigned)a / (unsigned)b;
+        case MULT_MODU:    return (b==0) ? a  :  (unsigned)a % (unsigned)b;
         default:           return 0;
     }
 }
@@ -297,7 +317,8 @@ static void executeInstruction(int instr) {
         case KIND_LD_LIT:  setReg(d, n21 << 11);                       break;
         case KIND_ADD_PC:  setReg(d, pc + n21*4);                      break;
         case KIND_CFG:     cfg_cmd(i, d, n13, regs[a]);                break;
-        case KIND_MUL:    setReg(d, mult_op(i, regs[a], regs[b]));    break;
+        case KIND_MUL:     setReg(d, mult_op(i, regs[a], regs[b]));    break;
+        case KIND_MUL_LIT: setReg(d, mult_op(i, regs[a], n13));        break;
         //case KIND_MULTI:   setReg(d, mult_op(i, regs[a], n13));        break;
     }
 
@@ -369,7 +390,7 @@ int main(int argc, string* argv)
     // if (debug)
     //     read_labels();
 
-    pc = 0xFFFF8000;
+    pc = 0xFFFF0000;
     execute();
 }
 

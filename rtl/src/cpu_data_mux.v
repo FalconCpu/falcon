@@ -22,6 +22,8 @@ module cpu_data_mux(
 
     input [4:0]     p3_dest_reg,
     input [31:0]    p3_out,
+    input [4:0]     p4_dest_reg,
+    input [31:0]    p4_out,
 
     output reg [31:0] p3_data_a,
     output reg [31:0] p3_data_b,
@@ -43,55 +45,57 @@ initial begin
 end
 // synthesis translate_on
 
-wire wren = p3_dest_reg!=0 && !stall && !reset;
+wire wren = p4_dest_reg!=0 && !stall && !reset;
 
 cpu_regfile  cpu_regfile_a (
     .clock(clock),
-    .data(p3_out),
+    .data(p4_out),
     .rdaddress(p2_reg_a),
-    .wraddress(p3_dest_reg),
+    .wraddress(p4_dest_reg),
     .wren(wren),
     .q(reg_a)
 );
 
 cpu_regfile  cpu_regfile_b (
     .clock(clock),
-    .data(p3_out),
+    .data(p4_out),
     .rdaddress(p2_reg_b),
-    .wraddress(p3_dest_reg),
+    .wraddress(p4_dest_reg),
     .wren(wren),
     .q(reg_b)
 );
 
 
-wire bypass_a = (p3_dest_reg == p2_reg_a) && (p3_dest_reg!=0);
-wire bypass_b = (p3_dest_reg == p2_reg_b) && (p3_dest_reg!=0);
+wire bypass_a3 = (p3_dest_reg == p2_reg_a) && (p3_dest_reg!=0);
+wire bypass_b3 = (p3_dest_reg == p2_reg_b) && (p3_dest_reg!=0);
+wire bypass_a4 = (p4_dest_reg == p2_reg_a) && (p4_dest_reg!=0);
+wire bypass_b4 = (p4_dest_reg == p2_reg_b) && (p4_dest_reg!=0);
 
 always @(*) begin
     case(p2_src_data_a) 
         `SRC_ZERO:    p2_data_a = 32'b0;
-        `SRC_REG:     p2_data_a = bypass_a ? p3_out : reg_a;
+        `SRC_REG:     p2_data_a = bypass_a3 ? p3_out : bypass_a4 ? p4_out : reg_a;
         `SRC_PC:      p2_data_a = p1_pc;
         default:      p2_data_a = 32'bx;
     endcase
 
     case(p2_src_data_b) 
         `SRC_ZERO:    p2_data_b = 32'b0;
-        `SRC_REG:     p2_data_b = bypass_b ? p3_out : reg_b;
+        `SRC_REG:     p2_data_b = bypass_b3 ? p3_out : bypass_b4 ? p4_out : reg_b;
         `SRC_LIT:     p2_data_b = p2_literal;
         default:      p2_data_b = 32'bx;
     endcase
 
     case(p2_src_addr_a) 
         `SRC_ZERO:    p2_addr_a = 32'b0;
-        `SRC_REG:     p2_addr_a = bypass_a ? p3_out : reg_a;
+        `SRC_REG:     p2_addr_a = bypass_a3 ? p3_out : bypass_a4 ? p4_out : reg_a;
         `SRC_PC:      p2_addr_a = p1_pc;
         default:      p2_addr_a = 32'bx;
     endcase
 
     case(p2_src_addr_b) 
         `SRC_ZERO:    p2_addr_b = 32'b0;
-        `SRC_REG:     p2_addr_b = bypass_b ? p3_out : reg_b;
+        `SRC_REG:     p2_addr_b = bypass_b3 ? p3_out : bypass_b4 ? p4_out : reg_b;
         `SRC_LIT:     p2_addr_b = p2_literal;
         default:      p2_addr_b = 32'bx;
     endcase
@@ -103,11 +107,12 @@ always @(posedge clock) begin
         p3_data_b <= p2_data_b;
         p3_addr_a <= p2_addr_a;
         p3_addr_b <= p2_addr_b;
+    	
+        // synthesis translate_off
+        if (wren)
+            $fdisplay(output_log_file,"$%d = %x", p4_dest_reg, p4_out);
+	    // synthesis translate_on
     end
-	 // synthesis translate_off
-    if (wren)
-        $fdisplay(output_log_file,"$%d = %x", p3_dest_reg, p3_out);
-	 // synthesis translate_on
 end
 
 

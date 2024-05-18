@@ -16,8 +16,11 @@ module byte_fifo (
   input            read_enable,   // read data has been taken - move onto next
   output reg [7:0] read_data,
   output [9:0]     slots_free,
+  output [23:0]    pointers,
   output           not_empty
 );
+
+assign pointers = {2'b0,wptr,2'b0,rptr};
 
 // FIFO capacity (number of elements)
 parameter FIFO_DEPTH = 1024;
@@ -26,13 +29,16 @@ parameter FIFO_DEPTH = 1024;
 reg [7:0] memory [0:FIFO_DEPTH-1];
 
 // Pointers for write and read operations
-reg [9:0] wptr;
+reg [9:0] wptr, prev_wptr;
 reg [9:0] rptr;
 
 
 // Full flag logic
+// Use a one cycle delayed version of the write pointer when signalling not empty
+// to ensure the data has actually been written into the ram before anouncing it as 
+// being availible to be read
 assign slots_free = rptr - wptr - 1'b1;
-assign not_empty  = rptr != wptr;
+assign not_empty  = rptr != prev_wptr;
 
 always @(posedge clk) begin
     // Logic for write operation
@@ -52,5 +58,7 @@ always @(posedge clk) begin
         // Read data from memory if not empty
         rptr      <= rptr + 1'b1;
     end      
+
+    prev_wptr <= wptr;
 end
 endmodule

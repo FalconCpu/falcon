@@ -16,20 +16,24 @@ module sdram_controller (
 	output	         		DRAM_WE_N,
 	output	        		DRAM_CAS_N,
 
-    // cpu port
+    // connections to the arbiter
     input                   sdram_request,      // Held high while a transaction is requested  
+    input [3:0]             sdram_master,       // Which master was requesting this transaction
     input                   sdram_write,        // Set if the transaction is a write
     input [25:0]            sdram_address,      // Address of transaction (lowest 2 lsb's not used)
     input [31:0]            sdram_wdata,        // Data for a write
     input [3:0]             sdram_byte_en,      // Byte enables for a write
     input                   sdram_burst,        // Set for a 32 byte burst, Clear for single 4 byte transaction
     output [31:0]           sdram_rdata,        // Data for a read
-    output reg              sdram_valid,        // Pulsed to indicate read data is valid, or write data consumed
-    output reg              sdram_complete      // pulsed to indicate the end of a transaction
+    output reg [3:0]        sdram_valid,        // Pulse with the value of the master to indicate the data is valid
+    output reg [3:0]        sdram_complete      // pulsed to value of master to indicate trnsaction has been completed and the 
+                                                // sender can deassert the request. Note for a read the final data 
+                                                // arrives the cycle after the complete.
 );
 
 reg [6:0]  this_counter, next_counter;
 reg [2:0]  this_state, next_state;
+reg [3:0]  next_master, this_master;
 reg [12:0] next_addr;
 reg [1:0]  next_ba;
 reg [2:0]  next_cmd, this_cmd;
@@ -37,8 +41,8 @@ reg [15:0] next_dq, this_dq;
 reg [1:0]  next_dqm, this_dqm;
 reg        next_dqe, this_dqe;
 reg [2:0]  next_col, this_col;
-reg        next_valid;
-reg        next_complete;
+reg [3:0]  next_valid;
+reg [3:0]  next_complete;
 reg [4:0]  this_read_pipeline;
 reg [15:0] reg0_dq, reg1_dq;
 reg [9:0]  next_refresh_counter, this_refresh_counter;
@@ -108,11 +112,12 @@ always @(*) begin
     next_dq = 16'bx;
     next_dqm = 2'b11;
     next_dqe = 1'b0;
-    next_valid = 1'b0;
-    next_complete = 1'b0;
+    next_valid = 4'b0;
+    next_complete = 4'b0;
     next_refresh_counter = this_refresh_counter + 1'b1;
     next_refresh_needed = this_refresh_needed;
     next_col = this_col;
+    next_master = this_master;
 
 
     if (reset) begin
@@ -166,8 +171,8 @@ always @(*) begin
                 next_dqm  = ~sdram_byte_en[1:0];
                 next_dq   = sdram_wdata[15:0];
                 next_dqe  = 1'b1;
-                next_valid  = 1'b1;
-                next_complete = 1'b1;    
+                next_valid  = sdram_master;
+                next_complete = sdram_master;    
                 next_state = STATE_WRITE;
             end else begin
                 next_addr = {3'b000, sdram_address[10:2], 1'b0};
@@ -175,6 +180,7 @@ always @(*) begin
                 next_cmd  = CMD_READ;
                 next_dqm  = ~sdram_byte_en[1:0];
                 next_col  = sdram_address[5:2] + 1'b1;
+                next_master = sdram_master;
                 next_state = sdram_burst ? STATE_READ_BURST : STATE_READ;
             end
         end
@@ -183,10 +189,11 @@ always @(*) begin
         if (this_counter<=1) 
             next_dqm  = 2'b0;
     
-        if (this_counter==7'd4) begin
-            next_complete = 1'b1;
-            next_valid = 1'b1;
-        end
+        if (this_counter==7'd3) 
+            next_complete = this_master;
+
+        if (this_counter==7'd4)
+            next_valid = this_master;
 
         if (this_counter==7'd5)
             next_state = STATE_IDLE;
@@ -207,10 +214,10 @@ always @(*) begin
             next_state = STATE_IDLE;
 
         if (this_counter==7'd18) 
-            next_complete = 1'b1;
+            next_complete = this_master;
 
         if (this_counter[0]==1'b0 && this_counter>=4 && this_counter<=18)
-            next_valid = 1'b1;
+            next_valid = this_master;
 
     end else if (this_state==STATE_WRITE) begin
         if (this_counter==7'd0) begin
@@ -272,6 +279,7 @@ always @(posedge clock) begin
 
     this_counter <= next_counter;
     this_state   <= next_state;
+    this_master  <= next_master;
     DRAM_ADDR    <= next_addr;
     DRAM_BA      <= next_ba;
     this_cmd     <= next_cmd;

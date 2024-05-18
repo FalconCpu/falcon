@@ -378,12 +378,14 @@ static void assemble_line(token** line) {
     else match("l=i")       define_constant(line[0],V2);
     else match("M$,$,$")    add_instr(format_r(KIND_MUL, V0, V1, V3, V5, 0));
     else match("M$,$")      add_instr(format_r(KIND_MUL, V0, V1, V1, V3, 0));
-    else match("C$,$,#")    add_instr(format_i(KIND_CFG, V0, V1, V3, V5));
-    else match("D$,#")      add_instr(format_i(KIND_CFG, 0,  V1, 0, V3));
-    else match("D#,$")      add_instr(format_i(KIND_CFG, 1,  0, V3, V1));
-    else match("D$,#,$")    add_instr(format_i(KIND_CFG, 1,  V1, V5, V3));
+    else match("M$,$,i")    add_instr(format_i(KIND_MUL_LIT, V0, V1, V3, V5));
+    else match("M$,i")      add_instr(format_i(KIND_MUL_LIT, V0, V1, V1, V3));
+    else match("C$,#,$")    add_instr(format_i(KIND_CFG, V0, V1, V5, V3));
+    else match("D$,#")      add_instr(format_i(KIND_CFG, 1,  V1, 0, V3));
+    else match("D#,$")      add_instr(format_i(KIND_CFG, 0,  0, V3, V1));
+    else match("D$,#,$")    add_instr(format_i(KIND_CFG, 0,  V1, V5, V3));
     else match("Yi")        add_instr(format_i(KIND_SYS, 0,  0, 0, V1));
-    else match("J#")        add_instr(format_i(KIND_CFG, 2,  0, 0, V1));
+    else match("J#")        add_instr(format_i(KIND_CFG, 3,  0, 0, V1));
     else match("oi")        origin = V1;
     else if (line[0]->kind=='d')  process_dc(line);
 

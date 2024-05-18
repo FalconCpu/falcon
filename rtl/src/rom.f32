@@ -1,0 +1,29 @@
+; *************************************************************
+;                    Constants
+; *************************************************************
+
+HWREG_BASE             = 0E0000000H
+HWREG_SEVEN_SEG        = 0000H
+HWREG_LEDs             = 0004H
+HWREG_MOUSE_X          = 0008H
+HWREG_MOUSE_Y          = 000CH
+HWREG_MOUSE_BUTTONS    = 0010H
+HWREG_UART_TX          = 0014H
+HWREG_UART_RX          = 0018H
+HWREG_SCREEN_BLANK     = 001CH
+HWREG_SCREEN_ADDR      = 0020H
+HWREG_SEVEN_SEG_BRIGHT = 0024H
+
+SCREEN_ADDRESS      = 3F80000H
+
+
+main:
+    ld $7, HWREG_BASE
+
+loop:
+    ld $2, $7[HWREG_UART_RX]    ; get a byte from the rx fifo
+    blt $2, 0, loop             ; loop if none availible
+
+    add $2, 1                   ; increment the byte
+    stw $2, $7[HWREG_UART_TX]   ; and send it back
+    jmp loop

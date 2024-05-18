@@ -8,10 +8,10 @@
 #define KIND_JUMP_REG  0x16
 #define KIND_LD_LIT    0x17
 #define KIND_ADD_PC    0x18
-#define KIND_MUL       0x19
-#define KIND_CFG       0x1A
-#define KIND_SYS       0x1B
-
+#define KIND_CFG       0x19
+#define KIND_MUL       0x1A
+#define KIND_MUL_LIT   0x1B
+#define KIND_SYS       0x1C
 
 #define ALU_AND    0x00
 #define ALU_OR     0x01

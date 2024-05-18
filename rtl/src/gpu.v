@@ -16,7 +16,7 @@ module gpu(
     // master interface to bus arbiter 
     output reg          gpu_request,
     output reg          gpu_write,
-    output reg [31:0]   gpu_address,
+    output reg [25:0]   gpu_address,
     output reg [31:0]   gpu_wdata,
     output reg          gpu_burst,
     output reg [3:0]    gpu_byte_en,
@@ -188,7 +188,7 @@ always @(*) begin
 
     if (reset || gpu_complete) begin
         next_gpu_request = 1'b0;
-        next_gpu_address = 32'bx;
+        next_gpu_address = 26'bx;
         next_gpu_write   = 1'b0;
         next_gpu_burst   = 1'b0;
         next_gpu_wdata   = 32'bx;
@@ -261,10 +261,6 @@ always @(posedge clock) begin
     end
 
     gpu_request           <= ((gpu_request && !gpu_complete) || next_gpu_request) && !reset;
-
-
 end
-
-
 
 endmodule

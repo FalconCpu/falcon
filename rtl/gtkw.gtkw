@@ -1,27 +1,94 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat May 11 10:14:14 2024
+[*] Fri May 17 14:16:38 2024
 [*]
 [dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
-[dumpfile_mtime] "Sat May 11 10:01:55 2024"
-[dumpfile_size] 436680
+[dumpfile_mtime] "Fri May 17 14:08:56 2024"
+[dumpfile_size] 1350638
 [savefile] "C:\Users\simon\falcon\rtl\gtkw.gtkw"
-[timestart] 0
+[timestart] 1712300
 [size] 1920 1129
-[pos] -87 -87
-*-18.000000 816000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-17.000000 1787000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.chip_top_inst.
+[treeopen] tb.chip_top_inst.cpu_inst.
 [sst_width] 197
-[signals_width] 142
+[signals_width] 190
 [sst_expanded] 1
 [sst_vpaned_height] 339
+@200
+-CPU BUS
 @28
-tb.chip_top_inst.cpu_request
-tb.chip_top_inst.cpu_ack
-tb.chip_top_inst.hwregs_ack
-tb.chip_top_inst.hwregs_request
+tb.chip_top_inst.cpu_inst.cpu_request
+@22
+tb.chip_top_inst.cpu_inst.cpu_address[31:0]
+@28
+tb.chip_top_inst.cpu_inst.cpu_write
+@22
+tb.chip_top_inst.cpu_inst.cpu_wdata[31:0]
+tb.chip_top_inst.cpu_inst.cpu_byte_en[3:0]
+tb.chip_top_inst.cpu_inst.cpu_rdata[31:0]
+@200
+-ALU P4
+@22
+tb.chip_top_inst.cpu_inst.p4_out[31:0]
+tb.chip_top_inst.cpu_inst.p4_dest_reg[4:0]
+@28
+tb.chip_top_inst.cpu_inst.stall
+tb.chip_top_inst.cpu_inst.cpu_valid
+@22
+tb.chip_top_inst.cpu_inst.cpu_alu_inst.p4_numerator[31:0]
+tb.chip_top_inst.cpu_inst.cpu_alu_inst.p4_denominator[31:0]
+tb.chip_top_inst.cpu_inst.cpu_alu_inst.p4_remainder[31:0]
+tb.chip_top_inst.cpu_inst.cpu_alu_inst.p4_quotient[31:0]
 @29
-tb.chip_top_inst.iram_request
+tb.chip_top_inst.cpu_inst.cpu_alu_inst.p4_divide_done
+@200
+-ADDR DEC
+@28
+tb.chip_top_inst.address_decoder_inst.cpu_request
+@22
+tb.chip_top_inst.address_decoder_inst.cpu_address[31:0]
+@28
+tb.chip_top_inst.address_decoder_inst.sdram_request
+@22
+tb.chip_top_inst.address_decoder_inst.sdram_address[25:0]
+@200
+-ARBITER
+@28
+tb.chip_top_inst.sdram_arbiter_inst.cpu_request
+@22
+tb.chip_top_inst.sdram_arbiter_inst.cpu_address[25:0]
+tb.chip_top_inst.sdram_arbiter_inst.cpu_address[25:0]
+@28
+tb.chip_top_inst.sdram_arbiter_inst.cpu_write
+@22
+tb.chip_top_inst.sdram_arbiter_inst.cpu_wdata[31:0]
+@200
+-
+@22
+tb.chip_top_inst.sdram_arbiter_inst.sdram_address[25:0]
+@28
+tb.chip_top_inst.sdram_arbiter_inst.sdram_request
+tb.chip_top_inst.hwregs_inst.gpu_busy
+tb.chip_top_inst.hwregs_inst.hwregs_request
+tb.chip_top_inst.hwregs_inst.hwregs_write
+@22
+tb.chip_top_inst.hwregs_inst.hwregs_address[15:0]
+tb.chip_top_inst.hwregs_inst.hwregs_wdata[31:0]
+tb.chip_top_inst.hwregs_inst.hwregs_rdata[31:0]
+@200
+-GPU
+@28
+tb.chip_top_inst.gpu_inst.gpu_request
+tb.chip_top_inst.gpu_inst.gpu_complete
+@22
+tb.chip_top_inst.sdram_controller_inst.sdram_complete[3:0]
+tb.chip_top_inst.sdram_controller_inst.sdram_master[3:0]
+tb.chip_top_inst.sdram_controller_inst.sdram_valid[3:0]
+tb.chip_top_inst.sdram_controller_inst.this_master[3:0]
+@28
+tb.chip_top_inst.sdram_controller_inst.this_state[2:0]
 [pattern_trace] 1
 [pattern_trace] 0

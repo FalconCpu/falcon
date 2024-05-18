@@ -18,7 +18,7 @@ module vga_output(
 
     // connections to the SDRAN
     output        vga_request,
-    output [31:0] vga_address,
+    output [25:0] vga_address,
     input         vga_valid,
     input [31:0]  vga_rdata,
     input         vga_complete,
@@ -36,7 +36,7 @@ reg [7:0] next_g,  this_g;
 reg [7:0] next_b,  this_b;
 reg       next_hs, this_hs;
 reg       next_vs, this_vs;
-reg [31:0]next_addr, this_addr;
+reg [25:0]next_addr, this_addr;
 reg       next_request, this_request;
 
 reg [31:0] fifo[0:127];

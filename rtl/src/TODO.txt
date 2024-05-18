@@ -1,0 +1,28 @@
+DONE
+====
+Multiply/Divide
+
+
+
+
+CPU
+===
+Exceptions
+Invalid Address
+Illegal Instruction
+
+GPU
+===
+Scrolling
+Line Draw
+Scale/Rotate on blit
+
+
+SYSTEM EMULATOR
+===============
+Implement GPU in emulator
+Find some way to incorporate Uart/Keyboard in regression tests
+
+Longer term
+===========
+FPU

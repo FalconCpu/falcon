@@ -119,8 +119,8 @@ always begin
 end
 
 initial begin
-//$dumpvars(6);
-#20000000;
+$dumpvars(6);
+#100000;
 $display("TIMEOUT");
 $finish;
 end

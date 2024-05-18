@@ -33,11 +33,11 @@ static string branch_name[] = {
 };
 
 static string mul_name[] = {
-    "mul","","","","div","mod"
+    "mul","","","","divs","mods","divu","modu"
 };
 
 static string cfg_op[] = {
-    "cfgr","cfgw", "cjmp"
+    "cfgl","cfgs","cfgc", "cjmp"
 };
 
 static string sysregs[] = {
@@ -125,12 +125,13 @@ char* disassemble_line(int addr) {
         case KIND_LD_LIT:   sprintf(buf,"ld   %s, %d",  reg_name[d], s21<<11); break;
         case KIND_ADD_PC:   sprintf(buf,"ldpc %s , %s",reg_name[d], display_address(addr + 4 + 4*s21)); break;
         case KIND_MUL:      sprintf(buf,"%-4s %s, %s, %s", mul_name[i], reg_name[d], reg_name[a], reg_name[b]); break;
+        case KIND_MUL_LIT:  sprintf(buf,"%-4s %s, %s, %d", mul_name[i], reg_name[d], reg_name[a], s13); break;
         case KIND_CFG:      if (s13<0 || s13>4)
                                 sprintf(buf,"invalid sysreg");
-                            else if (i==2)
+                            else if (i==3)
                                 sprintf(buf,"jmp %s", sysregs[s13]);
                             else 
-                                sprintf(buf,"%-4s %s, %s, %s", cfg_op[i], reg_name[d], reg_name[a], sysregs[s13]); 
+                                sprintf(buf,"%-4s %s, %s, %s", cfg_op[i], reg_name[d], sysregs[s13], reg_name[a]); 
                             break;
         case KIND_SYS:      sprintf(buf,"sys  %d", s13); break;
         default:            sprintf(buf,"reserved");
@@ -185,7 +186,7 @@ void read_file(string file_name) {
     FILE* fh = fopen(file_name,"r");
     if (fh==0)
         fatal("Cannot open file '%s'", file_name);
-    prog_length = 0x8000;   // account for the start position where the code gets loaded
+    prog_length = 0x0;   // account for the start position where the code gets loaded
 
     while(!feof(fh)) {
         buf[0]=0;

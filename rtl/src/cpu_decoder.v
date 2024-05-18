@@ -14,11 +14,13 @@ module cpu_decoder(
     output reg [1:0]     p2_src_addr_a,  // which data source to use for address gen
     output reg [1:0]     p2_src_addr_b,  // which data source to use for address gen
     output reg [31:0]    p2_literal,
+    output reg           p2_bubble,      // indicate we are unable to accept an instruction this cycle
 
     input                p3_jump, 
     output reg [6:0]     p3_op,          // operation to perform
     output reg [1:0]     p3_opx,         // extra bits to specify shift operations
-    output reg [4:0]     p3_dest_reg     // register to write data to
+    output reg [4:0]     p3_dest_reg,    // register to write data to
+    output reg [4:0]     p4_dest_reg     // register to write data to
 );
 
 // Split the instruction up into its constituent fields
@@ -42,17 +44,35 @@ assign p2_reg_b = instr_b;
 reg [6:0] p2_op;
 reg [1:0] p2_opx;
 reg [4:0] p2_dest_reg;
+reg       p2_latent, p3_latent;   // indicates an instruction that takes more than 1 clock cycle to complete
+
 
 always @(*) begin
+    // 
+    // Decode the instruction and determine data sources for ALU, and address generator. 
+    //
+
+    // default values 
+    p2_latent     = 1'b0;
+    p2_opx        = 2'b0;
+    p2_src_addr_a = `SRC_ZERO;
+    p2_src_addr_b = `SRC_ZERO;
+    p2_src_data_a = `SRC_ZERO;
+    p2_src_data_b = `SRC_ZERO;
+    p2_dest_reg   = 5'b0;
+    p2_literal    = 32'bx;     
+    p2_bubble     = 1'b0;           
+
     if (p3_jump || reset) begin
+        // Instruction immediately after a jump or taken branch gets nullified - treat it as if it were
+        // an AND instruction with the null register as the destination
         p2_op = `OP_AND;
-        p2_opx = 2'b0;
-        p2_src_addr_a = `SRC_ZERO;
-        p2_src_addr_b = `SRC_ZERO;
-        p2_src_data_a = `SRC_ZERO;
-        p2_src_data_b = `SRC_ZERO;
-        p2_dest_reg   = 5'b0;
-        p2_literal    = 32'bx;                
+
+    end else if (p3_latent && (p3_dest_reg==instr_a || p3_dest_reg==instr_b)) begin
+        // If the instruction might access the register written to by the instruction currently in the ALU
+        // and the ALU isn't guaranteed to have its result availible for forwarding
+        p2_op = `OP_AND;
+        p2_bubble = 1'b1;
 
     end else case(instr_k)
         `INSTR_ALU_REG   : begin
@@ -60,10 +80,7 @@ always @(*) begin
             p2_opx        = (instr_i==3'h3) ? instr_c[1:0] : 2'b0;
             p2_src_data_a = `SRC_REG;
             p2_src_data_b = `SRC_REG;
-            p2_src_addr_a = `SRC_ZERO;
-            p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = instr_d;
-            p2_literal    = 32'bx;                
         end
 
         `INSTR_ALU_LIT   : begin
@@ -71,26 +88,21 @@ always @(*) begin
             p2_opx        = (instr_i==3'h3) ? instr_c[1:0] : 2'b0;
             p2_src_data_a = `SRC_REG;
             p2_src_data_b = `SRC_LIT;
-            p2_src_addr_a = `SRC_ZERO;
-            p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = instr_d;                
             p2_literal    = lit_s13;                
         end
 
         `INSTR_LOAD      : begin
             p2_op         = {4'h2, instr_i};
-            p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
-            p2_src_data_b = `SRC_ZERO;
             p2_src_addr_a = `SRC_REG;
             p2_src_addr_b = `SRC_LIT;
             p2_dest_reg   = instr_d;                
             p2_literal    = lit_s13;                
+            p2_latent     = 1'b1;
         end
 
         `INSTR_STORE     : begin
             p2_op         = {4'h3, instr_i};
-            p2_opx        = 2'b0;
             p2_src_data_a = `SRC_ZERO;
             p2_src_data_b = `SRC_REG;
             p2_src_addr_a = `SRC_REG;
@@ -101,7 +113,6 @@ always @(*) begin
 
         `INSTR_BRANCH    : begin
             p2_op         = {4'h4, instr_i};
-            p2_opx        = 2'b0;
             p2_src_data_a = `SRC_REG;
             p2_src_data_b = `SRC_REG;
             p2_src_addr_a = `SRC_PC;
@@ -112,7 +123,6 @@ always @(*) begin
 
         `INSTR_JUMP      : begin
             p2_op         = `OP_JMP;
-            p2_opx        = 2'b0;
             p2_src_data_a = `SRC_PC;
             p2_src_data_b = `SRC_ZERO;
             p2_src_addr_a = `SRC_PC;
@@ -123,9 +133,7 @@ always @(*) begin
 
         `INSTR_JUMP_REG  : begin
             p2_op         = `OP_JMP;
-            p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
-            p2_src_data_b = `SRC_ZERO;
+            p2_src_data_a = `SRC_PC;
             p2_src_addr_a = `SRC_REG;
             p2_src_addr_b = `SRC_LIT;
             p2_dest_reg   = instr_d;                
@@ -135,10 +143,7 @@ always @(*) begin
         `INSTR_LDU       : begin
             p2_op         = `OP_OR;
             p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
             p2_src_data_b = `SRC_LIT;
-            p2_src_addr_a = `SRC_ZERO;
-            p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = instr_d;                
             p2_literal    = lit_s21 << 9;                
         end
@@ -148,22 +153,40 @@ always @(*) begin
             p2_opx        = 2'b0;
             p2_src_data_a = `SRC_PC;
             p2_src_data_b = `SRC_LIT;
-            p2_src_addr_a = `SRC_ZERO;
-            p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = instr_d;                
             p2_literal    = lit_s21;                
         end
-        
+
+        `INSTR_CFG:        begin
+            p2_op         = {4'h9, instr_i};
+            p2_src_data_a = `SRC_REG;
+            p2_src_data_b = `SRC_LIT;
+            p2_literal    = lit_s13;                
+            p2_dest_reg   = instr_d;                        
+        end
+
+        `INSTR_MUL: begin
+            p2_op         = {4'hA, instr_i};
+            p2_src_data_a = `SRC_REG;
+            p2_src_data_b = `SRC_REG;
+            p2_dest_reg   = instr_d;
+            p2_latent     = 1'b1;
+        end
+
+        `INSTR_MUL_LIT: begin
+            p2_op         = {4'hA, instr_i};
+            p2_src_data_a = `SRC_REG;
+            p2_src_data_b = `SRC_LIT;
+            p2_dest_reg   = instr_d;                
+            p2_literal    = lit_s13;                
+            p2_latent     = 1'b1;
+        end
 
         default: begin
+            // Will be illegal instructions, once Exceptions get implemented
             p2_op         = `OP_AND;
             p2_opx        = 2'b0;
-            p2_src_data_a = `SRC_ZERO;
-            p2_src_data_b = `SRC_ZERO;
-            p2_src_addr_a = `SRC_ZERO;
-            p2_src_addr_b = `SRC_ZERO;
             p2_dest_reg   = 5'b0;                
-            p2_literal    = 32'bx;
         end
 
     endcase
@@ -175,8 +198,8 @@ always @(posedge clock)
     if (!stall) begin
         p3_op       <= p2_op;
         p3_opx      <= p2_opx;
+        p3_latent   <= p2_latent;
         p3_dest_reg <= p2_dest_reg;
+        p4_dest_reg <= p3_dest_reg;
     end
-
-
 endmodule

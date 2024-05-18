@@ -8,5 +8,6 @@
 010110 ... DDDDD AAAAA ######## #####   jmp  $d, $a[#s13]
 010111 ### DDDDD ##### ######## #####   ld   $d, #21<<11
 011000 ### DDDDD ##### ######## #####   add  $d, $pc, #21
-011001 ### DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b
-011010 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg
+011001 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg
+011010 III DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b
+011011 III DDDDD AAAAA ######## #####   mul  $d, $a, $b

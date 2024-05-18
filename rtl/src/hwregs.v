@@ -14,8 +14,11 @@ module hwregs(
     output reg[31:0] hwregs_rdata,
 
     // Connections to peripherals
-    output reg[23:0]  seven_segment,
-    output reg[7:0]   seven_segment_brightness,
+    input     [9:0]   mouse_x,
+    input     [9:0]   mouse_y,
+    input     [2:0]   mouse_buttons,
+    output reg[23:0]  hwreg_seven_segment,
+    output reg[7:0]   hwreg_seven_segment_brightness,
 
     input            uart_rx_complete,
     input [7:0]      uart_rx_word,
@@ -39,10 +42,12 @@ module hwregs(
     output reg [15:0] gpu_clip_y1,
     output reg [15:0] gpu_clip_x2,
     output reg [15:0] gpu_clip_y2,
-
-
+    output reg [8:0]  hwreg_screen_blank,
+    output reg [25:0] hwreg_screen_addr,
     output reg [8:0] LEDR
 );
+
+wire [23:0] pointers;
 
 wire [7:0] uart_rx_fifo_data;
 wire [9:0] uart_tx_slots_free;
@@ -64,11 +69,12 @@ always @(posedge clock) begin
     hwregs_valid <= hwregs_request;
     hwregs_rdata <= 0;
     gpu_start    <= 1'b0;
+    hwreg_seven_segment <= pointers;
 
     // Handle reset
     if (reset) begin
-        seven_segment <= 0;
-        seven_segment_brightness <= 8'hff;
+        hwreg_seven_segment <= 0;
+        hwreg_seven_segment_brightness <= 8'hff;
     end
 
     // ================================================
@@ -76,10 +82,17 @@ always @(posedge clock) begin
     // ================================================
     if (hwregs_request && hwregs_write)
         case(hwregs_address)
-            16'h0000: seven_segment <= hwregs_wdata[23:0];
-            16'h0004: seven_segment_brightness <= hwregs_wdata[7:0];
-            16'h0008: begin end  // handled directly by tx_fifo
-            16'h0010: LEDR       <= hwregs_wdata[8:0];
+            16'h0000: hwreg_seven_segment <= hwregs_wdata[23:0];
+            16'h0004: LEDR                <= hwregs_wdata[8:0];
+            16'h0008: begin end // mouse_x
+            16'h000c: begin end // mouse_x
+            16'h0010: begin end // mouse_buttons
+            16'h0014: begin end // uart_tx - handled directly by tx_fifo
+            16'h0018: begin end // uart_rx
+            16'h001C: hwreg_screen_blank <= hwregs_wdata[8:0];
+            16'h0020: hwreg_screen_addr  <= hwregs_wdata[25:0];
+            16'h0024: hwreg_seven_segment_brightness <= hwregs_wdata[7:0];
+
             16'h0040: reg_x      <= hwregs_wdata[15:0];
             16'h0044: reg_y      <= hwregs_wdata[15:0];
             16'h0048: reg_width  <= hwregs_wdata[15:0];
@@ -115,9 +128,15 @@ always @(posedge clock) begin
     // ================================================
     if (hwregs_request && !hwregs_write)
     case(hwregs_address)
-        16'h0008: hwregs_rdata <= {22'b0, uart_tx_slots_free};
-        16'h000c: hwregs_rdata <= uart_rx_fifo_not_empty ?  {24'b0, uart_rx_fifo_data} : 32'hffffffff;
-        16'h0010: hwregs_rdata <= LEDR;
+        16'h0000: hwregs_rdata <= hwreg_seven_segment;
+        16'h0004: hwregs_rdata <= LEDR;
+        16'h0008: hwregs_rdata <= mouse_x;
+        16'h000C: hwregs_rdata <= mouse_y;
+        16'h0010: hwregs_rdata <= mouse_buttons;
+        16'h0014: hwregs_rdata <= {22'b0, uart_tx_slots_free};
+        16'h0018: hwregs_rdata <= uart_rx_fifo_not_empty ?  uart_rx_fifo_data : 32'hffffffff;
+        16'h001c: hwregs_rdata <= hwreg_screen_blank;
+        16'h0020: hwregs_rdata <= hwreg_seven_segment_brightness;
         16'h0040: hwregs_rdata <= reg_x;
         16'h0044: hwregs_rdata <= reg_y;
         16'h0048: hwregs_rdata <= reg_width;
@@ -138,11 +157,12 @@ end
 byte_fifo  uart_tx_fifo (
     .clk(clock),
     .reset(reset),
-    .write_enable(hwregs_request && hwregs_write && hwregs_address==16'h0008),
+    .write_enable(hwregs_request && hwregs_write && hwregs_address==16'h0014),
     .write_data(hwregs_wdata[7:0]),
     .read_enable(uart_tx_complete),
     .read_data(uart_tx_word),
     .slots_free(uart_tx_slots_free),
+    .pointers(pointers),
     .not_empty(uart_tx_ready)
   );
 
@@ -151,7 +171,7 @@ byte_fifo  uart_rx_fifo (
     .reset(reset),
     .write_enable(uart_rx_complete),
     .write_data(uart_rx_word),
-    .read_enable(hwregs_request && !hwregs_write && hwregs_address==16'h000c),
+    .read_enable(hwregs_request && !hwregs_write && hwregs_address==16'h0018),
     .read_data(uart_rx_fifo_data),
     .not_empty(uart_rx_fifo_not_empty)
   );

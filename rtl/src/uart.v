@@ -13,8 +13,8 @@ module uart (
     input       tx_ready,      // Asserted to indicate data is ready to be transmitted
     input [7:0] tx_word,       // The data to transmit
     output reg  tx_complete,   // Pulsd to indicate the byte has been transmitted
-    
-    output reg  uart_led       // High to indicate uart active
+    output reg [23:0] uart_count,
+    output      uart_led       // High to indicate uart active
 );
 
 
@@ -39,6 +39,8 @@ reg [15:0] tx_timer;
 reg [3:0]  tx_index;
 wire [9:0] tx_message = {1'b1,tx_word,1'b0};
 
+assign uart_led = rx_active | tx_active;
+
 always @(posedge clock) begin
     rx_bit <= UART_RX;
     prev_rx_bit <= rx_bit;
@@ -54,6 +56,7 @@ always @(posedge clock) begin
         rx_active <= 1'b0;
         rx_timer  <= UI_COUNTER;
         rx_index  <= 4'b0;
+        uart_count <= 24'b0;
 
     // Check for 2 consrcutive '0' bits to start a frame, as a bit of a buffer against noise
     end else if (!rx_active && rx_bit==1'b0 && prev_rx_bit==1'b0) begin
@@ -97,9 +100,16 @@ always @(posedge clock) begin
         if (tx_timer==0) begin
             tx_timer <= UI_COUNTER-1'b1;
             tx_index <= tx_index + 1'b1;
+            
+            // pulse tx_complete when we finish transmitting the actual message (start of the stop bit)
+            // This gives the fifo time to update ready for the next data
+            if (tx_index==8)
+                tx_complete <= 1'b1;  
+
+            // At the end of the stop bit go back to the inactive state waiting for the next data
             if (tx_index==9) begin
                 tx_active <= 1'b0;
-                tx_complete <= 1'b1;
+                uart_count <= uart_count + 1'b1;
             end
         end
     end

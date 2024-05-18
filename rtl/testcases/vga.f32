@@ -24,13 +24,13 @@ GPU_COMMAND_SOLID_RECTANGLE   = 003H
 main:
     ld $sp, 4000000H   ; set up stack pointer to top of ram
 
-    jsr clear_screen
-
     ld $1, 1
     ld $2, HWREGS_BASE
     stw $1, $2[HWREGS_7SEG]
 
     jsr set_clip_region
+
+    jsr clear_screen
 
     jsr load_font
 
@@ -58,7 +58,7 @@ main:
     ld $2, HWREGS_BASE
     stw $1, $2[HWREGS_7SEG]
 
-    ;jsr draw_text_cpu
+    jsr draw_text_cpu
 
     ld $1, 4
     ld $2, HWREGS_BASE

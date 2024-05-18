@@ -94,7 +94,7 @@ wire           cpu_complete;
 
 wire           gpu_request;
 wire           gpu_write;
-wire [31:0]    gpu_address;
+wire [25:0]    gpu_address;
 wire [31:0]    gpu_wdata;
 wire [3:0]     gpu_byte_en;
 wire [31:0]    gpu_rdata;
@@ -110,15 +110,27 @@ wire [3:0]     iram_byte_en;
 wire [31:0]    iram_rdata;
 wire           iram_valid;
 
+wire           cpu_to_sdram_request;
+wire           cpu_to_sdram_write;
+wire [25:0]    cpu_to_sdram_address;
+wire [31:0]    cpu_to_sdram_wdata;
+wire [3:0]     cpu_to_sdram_byte_en;
+wire [31:0]    cpu_to_sdram_rdata;
+wire           cpu_to_sdram_valid;
+wire           cpu_to_sdram_burst;
+wire           cpu_to_sdram_complete;
+
+
 wire           sdram_request;
 wire           sdram_write;
 wire [25:0]    sdram_address;
 wire [31:0]    sdram_wdata;
 wire [3:0]     sdram_byte_en;
 wire [31:0]    sdram_rdata;
-wire           sdram_valid;
+wire [3:0]     sdram_valid;
 wire           sdram_burst;
-wire           sdram_complete;
+wire [3:0]     sdram_complete;
+wire [3:0]     sdram_master;
 
 wire           hwregs_request;
 wire           hwregs_write;
@@ -137,7 +149,7 @@ wire [31:0]    pram_rdata;
 wire           pram_valid;
 
 wire           vga_request;
-wire [31:0]    vga_address;
+wire [25:0]    vga_address;
 wire [31:0]    vga_rdata;
 wire           vga_valid;
 wire           vga_complete;
@@ -179,6 +191,8 @@ wire [9:0] mouse_x, mouse_y;
 wire [2:0] mouse_buttons;
 
 
+
+
 // signals driven by VGA
 
 wire reset = !locked;
@@ -205,32 +219,17 @@ cpu  cpu_inst (
     .instr_data(instr_data)
   );
 
-  bus_arbiter  bus_arbiter_inst (
+  address_decoder  address_decoder_inst (
     .clock(clock),
     .reset(reset),
     .cpu_request(cpu_request),
     .cpu_write(cpu_write),
     .cpu_address(cpu_address),
-    .cpu_burst(cpu_burst),
     .cpu_wdata(cpu_wdata),
     .cpu_byte_en(cpu_byte_en),
     .cpu_rdata(cpu_rdata),
     .cpu_valid(cpu_valid),
     .cpu_complete(cpu_complete),
-    .vga_request(vga_request),
-    .vga_address(vga_address),
-    .vga_rdata(vga_rdata),
-    .vga_valid(vga_valid),
-    .vga_complete(vga_complete),
-    .gpu_request(gpu_request),
-    .gpu_write(gpu_write),
-    .gpu_address(gpu_address),
-    .gpu_wdata(gpu_wdata),
-    .gpu_burst(gpu_burst),
-    .gpu_byte_en(gpu_byte_en),
-    .gpu_rdata(gpu_rdata),
-    .gpu_valid(gpu_valid),
-    .gpu_complete(gpu_complete),
     .iram_request(iram_request),
     .iram_write(iram_write),
     .iram_address(iram_address),
@@ -238,15 +237,15 @@ cpu  cpu_inst (
     .iram_byte_en(iram_byte_en),
     .iram_rdata(iram_rdata),
     .iram_valid(iram_valid),
-    .sdram_request(sdram_request),
-    .sdram_write(sdram_write),
-    .sdram_address(sdram_address),
-    .sdram_wdata(sdram_wdata),
-    .sdram_byte_en(sdram_byte_en),
-    .sdram_rdata(sdram_rdata),
-    .sdram_valid(sdram_valid),
-    .sdram_burst(sdram_burst),
-    .sdram_complete(sdram_complete),
+    .sdram_request(cpu_to_sdram_request),
+    .sdram_write(cpu_to_sdram_write),
+    .sdram_address(cpu_to_sdram_address),
+    .sdram_wdata(cpu_to_sdram_wdata),
+    .sdram_byte_en(cpu_to_sdram_byte_en),
+    .sdram_rdata(cpu_to_sdram_rdata),
+    .sdram_valid(cpu_to_sdram_valid),
+    .sdram_burst(cpu_to_sdram_burst),
+    .sdram_complete(cpu_to_sdram_complete),
     .hwregs_request(hwregs_request),
     .hwregs_write(hwregs_write),
     .hwregs_address(hwregs_address),
@@ -261,6 +260,44 @@ cpu  cpu_inst (
     .pram_byte_en(pram_byte_en),
     .pram_valid(pram_valid),
     .pram_rdata(pram_rdata)
+  );
+
+  sdram_arbiter  sdram_arbiter_inst (
+    .clock(clock),
+    .reset(reset),
+    .cpu_request(cpu_to_sdram_request),
+    .cpu_write(cpu_to_sdram_write),
+    .cpu_address(cpu_to_sdram_address),
+    .cpu_burst(cpu_to_sdram_burst),
+    .cpu_wdata(cpu_to_sdram_wdata),
+    .cpu_byte_en(cpu_to_sdram_byte_en),
+    .cpu_rdata(cpu_to_sdram_rdata),
+    .cpu_valid(cpu_to_sdram_valid),
+    .cpu_complete(cpu_to_sdram_complete),
+    .vga_request(vga_request),
+    .vga_address(vga_address),
+    .vga_rdata(vga_rdata),
+    .vga_valid(vga_valid),
+    .vga_complete(vga_complete),
+    .gpu_request(gpu_request),
+    .gpu_write(gpu_write),
+    .gpu_address(gpu_address),
+    .gpu_wdata(gpu_wdata),
+    .gpu_burst(gpu_burst),
+    .gpu_byte_en(gpu_byte_en),
+    .gpu_rdata(gpu_rdata),
+    .gpu_valid(gpu_valid),
+    .gpu_complete(gpu_complete),
+    .sdram_request(sdram_request),
+    .sdram_master(sdram_master),
+    .sdram_write(sdram_write),
+    .sdram_address(sdram_address),
+    .sdram_wdata(sdram_wdata),
+    .sdram_byte_en(sdram_byte_en),
+    .sdram_rdata(sdram_rdata),
+    .sdram_valid(sdram_valid),
+    .sdram_burst(sdram_burst),
+    .sdram_complete(sdram_complete)
   );
 
 instruction_ram  instruction_ram_inst (
@@ -289,6 +326,7 @@ sdram_controller  sdram_controller_inst (
     .DRAM_UDQM(DRAM_UDQM),
     .DRAM_WE_N(DRAM_WE_N),
     .DRAM_CAS_N(DRAM_CAS_N),
+    .sdram_master(sdram_master),
     .sdram_request(sdram_request),
     .sdram_write(sdram_write),
     .sdram_address(sdram_address),
@@ -310,13 +348,16 @@ sdram_controller  sdram_controller_inst (
     .hwregs_byte_en(hwregs_byte_en),
     .hwregs_valid(hwregs_valid),
     .hwregs_rdata(hwregs_rdata),
-    .seven_segment(seven_segment),
-    .seven_segment_brightness(seven_segment_brightness),
+    //.hwreg_seven_segment(seven_segment),
+    .hwreg_seven_segment_brightness(seven_segment_brightness),
     .uart_rx_complete(uart_rx_complete),
     .uart_rx_word(uart_rx_word),
     .uart_tx_ready(uart_tx_ready),
     .uart_tx_word(uart_tx_word),
     .uart_tx_complete(uart_tx_complete),
+    .mouse_x(mouse_x),
+    .mouse_y(mouse_y),
+    .mouse_buttons(mouse_buttons),
     .gpu_x(gpu_x),
     .gpu_y(gpu_y),
     .gpu_width(gpu_width),
@@ -335,6 +376,7 @@ sdram_controller  sdram_controller_inst (
     .gpu_clip_y2(gpu_clip_y2),
     .LEDR(LEDR[8:0])
   );
+
 seven_segment  seven_segment_inst (
     .clock(clock),
     .seven_segment(seven_segment),
@@ -357,6 +399,7 @@ uart  uart_inst (
     .tx_ready(uart_tx_ready),
     .tx_word(uart_tx_word),
     .tx_complete(uart_tx_complete),
+    .uart_count(seven_segment),
     .uart_led(LEDR[9])
   );
   
