@@ -37,7 +37,6 @@ assembler/build
 
 */a.out
 a.txt
-rtl/dump.vcd
 
 # binaries
 bin
