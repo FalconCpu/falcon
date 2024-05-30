@@ -402,7 +402,7 @@ dcb 0,0,0,0              ; scan code 7F
 dcb 0,0,0,0              ; scan code 80  
 dcb 0,0,0,0              ; scan code 81  
 dcb 0,0,0,0              ; scan code 82  
-dcb 0,0,0,0              ; scan code 83  
+dcb 1,KEY_F7,KEY_F7,0    ; scan code 83  
 dcb 0,0,0,0              ; scan code 84  
 dcb 0,0,0,0              ; scan code 85  
 dcb 0,0,0,0              ; scan code 86  
