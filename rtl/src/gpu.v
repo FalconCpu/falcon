@@ -66,7 +66,7 @@ reg        [3:0]  next_word_enable, this_word_enable;
 
 reg        next_gpu_request;
 reg        next_gpu_write;
-reg [31:0] next_gpu_address;
+reg [25:0] next_gpu_address;
 reg [31:0] next_gpu_wdata;
 reg        next_gpu_burst;
 reg [3:0]  next_gpu_byte_en;

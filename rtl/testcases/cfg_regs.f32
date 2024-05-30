@@ -9,4 +9,5 @@ ld #edata, $3       ; #edata = 000000008H
 cfgs $11, #edata, $2  ; #edata = 0FEDC0008   $11=000000008H
 cfgc $12, #edata, $3  ; #edata = 0FEDC0000   $12=0FEDC0008
 ld $13, #edata, $1    ; #edata= 012345678H   $13=0FEDC0000
+ret
 

@@ -28,6 +28,7 @@ wire [31:0]    p3_out;        // result of alu operation for low latency ops
 wire           p3_jump;       // indicate a jump is to occur
 wire [31:0]    p3_jump_addr;  // address for a jump
 wire [31:0]    p4_out;        // Final result of alu operation
+wire           p3_exception;
 wire           stall;
 
 // signals driven by data_mux
@@ -49,6 +50,7 @@ wire [6:0]   p3_op;          // operation to perform
 wire [1:0]   p3_opx;         // extra bits to specify shift operations
 wire [4:0]   p3_dest_reg;    // register to write data to by instr at p3
 wire [4:0]   p4_dest_reg;    // register to write data to by instr at p4
+wire [31:0]  p3_instr;       // copy of instruction
 
 cpu_pc  cpu_pc_inst (
     .clock(clock),
@@ -80,7 +82,9 @@ cpu_decoder  cpu_decoder_inst (
     .p3_op(p3_op),
     .p3_opx(p3_opx),
     .p3_dest_reg(p3_dest_reg),
-    .p4_dest_reg(p4_dest_reg)
+    .p4_dest_reg(p4_dest_reg),
+    .p3_exception(p3_exception),
+    .p3_instr(p3_instr)
   );
 
 cpu_data_mux  cpu_data_mux_inst (
@@ -119,7 +123,10 @@ cpu_alu  cpu_alu_inst (
     .p4_out(p4_out),
     .p3_jump(p3_jump),
     .p3_jump_addr(p3_jump_addr),
+    .p2_pc(p2_pc),
     .p3_pc(p3_pc),
+    .p3_exception(p3_exception),
+    .p3_instr(p3_instr),
     .interupt(1'b0),
     .cpu_request(cpu_request),
     .cpu_write(cpu_write),

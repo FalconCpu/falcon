@@ -62,7 +62,6 @@
 `define OP_BLTU     7'h24
 `define OP_BGEU     7'h25
 `define OP_JMP      7'h28
-`define OP_RETE     7'h29
 `define OP_JMPR     7'h30
 `define OP_LDU      7'h38
 `define OP_LDPC     7'h40
@@ -70,6 +69,7 @@
 `define OP_CFGSET   7'h49
 `define OP_CFGCLR   7'h4A
 `define OP_CFGJMP   7'h4B
+`define OP_SYS      7'h4C
 `define OP_MUL      7'h50
 `define OP_DIVS     7'h54
 `define OP_MODS     7'h55
@@ -80,6 +80,7 @@
 `define OP_MODS_I   7'h5d
 `define OP_DIVU_I   7'h5e
 `define OP_MODU_I   7'h5f
+`define OP_ILLEGAL  7'h7f
 
 // Possible sources for arguments 
 `define SRC_ZERO  2'h0
@@ -88,9 +89,18 @@
 `define SRC_LIT   2'h2      // Only for 'B' args
 
 // config register numbers
-`define CFG_ECAUSE    32'h0
-`define CFG_EPC       32'h1
-`define CFG_EDATA     32'h2
-`define CFG_ESCRATCH  32'h3
-`define CFG_COUNTER   32'h4
+`define CFG_VERSION  8'h00
+`define CFG_STATUS   8'h01
+`define CFG_EPC      8'h02
+`define CFG_ECAUSE   8'h03
+`define CFG_EDATA    8'h04
+`define CFG_ESTATUS  8'h05
+`define CFG_ESCRATCH 8'h06
+`define CFG_COUNTER  8'h07
+
+`define EXCEPTION_SYSCALL             5'h00
+`define EXCEPTION_ILLEGAL_INSTRUCTION 5'h01
+`define EXCEPTION_MISALIGNED_LOAD     5'h02
+`define EXCEPTION_MISALIGNED_STORE    5'h03
+
 

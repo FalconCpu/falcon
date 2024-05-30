@@ -11,7 +11,6 @@
 #define KIND_CFG       0x19
 #define KIND_MUL       0x1A
 #define KIND_MUL_LIT   0x1B
-#define KIND_SYS       0x1C
 
 #define ALU_AND    0x00
 #define ALU_OR     0x01
@@ -46,16 +45,17 @@
 #define CFG_EDATA    4
 #define CFG_ESTATUS  5
 #define CFG_ESCRATCH 6
+#define CFG_COUNTER  7
 
 #define CFG_CMD_LD    0
 #define CFG_CMD_SET   1
 #define CFG_CMD_CLR   2
-#define CFG_CMD_SYS   3
-#define CFG_CMD_RETE  4
+#define CFG_CMD_JMP   3
+#define CFG_CMD_SYS   4
 
+#define EXCEPTION_SYSCALL             0
 #define EXCEPTION_ILLEGAL_INSTRUCTION 1
 #define EXCEPTION_MISALIGNED_LOAD     2
 #define EXCEPTION_MISALIGNED_STORE    3
-#define EXCEPTION_SYSCALL             4
 
 

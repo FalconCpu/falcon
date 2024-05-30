@@ -119,12 +119,12 @@ always @(*) begin
 
     if (next_x < 0)
         next_x = 0;
-    if (next_x > 639*8)
-        next_x = 639*8;
+    if (next_x > 14'd5112)
+        next_x = 14'd5112;
     if (next_y < 0)
         next_y = 0;
-    if (next_y > 479*8)
-        next_y = 479*8;
+    if (next_y > 14'd3967)
+        next_y = 14'd3967;
 end
 
 

@@ -16,7 +16,7 @@ extern token* all_labels;
 reference* all_references = 0;
 string current_block;
 
-static int origin = 0xffff8000;
+static int origin = 0xffff0000;
 
 /// -----------------------------------------------------------
 ///                      add_instr
@@ -384,7 +384,7 @@ static void assemble_line(token** line) {
     else match("D$,#")      add_instr(format_i(KIND_CFG, 1,  V1, 0, V3));
     else match("D#,$")      add_instr(format_i(KIND_CFG, 0,  0, V3, V1));
     else match("D$,#,$")    add_instr(format_i(KIND_CFG, 0,  V1, V5, V3));
-    else match("Yi")        add_instr(format_i(KIND_SYS, 0,  0, 0, V1));
+    else match("Yi")        add_instr(format_i(KIND_CFG, CFG_CMD_SYS,  0, 0, V1));
     else match("J#")        add_instr(format_i(KIND_CFG, 3,  0, 0, V1));
     else match("oi")        origin = V1;
     else if (line[0]->kind=='d')  process_dc(line);

@@ -17,10 +17,12 @@ module cpu_decoder(
     output reg           p2_bubble,      // indicate we are unable to accept an instruction this cycle
 
     input                p3_jump, 
+    input                p3_exception,   // Instruction at p3 has triggered an exception
     output reg [6:0]     p3_op,          // operation to perform
     output reg [1:0]     p3_opx,         // extra bits to specify shift operations
     output reg [4:0]     p3_dest_reg,    // register to write data to
-    output reg [4:0]     p4_dest_reg     // register to write data to
+    output reg [4:0]     p4_dest_reg,    // register to write data to
+    output reg [31:0]    p3_instr        // copy of instruction (for use in illegal instruction exception)
 );
 
 // Split the instruction up into its constituent fields
@@ -45,6 +47,7 @@ reg [6:0] p2_op;
 reg [1:0] p2_opx;
 reg [4:0] p2_dest_reg;
 reg       p2_latent, p3_latent;   // indicates an instruction that takes more than 1 clock cycle to complete
+reg       p2_illegal;
 
 
 always @(*) begin
@@ -62,6 +65,7 @@ always @(*) begin
     p2_dest_reg   = 5'b0;
     p2_literal    = 32'bx;     
     p2_bubble     = 1'b0;           
+    p2_illegal    = 1'b0;
 
     if (p3_jump || reset) begin
         // Instruction immediately after a jump or taken branch gets nullified - treat it as if it were
@@ -183,13 +187,20 @@ always @(*) begin
         end
 
         default: begin
-            // Will be illegal instructions, once Exceptions get implemented
-            p2_op         = `OP_AND;
+            // illegal instructions
+            p2_op         = `OP_ILLEGAL;
             p2_opx        = 2'b0;
-            p2_dest_reg   = 5'b0;                
+            p2_dest_reg   = 5'b0;   
+            p2_illegal    = 1'b1;
+
         end
 
     endcase
+
+    if (p2_illegal) begin
+        p2_op = `OP_ILLEGAL;
+        p2_dest_reg   = 5'b0;   
+    end
 
 end
 
@@ -200,6 +211,7 @@ always @(posedge clock)
         p3_opx      <= p2_opx;
         p3_latent   <= p2_latent;
         p3_dest_reg <= p2_dest_reg;
-        p4_dest_reg <= p3_dest_reg;
+        p4_dest_reg <= p3_exception ? 5'h0 : p3_dest_reg;
+        p3_instr    <= instr_data;
     end
 endmodule

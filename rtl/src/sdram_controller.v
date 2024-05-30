@@ -179,7 +179,7 @@ always @(*) begin
                 next_ba   = sdram_address[12:11];
                 next_cmd  = CMD_READ;
                 next_dqm  = ~sdram_byte_en[1:0];
-                next_col  = sdram_address[5:2] + 1'b1;
+                next_col  = sdram_address[4:2] + 1'b1;
                 next_master = sdram_master;
                 next_state = sdram_burst ? STATE_READ_BURST : STATE_READ;
             end

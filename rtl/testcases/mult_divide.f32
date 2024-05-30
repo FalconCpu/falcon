@@ -24,3 +24,4 @@ divu $14, $8, 0   ; = FFFFFFFF divide by zero should give maximum value
 modu $15, $8, 0   ; = 5472     modulo by zero should give numerator
 divs $16, $8, 0   ; = FFFFFFFF divide by zero should give maximum value
 mods $17, $8, 0   ; = 5472     modulo by zero should give numerator
+ret

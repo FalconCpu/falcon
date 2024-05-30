@@ -43,7 +43,31 @@ static int null_as_exception=0;
 
 FILE *debug_trace;
 FILE *reg_trace;
+FILE *uart_out;
 static void exception(int cause, int data);
+
+static int keyboard_scancodes[] = { 0x1A,       // Press 'z'
+                                    0xF0, 0x1A, // release 'z'
+                                    0x12,       // Press shift
+                                    0x4B,       // press 'L'
+                                    0xF0, 0x4B, // release 'L',
+                                    0x46,       // press '9'
+                                    0xF0, 0x46, // release '9'
+                                    0xF0, 0x12, // release shift,
+                                    0x46,       // press '9'
+                                    0xF0, 0x46, // release '9'
+                                    0x42,       // press 'k'
+                                    0xF0, 0x42  // release 'k'
+                                    -1};
+static int read_keyboard() {
+    static int keyboard_index = 0;
+    if (keyboard_scancodes[keyboard_index]==-1)
+        return -1;
+    else
+        return keyboard_scancodes[keyboard_index++];
+}
+
+
 
 static void setReg(int reg, int value) {
     if (reg!=0  && !null_as_exception) {
@@ -84,6 +108,7 @@ static void writeMemMappedReg(unsigned int addr, int value) {
             break;
 
         case 0xE0000014: // uart tx
+            fprintf(uart_out, "%c", value & 0xFF);
             printf("%c", value & 0xFF);
             break;
 
@@ -98,6 +123,9 @@ static int readMemMappedReg(unsigned int addr) {
         case 0xE0000014: // uart tx
             return 100;  // claim there is space in the fifo
         
+        case 0xE0000028:  // Keyboard fifo - report no keys
+            return read_keyboard();
+
         default:
             return 0;
     }
@@ -240,15 +268,18 @@ static void cfg_cmd(int cmd, int dest_reg, int cfg_reg, int value) {
             write_cfg(cfg_reg, x & ~value);
             break;
 
+        case CFG_CMD_JMP:
+            pc = read_cfg(cfg_reg);
+            break;
+
         case CFG_CMD_SYS:
-            exception(EXCEPTION_SYSCALL, cfg_reg);
+            epc = pc;
+            pc = 0xFFFF0004;
+            ecause = EXCEPTION_SYSCALL;
+            edata  = cfg_reg;
+            if (debug>=2)
+                fprintf(debug_trace,"SYS %d",cfg_reg);
             break;
-
-        case CFG_CMD_RETE:
-            pc = epc;
-            supervisor = estatus & 1;
-            break;
-
 
         default:    
             break;
@@ -285,10 +316,6 @@ static void executeInstruction(int instr) {
     int n13d = (c<<5) | d;
     int n21 = (c<<13) | (i<<10) | (a<<5) | b;
 
-
-    // if (is_illegal_instr(k,i,c))
-    //     exception(EXCEPTION_ILLEGAL_INSTRUCTION, instr);
-
     switch(k) {
         case KIND_ALU_REG: setReg(d, aluOp(i, regs[a], regs[b], c));   break;
         case KIND_ALU_LIT: setReg(d, aluOp(i, regs[a], n13, c));       break;
@@ -319,7 +346,7 @@ static void executeInstruction(int instr) {
         case KIND_CFG:     cfg_cmd(i, d, n13, regs[a]);                break;
         case KIND_MUL:     setReg(d, mult_op(i, regs[a], regs[b]));    break;
         case KIND_MUL_LIT: setReg(d, mult_op(i, regs[a], n13));        break;
-        //case KIND_MULTI:   setReg(d, mult_op(i, regs[a], n13));        break;
+        default:           exception(EXCEPTION_ILLEGAL_INSTRUCTION, instr); break;
     }
 
     if(debug>=2)
@@ -382,6 +409,7 @@ int main(int argc, string* argv)
     if (debug)
         debug_trace = fopen("debug.log","w");
     reg_trace = fopen("sim_regs.log","w");
+    uart_out  = fopen("sim_uart.log","w");
 
     if (filename==0)
         fatal("No filename specified");

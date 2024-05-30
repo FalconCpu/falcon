@@ -120,7 +120,7 @@ end
 
 initial begin
 $dumpvars(6);
-#100000;
+#1000000;
 $display("TIMEOUT");
 $finish;
 end

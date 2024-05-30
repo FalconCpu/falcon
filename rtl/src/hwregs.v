@@ -26,6 +26,10 @@ module hwregs(
     output [7:0]     uart_tx_word,
     input            uart_tx_complete,
 
+    input [7:0]      keyboard_data,
+    input            keyboard_strobe,
+    
+
     output reg [15:0] gpu_x,               // X location on screen
     output reg [15:0] gpu_y,               // Y location on screen
     output reg [15:0] gpu_width,           // Width of operation (in pixels)
@@ -53,6 +57,9 @@ wire [7:0] uart_rx_fifo_data;
 wire [9:0] uart_tx_slots_free;
 wire       uart_rx_fifo_not_empty;
 
+wire [7:0] keyboard_fifo_data;
+wire       keyboard_fifo_not_empty;
+
 reg [15:0] reg_x;
 reg [15:0] reg_y;
 reg [15:0] reg_width;
@@ -63,13 +70,18 @@ reg [1:0]  reg_pattern_depth;
 reg [8:0]  reg_color0;
 reg [8:0]  reg_color1;
 
+// synthesis translate_off
+integer log_file;
+initial begin
+    log_file = $fopen("rtl_uart.log","w");
+end
+// synthesis translate_on
 
 
 always @(posedge clock) begin
     hwregs_valid <= hwregs_request;
     hwregs_rdata <= 0;
     gpu_start    <= 1'b0;
-    hwreg_seven_segment <= pointers;
 
     // Handle reset
     if (reset) begin
@@ -87,11 +99,17 @@ always @(posedge clock) begin
             16'h0008: begin end // mouse_x
             16'h000c: begin end // mouse_x
             16'h0010: begin end // mouse_buttons
-            16'h0014: begin end // uart_tx - handled directly by tx_fifo
+            16'h0014: begin 
+                // The fifo below will pick up the byte to transmit and load it into the fifo
+                // synthesys translate_off
+                $fwrite(log_file,"%c",hwregs_wdata[7:0]);
+                // synthesys translate_on
+            end 
             16'h0018: begin end // uart_rx
             16'h001C: hwreg_screen_blank <= hwregs_wdata[8:0];
             16'h0020: hwreg_screen_addr  <= hwregs_wdata[25:0];
             16'h0024: hwreg_seven_segment_brightness <= hwregs_wdata[7:0];
+            16'h0028: begin end // keyboard
 
             16'h0040: reg_x      <= hwregs_wdata[15:0];
             16'h0044: reg_y      <= hwregs_wdata[15:0];
@@ -136,7 +154,9 @@ always @(posedge clock) begin
         16'h0014: hwregs_rdata <= {22'b0, uart_tx_slots_free};
         16'h0018: hwregs_rdata <= uart_rx_fifo_not_empty ?  uart_rx_fifo_data : 32'hffffffff;
         16'h001c: hwregs_rdata <= hwreg_screen_blank;
-        16'h0020: hwregs_rdata <= hwreg_seven_segment_brightness;
+        16'h0020: hwregs_rdata <= hwreg_screen_addr;
+        16'h0024: hwregs_rdata <= hwreg_seven_segment_brightness;
+        16'h0028: hwregs_rdata <= keyboard_fifo_not_empty ?  keyboard_fifo_data : 32'hffffffff;
         16'h0040: hwregs_rdata <= reg_x;
         16'h0044: hwregs_rdata <= reg_y;
         16'h0048: hwregs_rdata <= reg_width;
@@ -176,6 +196,15 @@ byte_fifo  uart_rx_fifo (
     .not_empty(uart_rx_fifo_not_empty)
   );
 
+byte_fifo  keyboard_fifo (
+    .clk(clock),
+    .reset(reset),
+    .write_enable(keyboard_strobe),
+    .write_data(keyboard_data),
+    .read_enable(hwregs_request && !hwregs_write && hwregs_address==16'h0028),
+    .read_data(keyboard_fifo_data),
+    .not_empty(keyboard_fifo_not_empty)
+  );
 
 
 endmodule

@@ -62,7 +62,7 @@ always @(posedge clock) begin
     end else if (!rx_active && rx_bit==1'b0 && prev_rx_bit==1'b0) begin
         // Got start of a frame
         rx_active <= 1;
-        rx_timer  <= UI_COUNTER/2-1'b1;
+        rx_timer  <= UI_COUNTER/2'd2-1'b1;
         rx_index  <= 4'h0;
     
     end else if (rx_active) begin

@@ -190,6 +190,9 @@ wire [8:0]  screen_blank = 0;
 wire [9:0] mouse_x, mouse_y;
 wire [2:0] mouse_buttons;
 
+// signals driven by the keyboard
+wire [7:0] keyboard_data;
+wire       keyboard_strobe;
 
 
 
@@ -348,7 +351,7 @@ sdram_controller  sdram_controller_inst (
     .hwregs_byte_en(hwregs_byte_en),
     .hwregs_valid(hwregs_valid),
     .hwregs_rdata(hwregs_rdata),
-    //.hwreg_seven_segment(seven_segment),
+    .hwreg_seven_segment(seven_segment),
     .hwreg_seven_segment_brightness(seven_segment_brightness),
     .uart_rx_complete(uart_rx_complete),
     .uart_rx_word(uart_rx_word),
@@ -358,6 +361,8 @@ sdram_controller  sdram_controller_inst (
     .mouse_x(mouse_x),
     .mouse_y(mouse_y),
     .mouse_buttons(mouse_buttons),
+    .keyboard_data(keyboard_data),
+    .keyboard_strobe(keyboard_strobe),
     .gpu_x(gpu_x),
     .gpu_y(gpu_y),
     .gpu_width(gpu_width),
@@ -399,7 +404,6 @@ uart  uart_inst (
     .tx_ready(uart_tx_ready),
     .tx_word(uart_tx_word),
     .tx_complete(uart_tx_complete),
-    .uart_count(seven_segment),
     .uart_led(LEDR[9])
   );
   
@@ -433,6 +437,15 @@ mouse_interface  mouse_interface_inst (
     .mouse_x(mouse_x),
     .mouse_y(mouse_y),
     .mouse_buttons(mouse_buttons)
+  );
+
+keyboard_if  keyboard_if_inst (
+    .clock(clock),
+    .reset(reset),
+    .PS2_CLK2(PS2_CLK2),
+    .PS2_DAT2(PS2_DAT2),
+    .keyboard_code(keyboard_data),
+    .keyboard_strobe(keyboard_strobe)
   );
 
   gpu  gpu_inst (

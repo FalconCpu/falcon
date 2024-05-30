@@ -12,12 +12,15 @@ module cpu_alu(
     input      [6:0]     p3_op,         // operation to perform
     input      [1:0]     p3_opx,        // extra bits to specify shift opertations
     input                interupt,      // Interupt handler has a pending interupt
+    input      [31:0]    p2_pc,         // address of next instruction
     input      [31:0]    p3_pc,         // address of current instruction
+    input      [31:0]    p3_instr,      // copy of the complete instruction - for edata in illegal instr
 
     output reg [31:0]    p3_out,        // result of alu operation
     output reg           p3_jump,       // indicate a jump is to occur
     output reg [31:0]    p3_jump_addr,  // address for a jump
     output reg [31:0]    p4_out,        // Final result of operation
+    output reg           p3_exception,  // The instruction at p3 has triggered an exception
 
     // cpu memory bus. 
     output reg           cpu_request,   // cpu is making a requst on the bus
@@ -40,7 +43,7 @@ reg  [31:0]  interrupt_pc, next_interrupt_pc;
 reg  [31:0]  p4_in;
 reg  [6:0]   p4_op;
 reg  [1:0]   p4_addr;
-
+reg          p4_misaligned_addr;
 
 reg  [31:0] p3_numerator, p4_numerator;
 reg  [31:0] p3_denominator, p4_denominator;
@@ -64,7 +67,7 @@ cpu_divider  cpu_divider_inst (
 
 
 wire p3_is_memory_op = p3_op[6:4]==3'h1;
-wire p4_is_memory_op = p4_op[6:4]==3'h1;
+wire p4_is_memory_op = p4_op[6:4]==3'h1 && !p4_misaligned_addr;
 
 // Config registers
 reg [4:0]     this_ecause, next_ecause;
@@ -217,6 +220,7 @@ always @(*) begin
     cfg_read = 32'hx;
     if (p3_op==`OP_CFGLOAD || p3_op==`OP_CFGSET || p3_op==`OP_CFGCLR || p3_op==`OP_CFGJMP) 
     case (p3_data_b) 
+        `CFG_VERSION:  cfg_read = 32'h1;
         `CFG_ECAUSE:   cfg_read = this_ecause;
         `CFG_EPC:      cfg_read = this_epc;
         `CFG_EDATA:    cfg_read = this_edata;
@@ -236,11 +240,12 @@ always @(*) begin
 
     if (p3_op==`OP_CFGLOAD || p3_op==`OP_CFGSET || p3_op==`OP_CFGCLR) 
         case (p3_data_b) 
-            `CFG_ECAUSE:   next_ecause    = cfg_write;
+            `CFG_ECAUSE:   next_ecause    = cfg_write[4:0];
             `CFG_EPC:      next_epc       = cfg_write;
             `CFG_EDATA:    next_edata     = cfg_write;
             `CFG_ESCRATCH: next_escratch  = cfg_write;
             `CFG_COUNTER:  next_counter   = cfg_write;
+				default:       begin end
         endcase
     
     // -------------------------------------------------------------------
@@ -280,11 +285,6 @@ always @(*) begin
         `OP_CFGLOAD,
         `OP_CFGSET,
         `OP_CFGCLR:   p3_out = cfg_read;
-
-        `OP_RETE   :  begin                         // Return from interupt
-                        p3_out=32'bx;     
-        next_interupt_enable=1'b1;  // enable interupts
-        end  
         default    :  p3_out = 32'bx;
     endcase
 
@@ -323,14 +323,37 @@ always @(*) begin
         `OP_BLTU   : p3_jump =  compare_ltu;    
         `OP_BGEU   : p3_jump = !compare_ltu;    
         `OP_JMP    : p3_jump =  1'b1;
-        `OP_RETE   : p3_jump = 1'b1;        // Return from interupt
         default    : p3_jump =  1'b0;    
     endcase
 
+    p3_exception = 1'b0;
     if (interupt && interrupt_enable) begin
         next_interrupt_pc = p3_pc;              // Save address of current instruction
         p3_jump_addr = 32'hFFFF0004;       // Address of interupt service routine
         p3_jump      = 1'b1;
+    end else if (misaligned_address) begin
+        p3_jump_addr = 32'hFFFF0004;       // Address of exception handler
+        p3_jump      = 1'b1;
+        next_epc     = p3_pc;
+        next_edata   = cpu_address;
+        next_ecause  = p3_op[3] ? `EXCEPTION_MISALIGNED_STORE : `EXCEPTION_MISALIGNED_LOAD;
+        p3_exception    = 1'b1;
+    end else if (p3_op==`OP_ILLEGAL) begin
+        p3_jump_addr = 32'hFFFF0004;       // Address of exception handler
+        p3_jump      = 1'b1;
+        next_epc     = p3_pc;
+        next_edata   = p3_instr;
+        next_ecause  = `EXCEPTION_ILLEGAL_INSTRUCTION;
+        p3_exception    = 1'b1;
+    end else if (p3_op==`OP_CFGJMP) begin
+        p3_jump_addr = cfg_read;
+        p3_jump      = 1'b1;
+    end else if (p3_op==`OP_SYS) begin
+        p3_jump_addr = 32'hFFFF0004;
+        p3_jump      = 1'b1;
+        next_epc     = p2_pc;
+        next_edata   = p3_data_b;
+        next_ecause  = `EXCEPTION_SYSCALL;
     end else if (p3_jump)
         p3_jump_addr = p3_addr_a + p3_addr_b;
     else
@@ -352,6 +375,7 @@ always @(posedge clock) begin
         p4_denominator <= p3_denominator;
         p4_divide_sign <= p3_divide_sign;
         p4_divide_start <= p3_divide_start;
+        p4_misaligned_addr <= misaligned_address;
 
         this_ecause    <= next_ecause;
         this_epc       <= next_epc;
