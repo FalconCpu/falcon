@@ -1,54 +1,15 @@
-0000067c kprint_hex.isNumber
-00000668 kprint_hex.loop
-00000644 kprint_string.loop
-00000654 kprint_string.loop_cond
-0000061c init_keyboard.loop
-0000020c read_keyboard.skip_caps_lock
-000001c4 read_keyboard.with_shift
-000001c8 read_keyboard.noshift
-000001d4 read_keyboard.printable_caps
-000001bc read_keyboard.printable_no_caps
-00000214 keyboard_scan_table
-00000128 read_keyboard.not_caps_lock
-0000010c read_keyboard.got_make_code
-000001f8 read_keyboard.got_break_code
-000001ec read_keyboard.got_break_modifier
-000001e0 read_keyboard.got_extend_modifier
-000000dc read_keyboard.got_scancode
-0000020c read_keyboard.ret
-00000064 key_names_table
-0000062c kprint_char
-00000040 loop.non_printable
-00000638 kprint_string
-0000065c kprint_hex
-000000cc read_keyboard
-00000004 loop
-00000614 init_keyboard
-00000000 main
-00000690 "NUMLOCK"
-0000069c "PAUSE"
-000006a8 "SCROLLOCK"
-000006b8 "PRTSCREEN"
-000006c8 "DOWN"
-000006d4 "UP"
-000006dc "RIGHT"
-000006e8 "LEFT"
-000006f4 "PAGEDOWN"
-00000704 "PAGEUP"
-00000710 "END"
-00000718 "HOME"
-00000724 "INSERT"
-00000730 "F12"
-00000738 "F11"
-00000740 "F10"
-00000748 "F9"
-00000750 "F8"
-00000758 "F7"
-00000760 "F6"
-00000768 "F5"
-00000770 "F4"
-00000778 "F3"
-00000780 "F2"
-00000788 "F1"
-00000790 "DELETE"
-0000079c " "
+000000a0 kprint_hex.isNumber
+0000008c kprint_hex.loop
+00000068 kprint_string.loop
+00000078 kprint_string.loop_cond
+00000080 kprint_hex
+0000005c kprint_string
+00000004 exception
+0000003c start
+00000000 Entry_point
+000000b4 "Error - should not be executed"
+000000d8 "Hello World
+"
+000000ec " EPC="
+000000f8 " EDATA="
+00000104 "Exception: CAUSE="
