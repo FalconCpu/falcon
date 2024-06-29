@@ -1,0 +1,296 @@
+HWREGS_BASE = 0E0000000H
+HWREGS_UART_TX = 14H         ; Read = number of free slots in FIFO
+                             ; Write = Data to TX
+HWREGS_UART_RX = 18H         ; Read = Byte of data from RX, of -1 if no data availible
+HWREGS_SCREEN_BLANK = 1CH    ; Bit 8=Blank screen, bits 7:0=Color.
+HWREGS_7SEG = 0
+HWREGS_7SEG_BRI = 24H
+
+jmp load_boot_code
+
+; ==========================================================
+                    exception:
+; ==========================================================
+
+ld $1, HWREGS_BASE
+
+ld $2, #ecause
+stw $2, $1[HWREGS_7SEG]
+ld $2, 255
+stw $2, $1[HWREGS_7SEG_BRI]
+ld $2, 100000000
+.delay1:
+sub $2,1
+bne $2, 0, .delay1
+
+ld $2, #epc
+stw $2, $1[HWREGS_7SEG]
+ld $2, 100
+stw $2, $1[HWREGS_7SEG_BRI]
+ld $2, 100000000
+.delay2:
+sub $2,1
+bne $2, 0, .delay2
+
+ld $2, #edata
+stw $2, $1[HWREGS_7SEG]
+ld $2, 100
+stw $2, $1[HWREGS_7SEG_BRI]
+ld $2, 100000000
+.delay3:
+sub $2,1
+bne $2, 0, .delay3
+
+jmp exception
+
+
+
+
+
+; ==========================================================
+                    uart_tx_word:
+; ==========================================================
+; Output a 32 bit word over the UART
+; Input:  $1 = word to transmit
+; Output: nothing
+
+ld $2, HWREGS_BASE           ; $2 = HWREGS_BASE
+ld $3, 4                     ; $3 = Number of bytes remaining
+
+.loop:
+ldw $4, $2[HWREGS_UART_TX]   ; $4 = Number of slots free in TX fifo
+beq $4, 0, .loop
+
+and $4, $1, 0FFH             ; $4 = Byte to transmit
+stw $4, $2[HWREGS_UART_TX]   ; send it to fifo
+lsr $1, 8
+sub $3, 1
+bne $3, 0, .loop
+ret
+
+
+; ==========================================================
+                    uart_rx_word:
+; ==========================================================
+; Receive a 32 bit word over the FIFO
+; Input:  nothing
+; Output: $7 = success (1) 
+;         $8 = received word
+
+ld $2, HWREGS_BASE           ; $2 = HWREGS_BASE
+ld $3, 4                     ; $3 = Number of bytes remaining
+ld $8, 0                     ; $8 = current word
+
+; repeat for 4 bytes
+.byte_loop:
+
+; The UART runs at 2Mbit/sec. The CPU runs at 100Mhz. Hence 50 cycles per bit.
+; a byte = 10 bits on UART (incl start and stop bits). So ~500 clock cycles per byte.
+; This 'get_byte_loop' below takes ~5 clock cycles per iteration. Therefore if we
+; set a timeout of 500 iterations then that is a margin of 5x over the expected time
+;
+; Found from experiment I get unwanted timeouts with 5000 iterations. So use 50000
+ld $4, 500000                 ; $4 = countdown for timeout
+
+.wait_byte_loop:
+ld $5, $2[HWREGS_UART_RX]    ; $5 = byte read from fifo
+bge $5, 0, .got_byte 
+sub $4,1
+bne $4, 0, .wait_byte_loop
+
+; hit the timeout
+ld $7, 0
+ld $8, 0
+ret
+
+.got_byte:
+lsr $8, 8
+lsl $5, 24
+or $8, $5
+sub $3, 1
+bne $3, 0, .byte_loop
+
+ld $7,1   ; indicate success
+ret
+
+; ==========================================================
+                    load_boot_code:
+; ==========================================================
+; loads a block of code over the UART
+; Stores the received code at address 0FFFF8000
+; checks the CRC of the received 
+; Updates the screen color to indicate progress
+
+; The protocol used is:
+; Send the word 0xB007FACE to request the host to send the BootCode
+; Host replies with 0xB007C0DE
+; Host then sends Datawords
+; Host then sends a checksum
+; Host then stops transmitting
+; FPGA detects a timeout - which signifies the end of transmission
+
+; Progress is indicated by screen color
+; YELLOW    = Waiting for Host 
+; MID GRAY  = Receiving data
+; MAGENTA   = Wrong response from host
+; RED       = CRC error in data
+; BLACK     = Pause before retry
+; unblanked = Complete
+
+; Set the screen to Yellow
+ld $15, HWREGS_BASE        ; $15 = HWREGS_BASE
+ld $1, 10BH
+stw $1,$15[HWREGS_SCREEN_BLANK] 
+
+; Drain RX fifo
+.drain:
+jsr uart_rx_word
+bne $7, 0, .drain
+
+; Send request
+.send_request:
+ld $1, 0B007FACEH
+jsr uart_tx_word
+
+; Each read word times out after ~50us.
+; Make 10000 attempts at reading a word (=500ms), then try resending the request
+ld $14, 100                ; $14 = Number of attempts
+.wait_response:
+sub $14,1
+beq $14, 0, .send_request
+jsr uart_rx_word
+beq $7, 0, .wait_response
+
+; check received word is expected header 0B007C0DE
+ld $1, 0B007C0DEH
+bne $1,$8, .bad_response
+
+; Prepare to receive data. Set screen to mid gray.
+ld $10, 0FFFF8000H         ; $10 = address to write to
+ld $12, 0                  ; $12 = checksum
+ld $1, 107H
+stw $1,$15[HWREGS_SCREEN_BLANK]  ; set 
+
+; receive the first word
+jsr uart_rx_word
+beq $7, 0, .no_data
+ld $11, $8                 ; $11 = current last word
+
+.data_loop:
+jsr uart_rx_word
+beq $7, 0, .end_of_data
+lsl $1, $12, 5             ; new_checksum = (old_checksum*31)+data
+sub $12, $1, $12
+add $12, $11
+stw $11, $10[0]            ; store the data
+add $10, 4
+beq $10, 0, .bad_crc       ; detect overflowing the memory. Treat as a bad CRC
+ld  $11, $8                ; update the last word
+jmp .data_loop
+
+.end_of_data:
+; reached the end of the data
+; check the last word = CRC
+bne $12, $11, .bad_crc     
+
+; CRC passed. Turn off screen blank, and jump to the newly loaded code
+stw 0, $15[HWREGS_SCREEN_BLANK] 
+
+ld $1,"Checksum passed\n"
+jsr kprint_string
+ld $30, 0FFFF8000H
+ret
+
+.bad_response:
+; we received an incorrect response to our boot request
+ld $1, 10DH
+stw $1, $15[HWREGS_SCREEN_BLANK] 
+
+ld $1, "Bad response "
+jsr kprint_string
+ld $1, $8
+jsr kprint_hex
+ld $1,"\n"
+jsr kprint_string
+
+; wait 1 sec, then restart
+.wait_and_retry:
+ld $1, 2000000
+.delay:
+sub $1,1
+bne $1, 0, .delay
+jmp load_boot_code
+
+.bad_crc:
+; we received an incorrect CRC
+ld $1, 109H
+stw 0, $15[HWREGS_SCREEN_BLANK] 
+
+ld $1, "Bad CRC "
+jsr kprint_string
+ld $1, $11
+jsr kprint_hex
+ld $1,"  "
+jsr kprint_string
+ld $1, $12
+jsr kprint_hex
+ld $1,"\n"
+jsr kprint_string
+jmp .wait_and_retry
+
+
+.no_data:
+; we received an incorrect response to our boot request
+ld $1, 10DH
+stw $1, $15[HWREGS_SCREEN_BLANK] 
+
+ld $1, "No data received after header\n"
+jsr kprint_string
+jmp .wait_and_retry
+
+
+; =======================================
+;               kprint_string
+; =======================================
+; $1 = string to print
+
+kprint_string:
+ld $7, HWREGS_BASE
+ld $2, $1[-4]       ; $2 = length of string
+jmp .loop_cond
+
+.loop:
+ldb $3, $1[0]       ; $3 = next char
+stw $3, $7[HWREGS_UART_TX]
+add $1, 1
+sub $2, 1
+.loop_cond:
+bne $2, 0, .loop
+
+ret
+
+
+; =======================================
+;               kprint_hex
+; =======================================
+; Prints an integer to the UART as an 8 digit hex value
+; $1 = integer to print
+
+kprint_hex:
+ld $7, HWREGS_BASE
+ld $6, 8               ; $6 = number of digits left to print
+ld $3, '9'
+
+.loop:
+lsr $2, $1, 28         ; $2 = most significant nybble of number
+lsl $1, $1, 4 
+add $2, '0'            ; convert to ASCII
+bge $3,$2, .isNumber
+add $2, 7              ; convert ':' to 'A'
+.isNumber:
+stw $2, $7[HWREGS_UART_TX]
+
+sub $6,1
+bne $6, 0, .loop
+
+ret

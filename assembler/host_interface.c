@@ -7,11 +7,15 @@
 
 typedef const char* string;
 
-#define COM_PORT "COM5"
+#define COM_PORT "COM3"
 #define BAUD_RATE 2000000
 #define OUT_FILE_NAME "out.bin"
 
 static HANDLE hSerial = INVALID_HANDLE_VALUE;
+
+const char* YELLOW = "\e[33m";
+const char* RED    = "\e[31m";
+const char* DEFAULT = "\e[0m";
 
 /// -----------------------------------------------------
 ///                       fatal
@@ -74,7 +78,7 @@ static void open_com_port() {
 
 static int read_from_com_port() {
 
-    char readBuffer[1];
+    unsigned char readBuffer[1];
     DWORD bytesRead = 0;
     
     if (!ReadFile(hSerial, readBuffer, 1, &bytesRead, NULL))
@@ -83,6 +87,7 @@ static int read_from_com_port() {
     if (bytesRead==0)
         return -1;
 
+    //printf("<%02x>\n", readBuffer[0]);
     return readBuffer[0];
 }
 
@@ -97,26 +102,68 @@ static void send_file_to_com_port(int file_number) {
     else
         sprintf(filename,"file%d.bin",file_number);
 
-
     FILE *fh = fopen(filename, "rb");
     if (fh==0)
-        fatal("Cannot open file '%s'", filename);
+        fatal("%sCannot open file '%s'%s", RED, filename, DEFAULT);
 
-    char data[256];
+    int data;
     int num_bytes;
 
     DWORD bytesWritten;
 
-    while ((num_bytes = fread(&data, sizeof(char), 256, fh)) > 0 ) {
+    data = 0xB007C0DE;
+    // data[0]=0xde;
+    // data[1]=0xc0;
+    // data[2]=0x07;
+    // data[3]=0xB0;
+    WriteFile(hSerial, &data, 4, &bytesWritten, NULL);
+
+    int crc = 0;
+
+    while ((num_bytes = fread(&data, sizeof(char), 4, fh)) > 0 ) {
+        //int word = data[0] | (data[1]<<8) | (data[2]<<16) | (data[3]<<24);
+        crc = crc*31 + data;
+
+
         if (!WriteFile(hSerial, &data, num_bytes, &bytesWritten, NULL)) {
             fclose(fh);
-            fatal("Error writing to serial port.");
+            fatal("%sError writing to serial port.%s", RED, DEFAULT);
         }
+
+        printf("Writing %x\n", data);
+        data = 0;
     }
+
+    // data[0] = (crc>>0) & 0xff;
+    // data[1] = (crc>>8) & 0xff;
+    // data[2] = (crc>>16) & 0xff;
+    // data[3] = (crc>>24) & 0xff;
+    WriteFile(hSerial, &crc, 4, &bytesWritten, NULL);
+    printf("CRC = %x\n",crc);
 
     fclose(fh);
 }
 
+
+/// -----------------------------------------------------------------
+///                      uart_command
+/// -----------------------------------------------------------------
+/// Received a high byte - start of a command
+
+void uart_command(int byte0) {
+    int byte1= read_from_com_port();
+    int byte2= read_from_com_port();
+    int byte3= read_from_com_port();
+    unsigned int word = (byte0) | (byte1<<8) | (byte2<<16) | (byte3<<24);
+
+    printf("%sReceived command %x  - ", YELLOW, word);
+    if (word==0xB007FACE) {
+        printf("Sending boot image\n");
+        send_file_to_com_port(0);
+    } else
+        printf("%sUnknown command %x\n", RED,word);
+    printf("%s",DEFAULT);
+}
 
 /// -----------------------------------------------------------------
 ///                      main_loop
@@ -127,39 +174,27 @@ static void send_file_to_com_port(int file_number) {
 
 void main_loop() {
     printf("Opened serial port\n");
+
+    // drain anything in the pipe
+    while(read_from_com_port()==-1)
+        ;
+
+
     while(1) {
         int com_data = read_from_com_port();
-        switch(com_data) {
-            case '\0':
-                printf("Received NULL\n");
-                send_file_to_com_port(0);
-                break;
-
-            case 1:
-                com_data = read_from_com_port();
-                printf("Received 1:%d\n", com_data);
-                send_file_to_com_port(com_data);
-                break;
-
-
-            case -1:
-                break;
-
-            case 27:
-                printf("Sending file to device\n");
-                send_file_to_com_port(0);
-                break;
-
-            default:
-                printf("%c", com_data);
-        }
-
-        if (_kbhit()) {
-            int c = _getch();
-            //printf("Sending ");
-            WriteFile(hSerial, &c, 1, 0, NULL);
-        }
+        if (com_data==-1)
+            ;
+        else if (com_data>0x80)
+            uart_command(com_data);
+        else
+            printf("%c", com_data);
     }
+
+    // if (_kbhit()) {
+    //     int c = _getch();
+    //     //printf("Sending ");
+    //     WriteFile(hSerial, &c, 1, 0, NULL);
+    // }
 }
 
 /// -----------------------------------------------------------------

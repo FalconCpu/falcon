@@ -1,15 +1,16 @@
-000000a0 kprint_hex.isNumber
-0000008c kprint_hex.loop
-00000068 kprint_string.loop
-00000078 kprint_string.loop_cond
-00000080 kprint_hex
-0000005c kprint_string
-00000004 exception
-0000003c start
-00000000 Entry_point
-000000b4 "Error - should not be executed"
-000000d8 "Hello World
-"
-000000ec " EPC="
-000000f8 " EDATA="
-00000104 "Exception: CAUSE="
+000001bc draw_text_cpu.skip
+000001ac draw_text_cpu.loop_x
+000001a4 draw_text_cpu.loop_y
+00000178 draw_text.wait_for_gpu
+00000110 load_font.loop
+000001d8 font
+000000f0 draw_rectangle.wait_for_gpu
+000000bc clear_screen.wait_for_gpu
+00000078 main.forever
+0000018c draw_text_cpu
+0000012c draw_text
+000000d0 draw_rectangle
+00000104 load_font
+0000009c clear_screen
+0000007c set_clip_region
+00000000 main

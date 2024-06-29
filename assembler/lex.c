@@ -347,7 +347,7 @@ token* next_token() {
             return 0;
 
         } else if (isalpha(lookahead) || lookahead=='@' || lookahead=='_') {
-            while(isalnum(lookahead) || lookahead=='_' || lookahead=='@' || lookahead=='.')
+            while(isalnum(lookahead) || lookahead=='_' || lookahead=='@' || lookahead=='.' || lookahead=='/')
                 add_to_str(next_char());
             ret = hash_find(string_buffer);
             if (ret==0)

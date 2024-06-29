@@ -46,8 +46,8 @@ module hwregs(
     output reg [15:0] gpu_clip_y1,
     output reg [15:0] gpu_clip_x2,
     output reg [15:0] gpu_clip_y2,
-    output reg [8:0]  hwreg_screen_blank,
-    output reg [25:0] hwreg_screen_addr,
+    output reg [8:0]  hwregs_screen_blank,
+    output reg [31:0] hwregs_screen_addr,
     output reg [8:0] LEDR
 );
 
@@ -87,6 +87,8 @@ always @(posedge clock) begin
     if (reset) begin
         hwreg_seven_segment <= 0;
         hwreg_seven_segment_brightness <= 8'hff;
+        hwregs_screen_addr <= 26'h3800000;
+        hwregs_screen_blank <= 9'h0;
     end
 
     // ================================================
@@ -106,8 +108,8 @@ always @(posedge clock) begin
                 // synthesys translate_on
             end 
             16'h0018: begin end // uart_rx
-            16'h001C: hwreg_screen_blank <= hwregs_wdata[8:0];
-            16'h0020: hwreg_screen_addr  <= hwregs_wdata[25:0];
+            16'h001C: hwregs_screen_blank <= hwregs_wdata[8:0];
+            16'h0020: hwregs_screen_addr  <= hwregs_wdata[25:0];
             16'h0024: hwreg_seven_segment_brightness <= hwregs_wdata[7:0];
             16'h0028: begin end // keyboard
 
@@ -153,8 +155,8 @@ always @(posedge clock) begin
         16'h0010: hwregs_rdata <= mouse_buttons;
         16'h0014: hwregs_rdata <= {22'b0, uart_tx_slots_free};
         16'h0018: hwregs_rdata <= uart_rx_fifo_not_empty ?  uart_rx_fifo_data : 32'hffffffff;
-        16'h001c: hwregs_rdata <= hwreg_screen_blank;
-        16'h0020: hwregs_rdata <= hwreg_screen_addr;
+        16'h001c: hwregs_rdata <= hwregs_screen_blank;
+        16'h0020: hwregs_rdata <= hwregs_screen_addr;
         16'h0024: hwregs_rdata <= hwreg_seven_segment_brightness;
         16'h0028: hwregs_rdata <= keyboard_fifo_not_empty ?  keyboard_fifo_data : 32'hffffffff;
         16'h0040: hwregs_rdata <= reg_x;

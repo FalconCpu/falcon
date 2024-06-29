@@ -183,8 +183,8 @@ wire        gpu_busy;
 wire       uart_rx_complete;  // Pulsed to indicate a byte has been received from the channel
 wire [7:0] uart_rx_word;   
 wire       uart_tx_complete;   // Pulsd to indicate the byte has been transmitted
-wire [31:0] screen_address = 31'h03f80000;
-wire [8:0]  screen_blank = 0;
+wire [31:0] hwregs_screen_address;
+wire [8:0]  hwregs_screen_blank;
 
 // signals driven by mouse controller 
 wire [9:0] mouse_x, mouse_y;
@@ -353,6 +353,8 @@ sdram_controller  sdram_controller_inst (
     .hwregs_rdata(hwregs_rdata),
     .hwreg_seven_segment(seven_segment),
     .hwreg_seven_segment_brightness(seven_segment_brightness),
+    .hwregs_screen_blank(hwregs_screen_blank),
+    .hwregs_screen_addr(hwregs_screen_address),
     .uart_rx_complete(uart_rx_complete),
     .uart_rx_word(uart_rx_word),
     .uart_tx_ready(uart_tx_ready),
@@ -410,8 +412,8 @@ uart  uart_inst (
 vga_output  vga_output_inst (
     .clock(clock),
     .reset(reset),
-    .screen_blank(screen_blank),
-    .screen_address(screen_address),
+    .screen_blank(hwregs_screen_blank),
+    .screen_address(hwregs_screen_address),
     .VGA_BLANK_N(VGA_BLANK_N),
     .VGA_B(VGA_B),
     .VGA_CLK(VGA_CLK),
@@ -483,7 +485,7 @@ keyboard_if  keyboard_if_inst (
     .gpu_clip_x2(gpu_clip_x2),
     .gpu_clip_y2(gpu_clip_y2),
     .gpu_busy(gpu_busy),
-    .gpu_screen_address(screen_address)
+    .gpu_screen_address(hwregs_screen_address)
   );
 
 
