@@ -34,6 +34,13 @@ reg [7:0] ram0[0:16383];
 reg [7:0] ram1[0:16383];
 reg [7:0] ram2[0:16383];
 reg [7:0] ram3[0:16383];
+initial begin
+    $readmemh("font0.hex",ram0);
+    $readmemh("font1.hex",ram1);
+    $readmemh("font2.hex",ram2);
+    $readmemh("font3.hex",ram3);
+end
+
 reg [31:0] rdata;
 
 //-----------------------------------------
@@ -51,9 +58,9 @@ always @(posedge clock) begin
         if (pram_byte_en[2])   
             ram2[pram_addr] = pram_wdata[23:16];
         if (pram_byte_en[3])   
-            ram3[pram_addr] = pram_wdata[31:24];
+            ram3[pram_addr]= pram_wdata[31:24];
     end
-    rdata <= {ram3[pram_addr], ram2[pram_addr], ram1[pram_addr], ram0[pram_addr]};
+    rdata <= {ram3[pram_addr],ram2[pram_addr],ram1[pram_addr],ram0[pram_addr]};
     pram_valid <= pram_request;
     pram_read  <= pram_request && !pram_write;
 end

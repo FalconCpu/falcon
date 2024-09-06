@@ -112,6 +112,13 @@ static void writeMemMappedReg(unsigned int addr, int value) {
             printf("%c", value & 0xFF);
             break;
 
+        case 0xE0000024: // LED brightness
+            if (value==0)
+                finished=1; 
+            else
+                printf("Brightness = %d", value & 0xFF);
+            break;
+
         case 0xE000001C: 
             printf("SCREEN BLANK %3X", value & 0x3FF);
             break;
@@ -305,17 +312,20 @@ static void executeInstruction(int instr) {
     cycle_count++;
     null_as_exception = 0;
 
+    // Break the instruction down into bit fields
     int k = (instr>>26) & 0x3f;
     int i = (instr>>23) & 7;
     int d = (instr>>18) & 31;
     int a = (instr>>13) & 31;
-    int c = (instr>>5)  & 0xff; if (c&0x80) c|= 0xffffff00;
+    int c = (instr>>5)  & 0xff; if (c&0x80) c|= 0xffffff00;   // Sign extend
     int b = (instr)     & 31;
 
+    // Possible int literal encodings
     int n13 = (c<<5) | b;
     int n13d = (c<<5) | d;
     int n21 = (c<<13) | (i<<10) | (a<<5) | b;
 
+    // Execute the instruction
     switch(k) {
         case KIND_ALU_REG: setReg(d, aluOp(i, regs[a], regs[b], c));   break;
         case KIND_ALU_LIT: setReg(d, aluOp(i, regs[a], n13, c));       break;
@@ -366,7 +376,7 @@ static void output_final_regs(FILE *out) {
 
 static void execute() {
     //int timeout = 100000000;
-    int timeout = 100000;
+    int timeout = 10000;
 
     while(!finished) {
         int ins = read(pc,2);

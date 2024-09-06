@@ -48,6 +48,7 @@ module gpu(
 );
 
 reg stall; 
+reg reg_gpu_start;
 
 reg signed [15:0] this_x, next_x;
 reg signed [15:0] this_y, next_y;
@@ -75,8 +76,9 @@ wire [8:0] texture_color;
 
 wire     same_word = (this_byte_address[31:2]==this_word_address[31:2]);
 
-parameter [7:0]   CMD_PATTERN_RECTANGLE = 8'h2;
-parameter [7:0]   CMD_SOLID_RECTANGLE   = 8'h3;
+
+parameter [7:0]   CMD_PATTERN_RECTANGLE = 8'h1;
+parameter [7:0]   CMD_SOLID_RECTANGLE   = 8'h2;
 
 // ===========================================
 //            The pattern ram
@@ -121,7 +123,7 @@ always @(*) begin
     next_gpu_write    = gpu_write;
     next_gpu_wdata    = gpu_wdata;
     next_gpu_byte_en  = gpu_byte_en;
-	 next_gpu_burst    = gpu_burst;
+	next_gpu_burst    = gpu_burst;
     stall             = 1'b0;
     next_gpu_request  = 1'b0;
 
@@ -133,20 +135,21 @@ always @(*) begin
     if (reset) begin
         next_busy = 1'b0;
 
-    end else if (gpu_start) begin
+    end else if (reg_gpu_start) begin
         // Got a command to start an operation
 
         if (gpu_busy) 
-            $display("Time %t: ERROR gpu command interupted", $abstime);
+            $display("Time %t: ERROR gpu command interupted", $time);
 
         case(gpu_command)
             CMD_SOLID_RECTANGLE, CMD_PATTERN_RECTANGLE: begin
                 next_x    = 0;
                 next_y    = 0;                
                 next_busy = 1'b1;  // ensure x1,y1 is top left corner
+                $display("GPU COMMAND %d %d %d %d %d", gpu_command, gpu_x, gpu_y, gpu_width, gpu_height);
             end
 
-            default: $display("Time %t: Unrecognized gpu command %x", $abstime, gpu_command);
+            default: $display("Time %t: Unrecognized gpu command %x", $time, gpu_command);
         endcase
 
     end else if (gpu_busy) 
@@ -238,6 +241,8 @@ end
 
 
 always @(posedge clock) begin
+    reg_gpu_start <= gpu_start | (reg_gpu_start & stall);
+    
     if (!stall) begin
         gpu_busy          <= next_busy;
         this_busy_dly     <= gpu_busy;

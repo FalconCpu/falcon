@@ -192,9 +192,9 @@ static void define_label(token *label) {
     label->value = prog_length;
     label->flags |= FLAG_DEFINED;
 
-    // if the label does not contain a '.' then it becomes the current block
+    // if the label does not contain a '@' then it becomes the current block
     for(const char*t = label->name; *t; t++)
-        if (*t=='.')
+        if (*t=='@')
             return;
     current_block = label->name;
 }
@@ -220,8 +220,8 @@ static void process_dcb(token** line) {
             case '0':
             case 'i': {
                 int v = line[index]->value;
-                if (v<0 || v>255)
-                    error("Value %d out of range 0..255");
+                if (v<-128 || v>127)
+                    error("Value %d out of range -128..127");
                 x |= (v&0xff) << (n*8);
                 n++;
                 if (n==4) {

@@ -18,9 +18,9 @@ integer i;
 integer file_handle;
 
 initial begin
-    for(i=0; i<=31; i=i+1)
+    for(i=0; i<=30; i=i+1)
         regs[i] = 0;
-
+    regs[31] = 32'h400000;
 end
 
 assign q = regs[rdaddress];

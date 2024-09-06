@@ -119,10 +119,14 @@ always begin
 end
 
 initial begin
-$dumpvars(6);
-#1000000;
-$display("TIMEOUT");
-$finish;
+  $dumpvars(0); // long enough for one frame
+  #15000000;  
+
+  //$dumpvars(5);  // Long enough for most testcases
+  //#15000; 
+
+  $display("TIMEOUT");
+  $finish;
 end
 
 // write RGB file

@@ -258,7 +258,7 @@ always @(*) begin
         `OP_XOR    :  p3_out = p3_data_a ^ p3_data_b;
         `OP_SHIFT  :  p3_out = (p3_opx==2'h0) ? p3_data_a << p3_data_b[4:0]
                              : (p3_opx==2'h3) ? $unsigned(p3_data_a) >> p3_data_b[4:0]
-                             : (p3_opx==2'h2) ? $signed(p3_data_a) >> p3_data_b[4:0]
+                             : (p3_opx==2'h1) ? $signed(p3_data_a) >> p3_data_b[4:0]
                              : 32'bx;
         `OP_ADD    :  p3_out = p3_data_a + p3_data_b;
         `OP_SUB    :  p3_out = p3_data_a - p3_data_b;

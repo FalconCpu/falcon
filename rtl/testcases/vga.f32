@@ -30,9 +30,9 @@ main:
 
     jsr set_clip_region
 
-    jsr clear_screen
+    ; jsr clear_screen
 
-    jsr load_font
+    ; jsr load_font
 
     ld $1, 2
     ld $2, HWREGS_BASE
@@ -43,7 +43,7 @@ main:
     ld $3, 7
     ld $4, 479
     ld $5, 1
-    jsr draw_rectangle
+    ; jsr draw_rectangle
 
     ld $1, 3
     ld $2, HWREGS_BASE
@@ -58,7 +58,7 @@ main:
     ld $2, HWREGS_BASE
     stw $1, $2[HWREGS_7SEG]
 
-    jsr draw_text_cpu
+    ; jsr draw_text_cpu
 
     ld $1, 4
     ld $2, HWREGS_BASE

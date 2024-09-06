@@ -274,8 +274,8 @@ end
 
 always @(posedge clock) begin
 
-    if (this_state==STATE_IDLE && next_state==STATE_WRITE)
-        $display("TIME %t [%x]=%x %x", $time, sdram_address, sdram_wdata, sdram_byte_en);
+    //if (this_state==STATE_IDLE && next_state==STATE_WRITE)
+    //    $display("TIME %t [%x]=%x %x", $time, sdram_address, sdram_wdata, sdram_byte_en);
 
     this_counter <= next_counter;
     this_state   <= next_state;

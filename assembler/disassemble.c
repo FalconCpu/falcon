@@ -170,7 +170,7 @@ void read_labels() {
             buf[strlen(buf)-1] = 0; // remove end of line
 
             token* label = new(token);
-            label->value = val;
+            label->value = val + 0xFFFF0000;
             label->name = strdup(buf);
             label->next = all_labels;
             label->flags = FLAG_DEFINED;

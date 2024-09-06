@@ -47,7 +47,7 @@ always @(*) begin
         end else if (this_count==10) begin
             next_count = 0;
         end
-
+    end else begin
         next_timeout = this_timeout-1'b1;
     end
 end

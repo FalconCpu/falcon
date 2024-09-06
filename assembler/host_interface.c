@@ -17,6 +17,17 @@ const char* YELLOW = "\e[33m";
 const char* RED    = "\e[31m";
 const char* DEFAULT = "\e[0m";
 
+#define COMMAND_WORD_BOOT 0xcefa07b0
+#define COMMAND_WORD_WRITE 0x7e4107b0
+#define COMMAND_WORD_READ 0xAD3E07B0
+#define COMMAND_WORD_OK 0x70AC07B0
+#define COMMAND_WORD_ERROR 0x01E007B0
+#define COMMAND_WORD_DATA 0x7ADA07B0
+
+#define NUM_DISK_BLOCKS 16
+#define BLOCK_SIZE 512
+int* diskImage;
+
 /// -----------------------------------------------------
 ///                       fatal
 /// -----------------------------------------------------
@@ -92,6 +103,24 @@ static int read_from_com_port() {
 }
 
 /// -----------------------------------------------------------------
+///                    read_command_word
+/// -----------------------------------------------------------------
+/// Assume we have already seen the 0xB0 to initiate a command word
+
+// static int read_command_word() {
+//     int byte1 = read_from_com_port();
+//     if (byte1 != 0x07)
+//         return 0;
+
+//     int byte2 = read_from_com_port();
+//     int byte3 = read_from_com_port();
+//     return 0xB0 | (byte1<<8) | (byte2<<16) | (byte3<<24);
+// }
+
+
+
+
+/// -----------------------------------------------------------------
 ///                    send_file_to_com_port
 /// -----------------------------------------------------------------
 
@@ -130,7 +159,7 @@ static void send_file_to_com_port(int file_number) {
             fatal("%sError writing to serial port.%s", RED, DEFAULT);
         }
 
-        printf("Writing %x\n", data);
+        // printf("Writing %x\n", data);
         data = 0;
     }
 
@@ -144,6 +173,112 @@ static void send_file_to_com_port(int file_number) {
     fclose(fh);
 }
 
+/// -----------------------------------------------------------------
+///                    initialize_memory_file
+/// -----------------------------------------------------------------
+
+void initialize_memory_file() {
+    // lets make the disk 64Mb - 131072 blocks
+    diskImage = calloc(1,NUM_DISK_BLOCKS * BLOCK_SIZE);
+    if (diskImage==0)
+        fatal("Cannot allocate memory for disk image");
+
+    FILE *fh = fopen("diskImage.bin","rb");
+    if (fh==0) {
+        printf("%sNo disk image found - initialzing one%s\n", RED, DEFAULT);
+        FILE *fh = fopen("diskImage.bin","wb");
+        if (fh==0) 
+            fatal("Cannot open file");
+        fwrite(diskImage, BLOCK_SIZE, NUM_DISK_BLOCKS,  fh);
+        fclose(fh);
+    } else {
+        printf("Reading disk image\n");
+        fread(diskImage, BLOCK_SIZE, NUM_DISK_BLOCKS, fh);
+        fclose(fh);
+    }
+}
+
+
+/// -----------------------------------------------------------------
+///                      read_word
+/// -----------------------------------------------------------------
+
+static int read_word() {
+    int byte0 = read_from_com_port();
+    int byte1 = read_from_com_port();
+    int byte2 = read_from_com_port();
+    int byte3 = read_from_com_port();
+
+    return (byte0<<0) | (byte1<<8) | (byte2<<16) | (byte3<<24);
+}
+
+/// -----------------------------------------------------------------
+///                      write_word
+/// -----------------------------------------------------------------
+
+static void write_word(int word) {
+    unsigned long bytesWritten;
+    WriteFile(hSerial, &word, 4, &bytesWritten, NULL);
+}
+
+
+
+/// -----------------------------------------------------------------
+///                      write block
+/// -----------------------------------------------------------------
+
+static void write_block() {
+    int block_number = read_word();
+    if (block_number<0 || block_number>NUM_DISK_BLOCKS) {
+        printf("%sInvalid block number%s\n",RED,DEFAULT);
+        return;
+    }
+
+    int crc = block_number;
+    printf("WRITE BLOCK %d\n", block_number);
+    for(int k=0; k<128; k++) {
+        int word = read_word();
+        crc = 31*crc + word;
+        diskImage[block_number*128 + k] = word;
+        printf("%08X ", word);
+        if ((k&7)==7)
+            printf("\n");
+    }
+    int rxcrc = read_word();
+    printf("RXCRC=%08x CALC_CRC=%08x   %s\n", rxcrc, crc, (rxcrc==crc)?"MATCH":"ERROR");
+
+    if (rxcrc==crc)
+        write_word(COMMAND_WORD_OK);
+    else
+        write_word(COMMAND_WORD_ERROR);  
+
+
+    FILE *fh = fopen("diskImage.bin","rb+");
+    if (fh==0)
+        fatal("Cannot open file");
+    fseek(fh, BLOCK_SIZE*block_number, SEEK_SET);
+    fwrite(diskImage+ 128*block_number, BLOCK_SIZE, 1,  fh);
+    fclose(fh);
+
+}
+
+/// -----------------------------------------------------------------
+///                      read block
+/// -----------------------------------------------------------------
+
+static void read_block() {
+    int block_number = read_word();
+    printf("READ BLOCK %d\n", block_number);
+
+    write_word(COMMAND_WORD_DATA);
+    int crc = 0;
+    for(int k=0; k<128; k++) {
+        int data = diskImage[128*block_number + k];
+        write_word(data);
+        crc = crc*31 + data;
+    }
+    write_word(crc);
+}
 
 /// -----------------------------------------------------------------
 ///                      uart_command
@@ -152,18 +287,27 @@ static void send_file_to_com_port(int file_number) {
 
 void uart_command(int byte0) {
     int byte1= read_from_com_port();
+    // if (byte1!=0x07)
+    //     return;
+
     int byte2= read_from_com_port();
     int byte3= read_from_com_port();
     unsigned int word = (byte0) | (byte1<<8) | (byte2<<16) | (byte3<<24);
 
     printf("%sReceived command %x  - ", YELLOW, word);
-    if (word==0xB007FACE) {
+    if (word==COMMAND_WORD_BOOT) {
         printf("Sending boot image\n");
         send_file_to_com_port(0);
-    } else
-        printf("%sUnknown command %x\n", RED,word);
+    } else if (word==COMMAND_WORD_READ) {
+        read_block();
+    } else if (word==COMMAND_WORD_WRITE)
+        write_block();
+    else
+        printf("%sUnknown command %x\n", RED, word);
+
     printf("%s",DEFAULT);
 }
+
 
 /// -----------------------------------------------------------------
 ///                      main_loop
@@ -184,7 +328,7 @@ void main_loop() {
         int com_data = read_from_com_port();
         if (com_data==-1)
             ;
-        else if (com_data>0x80)
+        else if (com_data==0xB0 || com_data==0xCE)
             uart_command(com_data);
         else
             printf("%c", com_data);
@@ -202,6 +346,7 @@ void main_loop() {
 /// -----------------------------------------------------------------
 
 int main() {
+    initialize_memory_file();
     open_com_port();
 
     // int fd = fileno(stdin); // Get file descriptor for standard input

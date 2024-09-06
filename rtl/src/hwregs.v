@@ -87,8 +87,12 @@ always @(posedge clock) begin
     if (reset) begin
         hwreg_seven_segment <= 0;
         hwreg_seven_segment_brightness <= 8'hff;
-        hwregs_screen_addr <= 26'h3800000;
+        hwregs_screen_addr <= 26'h3f80000;
         hwregs_screen_blank <= 9'h0;
+        gpu_clip_x1 <= 0;
+        gpu_clip_y1 <= 0;
+        gpu_clip_x2 <= 640;
+        gpu_clip_y2 <= 480;
     end
 
     // ================================================
@@ -96,7 +100,11 @@ always @(posedge clock) begin
     // ================================================
     if (hwregs_request && hwregs_write)
         case(hwregs_address)
-            16'h0000: hwreg_seven_segment <= hwregs_wdata[23:0];
+            16'h0000: begin
+                hwreg_seven_segment <= hwregs_wdata[23:0];
+                $display("7SEG = %x",hwregs_wdata[23:0]);
+            end
+
             16'h0004: LEDR                <= hwregs_wdata[8:0];
             16'h0008: begin end // mouse_x
             16'h000c: begin end // mouse_x
