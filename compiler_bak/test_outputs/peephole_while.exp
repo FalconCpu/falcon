@@ -1,0 +1,14 @@
+
+main:
+0    start
+1    mov   a, $1
+2    mov   total, 0
+3    mov   index, 0
+4    jmp   @2
+5    lab   @1
+6    add_i total, total, index
+7    add_i index, index, 1
+8    lab   @2
+9    blt_i index, a, @1
+10   mov   $8, total
+11   end

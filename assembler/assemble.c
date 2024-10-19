@@ -56,7 +56,7 @@ static int format_i(int kind, int op, int d, int a, int b) {
     assert(d>=0 && d<=31);
     assert(a>=0 && a<=31);
     if (b<-0x1000 || b>=0x1000)
-        error("Integer %d out of range -4096..4095");
+        error("Integer %d out of range -4096..4095", b);
 
     // if (a==latent_reg && latent_reg!=0)
     //     error("Use of register $%d in delay slot", a);
@@ -71,7 +71,7 @@ static int format_s(int kind, int op, int a, int b, int c) {
     assert(a>=0 && a<=31);
     assert(b>=0 && b<=31);
     if (c<-0x1000 || c>=0x1000)
-        error("Integer %d out of range -4096..4095");
+        error("Integer %d out of range -4096..4095", c);
     // if (a==latent_reg && latent_reg!=0)
     //     error("Use of register $%d in delay slot", a);
     // if (b==latent_reg && latent_reg!=0)
@@ -86,7 +86,7 @@ static int format_j(int kind, int d, int lit) {
     assert(kind>=0 && kind<=0x3f);
     assert(d>=0 && d<=31);
     if (lit<-0x100000 || lit>=0x100000)
-        error("Integer %d out of range -4096..4095");
+        error("Integer %d out of range -4096..4095", lit);
 
     int b= lit & 31;
     int a = (lit>>5) & 31;
@@ -220,8 +220,10 @@ static void process_dcb(token** line) {
             case '0':
             case 'i': {
                 int v = line[index]->value;
-                if (v<-128 || v>127)
-                    error("Value %d out of range -128..127");
+                if (v<-128 || v>255) {
+                    printf("%c %s %x\n", line[index]->kind, line[index]->name, line[index]->value);
+                    error("Value %d out of range -128..127", v);
+                }
                 x |= (v&0xff) << (n*8);
                 n++;
                 if (n==4) {
@@ -234,6 +236,7 @@ static void process_dcb(token** line) {
 
             case 'l':
             case '"':
+                printf("%c %s\n", line[index]->kind, line[index]->name);
                 error("labels only allowed in dcw");
                 break;
 

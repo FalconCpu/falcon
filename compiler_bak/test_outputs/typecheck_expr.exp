@@ -1,0 +1,13 @@
+Symbol table [test:FUNC:(Int)->Void  ]
+FUNCTION test
+   DECL x
+      SYMBOL Int
+   Symbol table [x:VAR:Int  a:VAR:Int  b:VAR:String  ]
+   DECL a Int
+      BINOP + Int
+         INTLIT 1 Int
+         SYMBOL x Int
+   DECL b String
+      BINOP + String
+         STRLIT "hello " String
+         STRLIT "world" String

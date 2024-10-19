@@ -1,0 +1,12 @@
+ASSIGN
+   SYMBOL a
+   INTLIT 0 Int
+REPEAT
+   BINOP =
+      SYMBOL a
+      INTLIT 10 Int
+   ASSIGN
+      SYMBOL a
+      BINOP +
+         SYMBOL a
+         INTLIT 1 Int

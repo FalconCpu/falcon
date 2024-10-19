@@ -86,10 +86,9 @@ static string alu_op_name(int op, int c) {
 ///               disassemble_line
 /// --------------------------------------
 
-char* disassemble_line(int addr) {
+char* disassemble_line(int addr, int instr) {
     static char buf[64];
 
-    int instr = prog[(addr & 0xffff)/4];
     int k = (instr>>26) & 31;
     int i = (instr>>23) & 7;
     int d = (instr>>18) & 31;
@@ -148,7 +147,8 @@ static void print_label(int pc) {
 void disassemble() {
     for(int pc=0; pc<prog_length; pc+=4) {
         print_label(pc);
-        printf("%04X %08X  %s\n",pc,prog[pc/4],disassemble_line(pc));
+        int instr = prog[pc/4];
+        printf("%04X %08X  %s\n",pc,instr,disassemble_line(pc, instr));
     }
 }
 

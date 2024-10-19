@@ -76,6 +76,10 @@ inout 		    [35:0]		GPIO_1
 // signals driven by instruction ram
 wire [31:0]    instr_address;
 wire [31:0]    instr_data;
+wire [31:0]    rom_data;
+wire           instr_cache_miss;
+wire           instr_error;
+wire           instr_flush = 1'b0;
 
 // signals driven by PLL
 wire           clock;
@@ -154,6 +158,11 @@ wire [31:0]    vga_rdata;
 wire           vga_valid;
 wire           vga_complete;
 
+wire           icache_request;
+wire [25:0]    icache_address;
+wire [31:0]    icache_rdata;
+wire           icache_valid;
+wire           icache_complete;
 
 // signals driven by hwregs
 wire [23:0]    seven_segment;
@@ -219,7 +228,9 @@ cpu  cpu_inst (
     .cpu_rdata(cpu_rdata),
     .cpu_valid(cpu_valid),
     .instr_address(instr_address),
-    .instr_data(instr_data)
+    .instr_data(instr_data),
+    .instr_cache_miss(instr_cache_miss),
+    .instr_error(instr_error)
   );
 
   address_decoder  address_decoder_inst (
@@ -282,6 +293,11 @@ cpu  cpu_inst (
     .vga_rdata(vga_rdata),
     .vga_valid(vga_valid),
     .vga_complete(vga_complete),
+    .icache_request(icache_request),
+    .icache_address(icache_address),
+    .icache_rdata(icache_rdata),
+    .icache_valid(icache_valid),
+    .icache_complete(icache_complete),
     .gpu_request(gpu_request),
     .gpu_write(gpu_write),
     .gpu_address(gpu_address),
@@ -303,6 +319,22 @@ cpu  cpu_inst (
     .sdram_complete(sdram_complete)
   );
 
+instruction_cache  instruction_cache_inst (
+    .clock(clock),
+    .reset(reset),
+    .instr_addr(instr_address),
+    .instr_data(instr_data),
+    .instr_cache_miss(instr_cache_miss),
+    .instr_error(instr_error),
+    .instr_flush(instr_flush),
+    .icache_request(icache_request),
+    .icache_address(icache_address),
+    .icache_rdata(icache_rdata),
+    .icache_valid(icache_valid),
+    .icache_complete(icache_complete),
+    .rom_data(rom_data)
+  );
+
 instruction_ram  instruction_ram_inst (
     .clock(clock),
     .iram_request(iram_request),
@@ -313,7 +345,7 @@ instruction_ram  instruction_ram_inst (
     .iram_valid(iram_valid),
     .iram_rdata(iram_rdata),
     .instr_address(instr_address),
-    .instr_data(instr_data)
+    .instr_data(rom_data)
   );
 
 sdram_controller  sdram_controller_inst (

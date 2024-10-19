@@ -1,0 +1,41 @@
+; Routines to handle the UART
+
+HWREGS_BASE = 0E0000000H
+HWREGS_UART_TX = 014H
+
+; ==============================================
+;              kprint_char
+; ==============================================
+
+kprint_char:
+    ld %7, HWREGS_BASE
+    @wait:
+        ld %6, %7[HWREGS_UART_TX]
+        beq %6, 0, @wait
+    stw %1, %7[HWREGS_UART_TX]
+    ret
+
+
+; ==============================================
+;              kprint_string
+; ==============================================
+
+kprint_string:
+    ld %7, HWREGS_BASE
+    ld %2, %1[-4]
+    add %2, %2, %1   ; %2 = end of string
+    @charLoop:
+        ld %3, %1[0]
+        @wait:
+            ld %6, %7[HWREGS_UART_TX]
+            beq %6, 0, @wait
+        stw %3, %7[HWREGS_UART_TX]
+        add %1, 1
+        bne %2, %1, @charLoop
+    ret
+
+; ==============================================
+;              kprint_hex
+; ==============================================
+
+kprint_hex:

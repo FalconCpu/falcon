@@ -1,4 +1,18 @@
+32 bit instructions, are divided into fields:-
+
 109876 543 21098 76543 21098765 43210
+KKKKKK III DDDDD AAAAA CCCCCCCC BBBBB
+
+KKKKKK = Instruction Kind - gives the general type of instruction
+III    = Opcode - based off Kind, provides the detailed instruction
+DDDDD  = Destination register
+AAAAA  = First source register
+BBBBB  = Second source register
+CCCCC  = Literal value. Concatenated with other fields as shown below.
+
+
+
+KKKKKK III DDDDD AAAAA CCCCCCCC BBBBB
 010000 III DDDDD AAAAA ........ BBBBB   alu3 $d,$a,$b
 010001 III DDDDD AAAAA ######## #####   alu3 $d,$a,#s13
 010010 ZZZ DDDDD AAAAA ######## #####   ldz  $d,$a[#s13]
@@ -10,4 +24,42 @@
 011000 ### DDDDD ##### ######## #####   add  $d, $pc, #21
 011001 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg
 011010 III DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b
-011011 III DDDDD AAAAA ######## #####   mul  $d, $a, $b
+011011 III DDDDD AAAAA ######## #####   mul  $d, $a, #s13
+
+
+Significance of III field:-
+
+ALU operations:
+000   AND
+001   OR
+010   XOR
+011   SHIFT     (positive values=shift left, negative values shift right. )
+100   ADD
+101   SUB
+110   CLT       Compare less than
+111   CLTU      Compare less than unsigned
+
+Load instructions
+000   LDB       Load Byte
+001   LDH       Load Halfword
+010   LDW       Load Word
+
+Store instructions
+000   STB       Store Byte
+001   STH       Store Halfword
+010   STW       Store Word
+
+Branch Instructions
+000   BEQ       Branch if Equal
+001   BNE       Branch if Not Equal
+010   BLT       Branch if Less than
+011   BGE       Branch if Greater or equal
+100   BLTU      Branch if Less than unsigned
+101   BGEU      Branch if Greater or equal unsigned
+
+Multiply Instructions
+000   MUL       Multiply
+100   DIVS      Divide Signed
+101   MODS      Modulo Signed
+110   DIVU      Divide Unsigned
+111   MODU      Modulo Unsigned

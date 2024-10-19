@@ -1,0 +1,80 @@
+; Simple test of the icache
+
+DEST_ADDR = 123458H   ; An arbitary address in RAM
+
+ld %1, testCode
+ld %2, DEST_ADDR
+ld %3, 60 
+
+copyLoop:
+ldw %4, %1[0]
+stw %4, %2[0]
+add %1, 4
+add %2, 4
+sub %3, 1
+bne %3, 0, copyLoop
+
+ld %5, DEST_ADDR
+jmp %5[0]
+
+
+
+HWREG_UART_TX = 14H
+HWREG_7SEG = 0
+
+; 
+; This is the code that gets copied into RAM before being executed
+;
+
+testCode:
+; this should give a cache miss
+
+ld %1, 0E0000000H    ; HWREGS Base
+
+; Output the word "Hello " to the UART
+ld %2, 'H'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'e'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'l'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'l'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'o'
+stw %2, %1[HWREG_UART_TX]
+ld %2, ' '
+
+; Count from 0 to 20 on the 7Segment Display
+; After the first iteration of this loop everything should hit the icache - so we 
+; should see a period of inactivity at the SDRAM
+
+ld %3,0
+ld %4,20
+loop7Seg:
+stw %3,%1[ HWREG_7SEG ]
+add %3,1
+bne %3, %4, loop7Seg
+
+
+
+; Output the word "world" to the uart
+; This should be another cache miss
+
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'W'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'o'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'r'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'l'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 'd'
+stw %2, %1[HWREG_UART_TX]
+ld %2, 10
+stw %2, %1[HWREG_UART_TX]
+
+jmp 0[0]
+dcw 0,0,0,0,0,0,0,0,0,0
+dcw 0,0,0,0,0,0,0,0,0,0
+dcw 0,0,0,0,0,0,0,0,0,0

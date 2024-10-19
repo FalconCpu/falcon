@@ -1,0 +1,242 @@
+[
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\fpl.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\fpl.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\fpl.c",
+  "output": "CMakeFiles\\fpl.dir\\fpl.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\location.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\location.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\location.c",
+  "output": "CMakeFiles\\fpl.dir\\location.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\token.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\token.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\token.c",
+  "output": "CMakeFiles\\fpl.dir\\token.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\util.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\util.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\util.c",
+  "output": "CMakeFiles\\fpl.dir\\util.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST.c",
+  "output": "CMakeFiles\\fpl.dir\\AST.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_intlit.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_intlit.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_intlit.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_intlit.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_symbol.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_symbol.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_symbol.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_symbol.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_binop.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_binop.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_binop.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_binop.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_decl.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_decl.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_decl.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_decl.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_index.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_index.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_index.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_index.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_member.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_member.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_member.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_member.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_unary.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_unary.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_unary.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_unary.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_funccall.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_funccall.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_funccall.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_funccall.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_return.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_return.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_return.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_return.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_assign.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_assign.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_assign.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_assign.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_while.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_while.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_while.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_while.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_repeat.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_repeat.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_repeat.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_repeat.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_new.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_new.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_new.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_new.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_clause.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_clause.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_clause.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_clause.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_if.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_if.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_if.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_if.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_struct.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_struct.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_struct.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_struct.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_strlit.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_strlit.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_strlit.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_strlit.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_pointer.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_pointer.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_pointer.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_pointer.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_cast.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_cast.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_cast.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_cast.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_for.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_for.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_for.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_for.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_assignOp.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_assignOp.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_assignOp.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_assignOp.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\AST_list.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_list.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_list.c",
+  "output": "CMakeFiles\\fpl.dir\\AST_list.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\block.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\block.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\block.c",
+  "output": "CMakeFiles\\fpl.dir\\block.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\parser.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\parser.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\parser.c",
+  "output": "CMakeFiles\\fpl.dir\\parser.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\function.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\function.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\function.c",
+  "output": "CMakeFiles\\fpl.dir\\function.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\types.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\types.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\types.c",
+  "output": "CMakeFiles\\fpl.dir\\types.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\symbol.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\symbol.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\symbol.c",
+  "output": "CMakeFiles\\fpl.dir\\symbol.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\typecheck.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\typecheck.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\typecheck.c",
+  "output": "CMakeFiles\\fpl.dir\\typecheck.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\instr.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\instr.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\instr.c",
+  "output": "CMakeFiles\\fpl.dir\\instr.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\stdlib.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\stdlib.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\stdlib.c",
+  "output": "CMakeFiles\\fpl.dir\\stdlib.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\bitmap.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\bitmap.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\bitmap.c",
+  "output": "CMakeFiles\\fpl.dir\\bitmap.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\peephole.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\peephole.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\peephole.c",
+  "output": "CMakeFiles\\fpl.dir\\peephole.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\livemap.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\livemap.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\livemap.c",
+  "output": "CMakeFiles\\fpl.dir\\livemap.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\regalloc.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\regalloc.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\regalloc.c",
+  "output": "CMakeFiles\\fpl.dir\\regalloc.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -Wextra -Wno-microsoft-enum-forward-reference -Wno-deprecated-declarations -o CMakeFiles\\fpl.dir\\gen_assembly.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\gen_assembly.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\gen_assembly.c",
+  "output": "CMakeFiles\\fpl.dir\\gen_assembly.c.obj"
+}
+]

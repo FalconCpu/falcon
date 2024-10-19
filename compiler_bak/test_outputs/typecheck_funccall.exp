@@ -1,0 +1,18 @@
+Symbol table [foo:FUNC:(Int,String)->Int[]  a:GLOBAL:Int[]  b:GLOBAL:Int  ]
+DECL a Int[]
+   FUNCCALL Int[]
+      SYMBOL foo (Int,String)->Int[]
+      INTLIT 4 Int
+      STRLIT "fred" String
+DECL b Int
+   INDEX
+      SYMBOL a Int[]
+      INTLIT 1 Int
+FUNCTION foo
+   DECL a
+      SYMBOL Int
+   DECL b
+      SYMBOL String
+   Symbol table [a:VAR:Int  b:VAR:String  x:VAR:Int  ]
+   DECL x Int
+      INTLIT 2 Int

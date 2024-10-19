@@ -1,0 +1,29 @@
+
+Cat.count_legs:
+0    start
+1    mov   this, $1
+2    ldw   #0, this[legs]
+3    mov   #1, 1
+4    add_i #2, #0, #1
+5    mov   $8, #2
+6    jmp   @0
+7    lab   @0
+8    end
+
+main:
+0    start
+1    lea   $1, Cat
+2    call  _new
+3    mov   #0, $8
+4    lea   #1, "pootle"
+5    stw   #1, #0[name]
+6    mov   #2, 4
+7    stw   #2, #0[legs]
+8    mov   c, #0
+9    mov   $1, c
+10   call  Cat.count_legs
+11   mov   #3, $8
+12   mov   $8, #3
+13   jmp   @0
+14   lab   @0
+15   end

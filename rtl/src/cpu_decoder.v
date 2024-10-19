@@ -6,6 +6,7 @@ module cpu_decoder(
     input                reset,
     input                stall,
     input      [31:0]    instr_data,
+    input                instr_cache_miss,
 
     output     [4:0]     p2_reg_a,       // register number for 'a' source
     output     [4:0]     p2_reg_b,       // register number for 'b' source
@@ -67,7 +68,7 @@ always @(*) begin
     p2_bubble     = 1'b0;           
     p2_illegal    = 1'b0;
 
-    if (p3_jump || reset) begin
+    if (p3_jump || reset || instr_cache_miss) begin
         // Instruction immediately after a jump or taken branch gets nullified - treat it as if it were
         // an AND instruction with the null register as the destination
         p2_op = `OP_AND;

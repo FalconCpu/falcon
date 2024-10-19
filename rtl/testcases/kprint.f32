@@ -76,43 +76,43 @@ jmp _start        ; location 0FFFF0000H = Initial value of PC after reset
 _excetion_handler:
     ; get the TCB and save some registers into it to give some workspace for the exception handler
 
-    ld $28, #escratch, $28     ; swaps $28 and #escratch. Now $28 = TaskControlBlock, #escratch=task's $28
-    stw $1, $28[TCB_REG1]
-    stw $2, $28[TCB_REG2]
-    stw $3, $28[TCB_REG3]
-    stw $4, $28[TCB_REG4]
-    stw $5, $28[TCB_REG5]
-    stw $6, $28[TCB_REG6]
-    stw $7, $28[TCB_REG7]
-    stw $8, $28[TCB_REG8]
-    stw $31,$28[TCB_REG31]
+    ld %28, #escratch, %28     ; swaps %28 and #escratch. Now %28 = TaskControlBlock, #escratch=task's %28
+    stw %1, %28[TCB_REG1]
+    stw %2, %28[TCB_REG2]
+    stw %3, %28[TCB_REG3]
+    stw %4, %28[TCB_REG4]
+    stw %5, %28[TCB_REG5]
+    stw %6, %28[TCB_REG6]
+    stw %7, %28[TCB_REG7]
+    stw %8, %28[TCB_REG8]
+    stw %31,%28[TCB_REG31]
 
     ; Insert code here to query #ecause and handle the exception
     ; then jump to fast_run_task to return to task
 
-    stw $9,  $28[TCB_REG9]
-    stw $10, $28[TCB_REG10]
-    stw $11, $28[TCB_REG11]
-    stw $12, $28[TCB_REG12]
-    stw $13, $28[TCB_REG13]
-    stw $14, $28[TCB_REG14]
-    stw $15, $28[TCB_REG15]
-    stw $16, $28[TCB_REG16]
-    stw $17, $28[TCB_REG17]
-    stw $18, $28[TCB_REG18]
-    stw $19, $28[TCB_REG19]
-    stw $20, $28[TCB_REG20]
-    stw $21, $28[TCB_REG21]
-    stw $22, $28[TCB_REG22]
-    stw $23, $28[TCB_REG23]
-    stw $24, $28[TCB_REG24]
-    stw $25, $28[TCB_REG25]
-    stw $26, $28[TCB_REG26]
-    stw $27, $28[TCB_REG27]
-    ld $1, #escratch
-    stw $1,  $28[TCB_REG28]
-    stw $29, $28[TCB_REG29]
-    stw $30, $28[TCB_REG30]
+    stw %9,  %28[TCB_REG9]
+    stw %10, %28[TCB_REG10]
+    stw %11, %28[TCB_REG11]
+    stw %12, %28[TCB_REG12]
+    stw %13, %28[TCB_REG13]
+    stw %14, %28[TCB_REG14]
+    stw %15, %28[TCB_REG15]
+    stw %16, %28[TCB_REG16]
+    stw %17, %28[TCB_REG17]
+    stw %18, %28[TCB_REG18]
+    stw %19, %28[TCB_REG19]
+    stw %20, %28[TCB_REG20]
+    stw %21, %28[TCB_REG21]
+    stw %22, %28[TCB_REG22]
+    stw %23, %28[TCB_REG23]
+    stw %24, %28[TCB_REG24]
+    stw %25, %28[TCB_REG25]
+    stw %26, %28[TCB_REG26]
+    stw %27, %28[TCB_REG27]
+    ld %1, #escratch
+    stw %1,  %28[TCB_REG28]
+    stw %29, %28[TCB_REG29]
+    stw %30, %28[TCB_REG30]
     jmp print_tcb_and_halt
 
 
@@ -132,25 +132,25 @@ ADDRESS_TASK_CONTROL_BLOCK = 03FFFF00H   ; allocate 256 bytes at the top of memo
 ADDRESS_SUPERVISOR_STACK   = 03FFFF00H   ; then 512 bytes below that for a supervisor stack  (pointer points to end)
 ADDRESS_USER_STACK         = 03FFFD00H   ; and then the user mode stack (pointer points to end)
 
-ld $sp, ADDRESS_SUPERVISOR_STACK
-ld $28, ADDRESS_TASK_CONTROL_BLOCK
+ld %sp, ADDRESS_SUPERVISOR_STACK
+ld %28, ADDRESS_TASK_CONTROL_BLOCK
 
 ; zero out all the registers in the task
-ld $1, $28               ; $1 = pointer to start of tcb
-add $2, $1, TCB_SIZE     ; $2 = number of registers remaining
-.zero:
-stw 0, $1[0]
-add $1, 4
-bne $1, $2, .zero
+ld %1, %28               ; %1 = pointer to start of tcb
+add %2, %1, TCB_SIZE     ; %2 = number of registers remaining
+@zero:
+stw 0, %1[0]
+add %1, 4
+bne %1, %2, @zero
 
 ; initialize user mode stack pointer, and PC
-ld $1, ADDRESS_USER_STACK
-stw $1, $28[TCB_REG31]
+ld %1, ADDRESS_USER_STACK
+stw %1, %28[TCB_REG31]
 
-ld $1, main              ; get address of user main() entry point
-stw $1, $28[TCB_PC]
-ld $1, _end_task         ; end address in case task finishes with a ret
-stw $1, $28[TCB_REG30]
+ld %1, main              ; get address of user main() entry point
+stw %1, %28[TCB_PC]
+ld %1, _end_task         ; end address in case task finishes with a ret
+stw %1, %28[TCB_REG30]
 jmp run_task
 
 
@@ -164,47 +164,47 @@ sys 0
                 run_task:
 ; =======================================
 ; run a user mode task
-; $28 = TaskControlBlock of task to run
+; %28 = TaskControlBlock of task to run
 
-ld $1, $28[TCB_PC]
-ld #epc, $1            ; set exception return address as being the task to run
-ld $1, $28[TCB_REG28]  
-ld #escratch, $1       ; set #escratch to the contents of $28 in the task to run
-ld $9,  $28[TCB_REG9]
-ld $10,  $28[TCB_REG10]
-ld $11, $28[TCB_REG11]
-ld $12, $28[TCB_REG12]
-ld $13, $28[TCB_REG13]
-ld $14, $28[TCB_REG14]
-ld $15, $28[TCB_REG15]
-ld $16, $28[TCB_REG16]
-ld $17, $28[TCB_REG17]
-ld $18, $28[TCB_REG18]
-ld $19, $28[TCB_REG19]
-ld $20, $28[TCB_REG20]
-ld $21, $28[TCB_REG21]
-ld $22, $28[TCB_REG22]
-ld $23, $28[TCB_REG23]
-ld $24, $28[TCB_REG24]
-ld $25, $28[TCB_REG25]
-ld $26, $28[TCB_REG26]
-ld $27, $28[TCB_REG27]
-ld $29, $28[TCB_REG29]
-ld $30, $28[TCB_REG30]
+ld %1, %28[TCB_PC]
+ld #epc, %1            ; set exception return address as being the task to run
+ld %1, %28[TCB_REG28]  
+ld #escratch, %1       ; set #escratch to the contents of %28 in the task to run
+ld %9,  %28[TCB_REG9]
+ld %10,  %28[TCB_REG10]
+ld %11, %28[TCB_REG11]
+ld %12, %28[TCB_REG12]
+ld %13, %28[TCB_REG13]
+ld %14, %28[TCB_REG14]
+ld %15, %28[TCB_REG15]
+ld %16, %28[TCB_REG16]
+ld %17, %28[TCB_REG17]
+ld %18, %28[TCB_REG18]
+ld %19, %28[TCB_REG19]
+ld %20, %28[TCB_REG20]
+ld %21, %28[TCB_REG21]
+ld %22, %28[TCB_REG22]
+ld %23, %28[TCB_REG23]
+ld %24, %28[TCB_REG24]
+ld %25, %28[TCB_REG25]
+ld %26, %28[TCB_REG26]
+ld %27, %28[TCB_REG27]
+ld %29, %28[TCB_REG29]
+ld %30, %28[TCB_REG30]
 
 fast_run_task:  
 ; Returns to a user mode task after short exception.
-; All registers except $1..$8 and $28 are assumed to still be valid. $28 stored in #escratch and return address in #epc
-ld $1,  $28[TCB_REG1]
-ld $2,  $28[TCB_REG2]
-ld $3,  $28[TCB_REG3]
-ld $4,  $28[TCB_REG4]
-ld $5,  $28[TCB_REG5]
-ld $6,  $28[TCB_REG6]
-ld $7,  $28[TCB_REG7]
-ld $8,  $28[TCB_REG8]
-ld $31, $28[TCB_REG31]
-ld $28, #escratch, $28    ; swap $escratch with task's $28. $escratch now contains TCB
+; All registers except %1..%8 and %28 are assumed to still be valid. %28 stored in #escratch and return address in #epc
+ld %1,  %28[TCB_REG1]
+ld %2,  %28[TCB_REG2]
+ld %3,  %28[TCB_REG3]
+ld %4,  %28[TCB_REG4]
+ld %5,  %28[TCB_REG5]
+ld %6,  %28[TCB_REG6]
+ld %7,  %28[TCB_REG7]
+ld %8,  %28[TCB_REG8]
+ld %31, %28[TCB_REG31]
+ld %28, #escratch, %28    ; swap %escratch with task's %28. %escratch now contains TCB
 jmp #epc                  ; return from exception. Switches to user mode and jumps to #epc
 
 
@@ -212,65 +212,65 @@ jmp #epc                  ; return from exception. Switches to user mode and jum
                print_tcb_and_halt:
 ; =======================================
 ; Prints a tcb to the UART port, and then halts
-; $28 = TaskControlBlock to print
+; %28 = TaskControlBlock to print
 
-ld $2, #ecause
-lsl $2,2
-ld $1, exception_cause_names
-add $1, $2
-ldw $1, $1[0]
+ld %2, #ecause
+lsl %2,2
+ld %1, exception_cause_names
+add %1, %2
+ldw %1, %1[0]
 jsr kprint_string
 
-ld $10, 1                ; $10 = current register number
-ld $11, 32               ; $11 = last register nunber
+ld %10, 1                ; %10 = current register number
+ld %11, 32               ; %11 = last register nunber
 
-.print_reg:
-ld $1, '$'
+@print_reg:
+ld %1, '%'
 jsr kprint_char
 
-ld $1, $10
+ld %1, %10
 jsr kprint_int
 
-ld $1,10
-bge $10, $1, .skip
-ld $1, ' '
+ld %1,10
+bge %10, %1, @skip
+ld %1, ' '
 jsr kprint_char
-.skip:
+@skip:
 
-ld $1,'='
+ld %1,'='
 jsr kprint_char
 
-lsl $1, $10, 2
-add $1, $28
-ldw $1, $1[0]
+lsl %1, %10, 2
+add %1, %28
+ldw %1, %1[0]
 jsr kprint_hex
 
-ld $1, ' '
-modu $2, $10, 6
-bne 0, $2, .skip_cr
-ld $1, 10
+ld %1, ' '
+modu %2, %10, 6
+bne 0, %2, @skip_cr
+ld %1, 10
 
-.skip_cr:
+@skip_cr:
 jsr kprint_char
 
-add $10,1
-bne $10, $11, .print_reg
+add %10,1
+bne %10, %11, @print_reg
 
-ld $1, " EPC="
+ld %1, " EPC="
 jsr kprint_string
-ld $1, #epc
+ld %1, #epc
 jsr kprint_hex
 
-ld $1, " DAT="
+ld %1, " DAT="
 jsr kprint_string
-ld $1, #edata
+ld %1, #edata
 jsr kprint_hex
 
 forever:
 jmp forever
 
-ld $30, 0
-jmp $30[0]
+ld %30, 0
+jmp %30[0]
 
 exception_cause_names:
 dcw "Program completed\n"
@@ -283,56 +283,56 @@ dcw "Misaligned Store\n"
 ; =======================================
 
 main:
-sub $sp,4
-stw $30, $sp[0]
+sub %sp,4
+stw %30, %sp[0]
 
-ld $1, "Hello world\n"
+ld %1, "Hello world\n"
 jsr kprint_string
 
-ld $1, 1234ABCDH
+ld %1, 1234ABCDH
 jsr kprint_hex
 
-ld $1, 10
+ld %1, 10
 jsr kprint_char
 
-ld $1, -123456
+ld %1, -123456
 jsr kprint_int
 
-ld $1, 10
+ld %1, 10
 jsr kprint_char
 
-ldw $30, $sp[0]
-add $sp, 4
+ldw %30, %sp[0]
+add %sp, 4
 ret
 
 
 ; =======================================
 ;               kprint_char
 ; =======================================
-; $1 = character to print
+; %1 = character to print
 
 kprint_char:
-ld $7, HWREGS_BASE
-stw $1, $7[HWREGS_UART_TX]
+ld %7, HWREGS_BASE
+stw %1, %7[HWREGS_UART_TX]
 ret
 
 ; =======================================
 ;               kprint_string
 ; =======================================
-; $1 = string to print
+; %1 = string to print
 
 kprint_string:
-ld $7, HWREGS_BASE
-ld $2, $1[-4]       ; $2 = length of string
-jmp .loop_cond
+ld %7, HWREGS_BASE
+ld %2, %1[-4]       ; %2 = length of string
+jmp @loop_cond
 
-.loop:
-ldb $3, $1[0]       ; $3 = next char
-stw $3, $7[HWREGS_UART_TX]
-add $1, 1
-sub $2, 1
-.loop_cond:
-bne $2, 0, .loop
+@loop:
+ldb %3, %1[0]       ; %3 = next char
+stw %3, %7[HWREGS_UART_TX]
+add %1, 1
+sub %2, 1
+@loop_cond:
+bne %2, 0, @loop
 
 ret
 
@@ -341,24 +341,24 @@ ret
 ;               kprint_hex
 ; =======================================
 ; Prints an integer to the UART as an 8 digit hex value
-; $1 = integer to print
+; %1 = integer to print
 
 kprint_hex:
-ld $7, HWREGS_BASE
-ld $6, 8               ; $6 = number of digits left to print
-ld $3, '9'
+ld %7, HWREGS_BASE
+ld %6, 8               ; %6 = number of digits left to print
+ld %3, '9'
 
-.loop:
-lsr $2, $1, 28         ; $2 = most significant nybble of number
-lsl $1, $1, 4 
-add $2, '0'            ; convert to ASCII
-bge $3,$2, .isNumber
-add $2, 7              ; convert ':' to 'A'
-.isNumber:
-stw $2, $7[HWREGS_UART_TX]
+@loop:
+lsr %2, %1, 28         ; %2 = most significant nybble of number
+lsl %1, %1, 4 
+add %2, '0'            ; convert to ASCII
+bge %3,%2, @isNumber
+add %2, 7              ; convert ':' to 'A'
+@isNumber:
+stw %2, %7[HWREGS_UART_TX]
 
-sub $6,1
-bne $6, 0, .loop
+sub %6,1
+bne %6, 0, @loop
 
 ret
 
@@ -366,35 +366,35 @@ ret
 ;               kprint_int
 ; =======================================
 ; Prints an integer to the UART as an integer value
-; $1 = integer to print
+; %1 = integer to print
 
 kprint_int:
-ld $7, HWREGS_BASE
-sub $sp, 16             ; allocate 16 bytes of space on the stack
-ld $3, $sp              ; $3 = pointer to buffer (needed to reverse digits when printing)
+ld %7, HWREGS_BASE
+sub %sp, 16             ; allocate 16 bytes of space on the stack
+ld %3, %sp              ; %3 = pointer to buffer (needed to reverse digits when printing)
 
 ; check for negative number
-blt 0, $1, .positive
-ld $2, '-'              ; print a '-' sign
-stw $2, $7[HWREGS_UART_TX]
-sub $1, 0, $1           ; negate $1    
+blt 0, %1, @positive
+ld %2, '-'              ; print a '-' sign
+stw %2, %7[HWREGS_UART_TX]
+sub %1, 0, %1           ; negate %1    
 
 ; loop through the digits of the number, storing them in the buffer
-.positive:
-modu $4, $1, 10         ; get the last digit
-add $4, '0'             ; convert to ASCII
-stb $4, $3[0]           ; store it in the buffer
-add $3,1
-divu $1, $1, 10         ; divide by 10, and see if more digits
-bne $1, 0, .positive
+@positive:
+modu %4, %1, 10         ; get the last digit
+add %4, '0'             ; convert to ASCII
+stb %4, %3[0]           ; store it in the buffer
+add %3,1
+divu %1, %1, 10         ; divide by 10, and see if more digits
+bne %1, 0, @positive
 
 ; loop through the digits in the buffer in reverse order, printing them
-.print:
-sub $3, 1
-ldb $2, $3[0]
-stw $2, $7[HWREGS_UART_TX]
-bne $3, $sp, .print
+@print:
+sub %3, 1
+ldb %2, %3[0]
+stw %2, %7[HWREGS_UART_TX]
+bne %3, %sp, @print
 
-add $sp, 16
+add %sp, 16
 ret
 

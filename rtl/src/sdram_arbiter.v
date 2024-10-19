@@ -42,6 +42,15 @@ module sdram_arbiter(
     output          gpu_valid,
     output          gpu_complete,
 
+    // Instruction cache = bus master 4  (read only)
+    input           icache_request,
+    input   [25:0]  icache_address,
+    output  [31:0]  icache_rdata,
+    output          icache_valid,
+    output          icache_complete,
+
+
+
     // SDRAM slave
     output              sdram_request,
     output reg          sdram_write,
@@ -71,6 +80,10 @@ assign gpu_valid    = sdram_valid[2];
 assign gpu_complete = sdram_complete[2];
 assign gpu_rdata    = gpu_valid ? sdram_rdata : 32'bx;
 
+assign icache_valid    = sdram_valid[3];
+assign icache_complete = sdram_complete[3];
+assign icache_rdata    = icache_valid ? sdram_rdata : 32'bx;
+
 assign sdram_master = next_master;
 
 always @(*) begin
@@ -84,7 +97,9 @@ always @(*) begin
         next_master = 4'd2;
     else if (next_master==3'b0 && gpu_request)
         next_master = 4'd4;
-
+    else if (next_master==3'b0 && icache_request)
+        next_master = 4'd8;
+    
     // get the signals from the new master
     case (next_master)
         4'h1: begin
@@ -109,6 +124,14 @@ always @(*) begin
             sdram_wdata = gpu_wdata;
             sdram_byte_en = gpu_byte_en;
             sdram_burst = gpu_burst;
+        end
+
+        4'h8: begin
+            sdram_write   = 1'b0;
+            sdram_address = icache_address;
+            sdram_wdata   = 26'bx;;
+            sdram_byte_en = 4'b0;
+            sdram_burst   = 1'h1;
         end
 
         default: begin

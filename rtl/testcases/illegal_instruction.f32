@@ -17,20 +17,20 @@ jmp start
 ; entry point for exception handler
 ; for this test lets dump the details of the exception to the UART
 
-ld $1, "Exception: CAUSE="
+ld %1, "Exception: CAUSE="
 jsr kprint_string
-ld $1, #ecause
+ld %1, #ecause
 jsr kprint_hex
-ld $1, " EDATA="
+ld %1, " EDATA="
 jsr kprint_string
-ld $1, #edata
+ld %1, #edata
 jsr kprint_hex
-ld $1, " EPC="
+ld %1, " EPC="
 jsr kprint_string
-ld $1, #epc
+ld %1, #epc
 jsr kprint_hex
-ld $30,0          ; jump to address zero will trigger end of simulation
-jmp $30[0]    
+ld %30,0          ; jump to address zero will trigger end of simulation
+jmp %30[0]    
 
 
 
@@ -40,37 +40,37 @@ jmp $30[0]
 ; Main entry point for the code
 ; Print a message, then trigger a misaligned load
 
-ld $31, 3800000H   ; initialize stack pointer
+ld %31, 3800000H   ; initialize stack pointer
 
-ld $1, "Hello World\n"
+ld %1, "Hello World\n"
 jsr kprint_string
 
 dcw 12345678H    ; an illegal instruction
 
-ld $1,"Error - should not be executed"
+ld %1,"Error - should not be executed"
 jsr kprint_string
 
-ld $30,0          ; jump to address zero will trigger end of simulation
-jmp $30[0]    
+ld %30,0          ; jump to address zero will trigger end of simulation
+jmp %30[0]    
 
 
 ; =======================================
 ;               kprint_string
 ; =======================================
-; $1 = string to print
+; %1 = string to print
 
 kprint_string:
-ld $7, HWREGS_BASE
-ld $2, $1[-4]       ; $2 = length of string
-jmp .loop_cond
+ld %7, HWREGS_BASE
+ld %2, %1[-4]       ; %2 = length of string
+jmp @loop_cond
 
-.loop:
-ldb $3, $1[0]       ; $3 = next char
-stw $3, $7[HWREGS_UART_TX]
-add $1, 1
-sub $2, 1
-.loop_cond:
-bne $2, 0, .loop
+@loop:
+ldb %3, %1[0]       ; %3 = next char
+stw %3, %7[HWREGS_UART_TX]
+add %1, 1
+sub %2, 1
+@loop_cond:
+bne %2, 0, @loop
 
 ret
 
@@ -79,24 +79,24 @@ ret
 ;               kprint_hex
 ; =======================================
 ; Prints an integer to the UART as an 8 digit hex value
-; $1 = integer to print
+; %1 = integer to print
 
 kprint_hex:
-ld $7, HWREGS_BASE
-ld $6, 8               ; $6 = number of digits left to print
-ld $3, '9'
+ld %7, HWREGS_BASE
+ld %6, 8               ; %6 = number of digits left to print
+ld %3, '9'
 
-.loop:
-lsr $2, $1, 28         ; $2 = most significant nybble of number
-lsl $1, $1, 4 
-add $2, '0'            ; convert to ASCII
-bge $3,$2, .isNumber
-add $2, 7              ; convert ':' to 'A'
-.isNumber:
-stw $2, $7[HWREGS_UART_TX]
+@loop:
+lsr %2, %1, 28         ; %2 = most significant nybble of number
+lsl %1, %1, 4 
+add %2, '0'            ; convert to ASCII
+bge %3,%2, @isNumber
+add %2, 7              ; convert ':' to 'A'
+@isNumber:
+stw %2, %7[HWREGS_UART_TX]
 
-sub $6,1
-bne $6, 0, .loop
+sub %6,1
+bne %6, 0, @loop
 
 ret
 

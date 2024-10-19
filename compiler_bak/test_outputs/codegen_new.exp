@@ -1,0 +1,16 @@
+
+main:
+0    start
+1    lea   $1, Cat
+2    call  _new
+3    mov   #0, $8
+4    lea   #1, "Pootle"
+5    stw   #1, #0[name]
+6    mov   #2, 4
+7    stw   #2, #0[legs]
+8    mov   cat, #0
+9    ldw   #3, cat[legs]
+10   mov   $8, #3
+11   jmp   @0
+12   lab   @0
+13   end

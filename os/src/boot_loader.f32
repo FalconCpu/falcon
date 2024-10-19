@@ -1,12 +1,4 @@
-HWREGS_BASE = 0E0000000H
-HWREGS_UART_TX = 14H         ; Read = number of free slots in FIFO
-                             ; Write = Data to TX
-HWREGS_UART_RX = 18H         ; Read = Byte of data from RX, of -1 if no data availible
-HWREGS_SCREEN_BLANK = 1CH    ; Bit 8=Blank screen, bits 7:0=Color.
-HWREGS_7SEG = 0
-HWREGS_7SEG_BRI = 24H
 
-jmp load_boot_code
 
 ; ==========================================================
                     exception:

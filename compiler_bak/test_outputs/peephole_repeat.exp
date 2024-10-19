@@ -1,0 +1,18 @@
+
+sum_array:
+0    start
+1    mov   a, $1
+2    mov   total, 0
+3    mov   index, 0
+4    lab   @1
+5    ldw   #2, a[size]
+6    chk   index, #2
+7    lsl_i #3, index, 2
+8    add_i #4, a, #3
+9    ldw   #5, #4[0]
+10   add_i total, total, #5
+11   add_i index, index, 1
+12   ldw   #9, a[size]
+13   bne_i index, #9, @1
+14   mov   $8, total
+15   end

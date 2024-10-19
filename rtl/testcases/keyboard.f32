@@ -68,32 +68,32 @@ jsr init_keyboard
 ; Simply wait for characters from the keyoard, then output them on the UART
 loop:
 jsr read_keyboard
-beq $8, 0, loop
+beq %8, 0, loop
 
-ld $11, $8    ; $11 = key pressed
-ld $12, $7    ; $12 = qualifier
+ld %11, %8    ; %11 = key pressed
+ld %12, %7    ; %12 = qualifier
 
-ld $1, $7     ; $1 = qualifiers
+ld %1, %7     ; %1 = qualifiers
 jsr kprint_hex
-ld $1," "
+ld %1," "
 jsr kprint_string
 
-ld $1, $8
-ld $2, 127
-bge $1, $2, .non_printable
+ld %1, %8
+ld %2, 127
+bge %1, %2, @non_printable
 jsr kprint_char
-ld $1, 10
+ld %1, 10
 jsr kprint_char
 jmp loop
 
-.non_printable:
-sub $1,127
-lsl $1,2
-ld $2, key_names_table
-add $1, $2
-ld $1, $1[0]
+@non_printable:
+sub %1,127
+lsl %1,2
+ld %2, key_names_table
+add %1, %2
+ld %1, %1[0]
 jsr kprint_string
-ld $1, 10
+ld %1, 10
 jsr kprint_char
 jmp loop
 
@@ -131,134 +131,134 @@ dcw "NUMLOCK"
                    read_keyboard:
 ; =========================================================
 ; poll the keyboard and check for any key presses
-; returns $8 = ASCII code of key pressed, or KEY_* for non-printable characters
-;         $7 = Qualifier key bitmap. See list of QUALKEY_* values
-; if no key pressed then returns $8=0
+; returns %8 = ASCII code of key pressed, or KEY_* for non-printable characters
+;         %7 = Qualifier key bitmap. See list of QUALKEY_* values
+; if no key pressed then returns %8=0
 
-ld $8, 0                       ; default return value
-ld $6, HWREGS_BASE             ; read a byte from the fifo
-ldw $1, $6[HWREGS_KEYBOARD]     
-blt $1, 0, .ret                ; if no key pressed then return
+ld %8, 0                       ; default return value
+ld %6, HWREGS_BASE             ; read a byte from the fifo
+ldw %1, %6[HWREGS_KEYBOARD]     
+blt %1, 0, @ret                ; if no key pressed then return
 
-.got_scancode:                 ; $1 = scan code of key pressed
-ld $4, KEYBOARD_BASE           ; $4 = Address of keyboard state structure
-ld $2, $4[KEYBOARD_MODIFIERS]  ; $2 = current state of modifiers
-ld $3, 0E0H
-beq $1, $3, .got_extend_modifier
-ld $3, 0F0H
-beq $1, $3, .got_break_modifier
-stw 0, $4[KEYBOARD_MODIFIERS]
+@got_scancode:                 ; %1 = scan code of key pressed
+ld %4, KEYBOARD_BASE           ; %4 = Address of keyboard state structure
+ld %2, %4[KEYBOARD_MODIFIERS]  ; %2 = current state of modifiers
+ld %3, 0E0H
+beq %1, %3, @got_extend_modifier
+ld %3, 0F0H
+beq %1, %3, @got_break_modifier
+stw 0, %4[KEYBOARD_MODIFIERS]
 
 ; if the key has an extend modifier then add 128 to the keycode
-and $5, $2, KEYBOARD_MODIFIERS_EXTEND  
-lsl $5, 6
-or  $1, $5                     ; $1 = key scan code, +128 for extend
+and %5, %2, KEYBOARD_MODIFIERS_EXTEND  
+lsl %5, 6
+or  %1, %5                     ; %1 = key scan code, +128 for extend
 
 ; check to see if we have a make or a break code
-and $3, $2, KEYBOARD_MODIFIERS_BREAK 
-bne $3, 0, .got_break_code
+and %3, %2, KEYBOARD_MODIFIERS_BREAK 
+bne %3, 0, @got_break_code
 
-.got_make_code:
+@got_make_code:
 
 ; set the byte in the KEYBOARD_BASE table to indicate the key is down
 ; caps lock is a special case - it toggles when pressed
 
-ld $3, KEYBOARD_BASE          ; store a '1' at the corresponding location in the key pressed table
-add $6, $3, $1
-ld $4, 1
-ld $5, KEYBAORD_SCAN_CODE_CAPS
-bne $5, $1, .not_caps_lock
-ldb $4, $6[0]
-xor $4, 1
-.not_caps_lock:
-stb $4, $6[0]
+ld %3, KEYBOARD_BASE          ; store a '1' at the corresponding location in the key pressed table
+add %6, %3, %1
+ld %4, 1
+ld %5, KEYBAORD_SCAN_CODE_CAPS
+bne %5, %1, @not_caps_lock
+ldb %4, %6[0]
+xor %4, 1
+@not_caps_lock:
+stb %4, %6[0]
 
 ; get the qualifier keys
-ld $7, 0                      ; $7 = Qualifiers CAPS,RSHIFT,LSHIFT
-ldb $7, $3[KEYBAORD_SCAN_CODE_LSHIFT]
-ldb $5, $3[KEYBAORD_SCAN_CODE_RSHIFT]
-lsl $5,1
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_CAPS]
-lsl $5,2
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_LCTRL]
-lsl $5,3
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_RCTRL]
-lsl $5,4
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_LALT]
-lsl $5,5
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_RALT]
-lsl $5,6
-or $7, $5
-ldb $5, $3[KEYBAORD_SCAN_CODE_WINDOWS]
-lsl $5,7
-or $7, $5
+ld %7, 0                      ; %7 = Qualifiers CAPS,RSHIFT,LSHIFT
+ldb %7, %3[KEYBAORD_SCAN_CODE_LSHIFT]
+ldb %5, %3[KEYBAORD_SCAN_CODE_RSHIFT]
+lsl %5,1
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_CAPS]
+lsl %5,2
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_LCTRL]
+lsl %5,3
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_RCTRL]
+lsl %5,4
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_LALT]
+lsl %5,5
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_RALT]
+lsl %5,6
+or %7, %5
+ldb %5, %3[KEYBAORD_SCAN_CODE_WINDOWS]
+lsl %5,7
+or %7, %5
 
 ; for debug - output the scan code on the 7seg display
-ld $3,HWREGS_BASE
-stw $1, $3[HWREGS_SEVEN_SEG]
+ld %3,HWREGS_BASE
+stw %1, %3[HWREGS_SEVEN_SEG]
 
 ; lookup the key in the keyboard_scan_table
-ld $3, keyboard_scan_table    ; look the code up in the table
-lsl $1, 2                     ; 4 bytes per entry
-add $3, $1
-ldw $1, $3[0]                 ; $1 = Entry from lookup table
+ld %3, keyboard_scan_table    ; look the code up in the table
+lsl %1, 2                     ; 4 bytes per entry
+add %3, %1
+ldw %1, %3[0]                 ; %1 = Entry from lookup table
 
 
 ; decode whether the key exists, and if it does whether it is sensitive to caps lock
-and $2, $1, 0FFH              ; $2 = kind from lookup table
-ld $3, 1
-beq $2, $3, .printable_no_caps
-ld $3, 2
-beq $2, $3, .printable_caps
+and %2, %1, 0FFH              ; %2 = kind from lookup table
+ld %3, 1
+beq %2, %3, @printable_no_caps
+ld %3, 2
+beq %2, %3, @printable_caps
 ; the key is a qualifier - it doesn't get reported as a keypress
-ld $8, 0
+ld %8, 0
 ret
 
-.printable_no_caps:           ; got a key which ignores caps lock
-and $6, $7, 3
-beq $6, 0, .noshift
+@printable_no_caps:           ; got a key which ignores caps lock
+and %6, %7, 3
+beq %6, 0, @noshift
 
-.with_shift:
-lsr $1, $1, 8
+@with_shift:
+lsr %1, %1, 8
 
-.noshift:
-lsr $8, $1, 8
-and $8, 0FFH
+@noshift:
+lsr %8, %1, 8
+and %8, 0FFH
 ret
 
-.printable_caps:              ; got a key which honours caps lock
-and $6, $7, 7
-beq $6, 0, .noshift
-jmp .with_shift
+@printable_caps:              ; got a key which honours caps lock
+and %6, %7, 7
+beq %6, 0, @noshift
+jmp @with_shift
 
 
-.got_extend_modifier:
-or $2, KEYBOARD_MODIFIERS_EXTEND
-stw $2, $4[KEYBOARD_MODIFIERS]
+@got_extend_modifier:
+or %2, KEYBOARD_MODIFIERS_EXTEND
+stw %2, %4[KEYBOARD_MODIFIERS]
 jmp read_keyboard
 
-.got_break_modifier:
-or $2, KEYBOARD_MODIFIERS_BREAK
-stw $2, $4[KEYBOARD_MODIFIERS]
+@got_break_modifier:
+or %2, KEYBOARD_MODIFIERS_BREAK
+stw %2, %4[KEYBOARD_MODIFIERS]
 jmp read_keyboard
 
-.got_break_code:
+@got_break_code:
 ; store a '0' at the corresponding location in the key pressed table
 ; caps lock is a special case - do nothing when it is released
 
-ld $3, KEYBOARD_BASE          
-add $3, $1
-ld $5, KEYBAORD_SCAN_CODE_CAPS
-beq $5, $1, .skip_caps_lock
-stb 0, $3[0]
-.skip_caps_lock:
-.ret:
-ld $8, 0
+ld %3, KEYBOARD_BASE          
+add %3, %1
+ld %5, KEYBAORD_SCAN_CODE_CAPS
+beq %5, %1, @skip_caps_lock
+stb 0, %3[0]
+@skip_caps_lock:
+@ret:
+ld %8, 0
 ret
 
 ; =========================================================
@@ -271,303 +271,303 @@ ret
 ; second byte = ASCII char when not shifted
 ; third  byte = ASCII char when shifted
 
-dcb 0,0,0,0              ; scan code 00
-dcb 1,KEY_F9,KEY_F9,0    ; scan code 01  F9
-dcb 0,0,0,0              ; scan code 02  
-dcb 1,KEY_F5,KEY_F5,0    ; scan code 03  F5
-dcb 1,KEY_F3,KEY_F3,0    ; scan code 04  F3
-dcb 1,KEY_F1,KEY_F1,0    ; scan code 05  F1
-dcb 1,KEY_F2,KEY_F2,0    ; scan code 06  F2
-dcb 1,KEY_F12,KEY_F12,0  ; scan code 07  F12
-dcb 0,0,0,0              ; scan code 08  
-dcb 1,KEY_F10,KEY_F10,0  ; scan code 09  F10
-dcb 1,KEY_F8,KEY_F8,0    ; scan code 0A  F8
-dcb 1,KEY_F6,KEY_F6,0    ; scan code 0B  F6
-dcb 1,KEY_F4,KEY_F4,0    ; scan code 0C  F4
-dcb 1,9,9,0              ; scan code 0D  Tab
-dcb 1,'`','`',0          ; scan code 0E  `
-dcb 0,0,0,0              ; scan code 0F  
-dcb 0,0,0,0              ; scan code 10  
-dcb 0,0,0,0              ; scan code 11  Alt (left)
-dcb 0,0,0,0              ; scan code 12  Shift (Left)
-dcb 0,0,0,0              ; scan code 13  
-dcb 0,0,0,0              ; scan code 14  Ctrl (left)
-dcb 2,'q','Q',0          ; scan code 15  Q
-dcb 1,'1','!',0          ; scan code 16  1
-dcb 0,0,0,0              ; scan code 17  
-dcb 0,0,0,0              ; scan code 18  
-dcb 0,0,0,0              ; scan code 19  
-dcb 2,'z','Z',0          ; scan code 1A  Z
-dcb 2,'s','S',0          ; scan code 1B  S
-dcb 2,'a','A',0          ; scan code 1C  A
-dcb 2,'w','W',0          ; scan code 1D  W
-dcb 1,'2','"',0          ; scan code 1E  2
-dcb 0,0,0,0              ; scan code 1F  
-dcb 0,0,0,0              ; scan code 20  
-dcb 2,'c','C',0          ; scan code 21  C
-dcb 2,'x','X',0          ; scan code 22  X
-dcb 2,'d','D',0          ; scan code 23  D
-dcb 2,'e','E',0          ; scan code 24  E
-dcb 1,'4','$',0          ; scan code 25  4
-dcb 1,'3','3',0          ; scan code 26  3
-dcb 0,0,0,0              ; scan code 27  
-dcb 0,0,0,0              ; scan code 28  
-dcb 1,' ',' ',0          ; scan code 29  Spacebar
-dcb 2,'v','V',0          ; scan code 2A  V
-dcb 2,'f','F',0          ; scan code 2B  F
-dcb 2,'t','T',0          ; scan code 2C  T
-dcb 2,'r','R',0          ; scan code 2D  R
-dcb 1,'5','%',0          ; scan code 2E  5
-dcb 0,0,0,0              ; scan code 2F  
-dcb 0,0,0,0              ; scan code 30  
-dcb 2,'n','N',0          ; scan code 31  N
-dcb 2,'b','B',0          ; scan code 32  B
-dcb 2,'h','H',0          ; scan code 33  H
-dcb 2,'g','G',0          ; scan code 34  G
-dcb 2,'y','Y',0          ; scan code 35  Y
-dcb 1,'6','^',0          ; scan code 36  6
-dcb 0,0,0,0              ; scan code 37  
-dcb 0,0,0,0              ; scan code 38  
-dcb 0,0,0,0              ; scan code 39  
-dcb 2,'m','M',0          ; scan code 3A  M
-dcb 2,'j','J',0          ; scan code 3B  J
-dcb 2,'u','U',0          ; scan code 3C  U
-dcb 1,'7','&',0          ; scan code 3D  7
-dcb 1,'8','*',0          ; scan code 3E  8
-dcb 0,0,0,0              ; scan code 3F  
-dcb 0,0,0,0              ; scan code 40  
-dcb 1,',','<',0          ; scan code 41  ,
-dcb 2,'k','K',0          ; scan code 42  K
-dcb 2,'i','I',0          ; scan code 43  I
-dcb 2,'o','O',0          ; scan code 44  O
-dcb 1,'0',')',0          ; scan code 45  0
-dcb 1,'9','(',0          ; scan code 46  9
-dcb 0,0,0,0              ; scan code 47  
-dcb 0,0,0,0              ; scan code 48  
-dcb 1,'.','>',0          ; scan code 49  .
-dcb 1,'/','?',0          ; scan code 4A  /
-dcb 2,'l','L',0          ; scan code 4B  L
-dcb 1,';',':',0          ; scan code 4C  ;
-dcb 2,'p','P',0          ; scan code 4D  P
-dcb 1,'-','_',0          ; scan code 4E  -
-dcb 0,0,0,0              ; scan code 4F  
-dcb 0,0,0,0              ; scan code 50  
-dcb 0,0,0,0              ; scan code 51  
-dcb 1,''','@',0          ; scan code 52  '
-dcb 0,0,0,0              ; scan code 53  
-dcb 1,'[','{',0          ; scan code 54  [
-dcb 1,'=','+',0          ; scan code 55  =
-dcb 0,0,0,0              ; scan code 56  
-dcb 0,0,0,0              ; scan code 57  
-dcb 0,0,0,0              ; scan code 58  Caps Lock
-dcb 0,0,0,0              ; scan code 59  Shift (Right)
-dcb 1,13,13,0            ; scan code 5A  Enter
-dcb 1,']','}',0          ; scan code 5B  ]
-dcb 0,0,0,0              ; scan code 5C  
-dcb 1,'\','|',0          ; scan code 5D  \
-dcb 0,0,0,0              ; scan code 5E  
-dcb 0,0,0,0              ; scan code 5F  
-dcb 0,0,0,0              ; scan code 60  
-dcb 0,0,0,0              ; scan code 61  
-dcb 0,0,0,0              ; scan code 62  
-dcb 0,0,0,0              ; scan code 63  
-dcb 0,0,0,0              ; scan code 64  
-dcb 0,0,0,0              ; scan code 65  
-dcb 1,7,7,0              ; scan code 66  Backspace
-dcb 0,0,0,0              ; scan code 67  
-dcb 0,0,0,0              ; scan code 68  
-dcb 1,'1','1',0          ; scan code 69  KEYPAD 1
-dcb 0,0,0,0              ; scan code 6A  
-dcb 1,'4','4',0          ; scan code 6B  KEYPAD 4
-dcb 1,'7','7',0          ; scan code 6C  KEYPAD 7
-dcb 0,0,0,0              ; scan code 6D  
-dcb 0,0,0,0              ; scan code 6E  
-dcb 0,0,0,0              ; scan code 6F  
-dcb 1,'0','0',0          ; scan code 70  KEYPAD 0
-dcb 1,'.','.',0          ; scan code 71  .
-dcb 1,'2','2',0          ; scan code 72  2
-dcb 1,'5','5',0          ; scan code 73  5
-dcb 1,'6','6',0          ; scan code 74  6
-dcb 1,'8','8',0          ; scan code 75  8
-dcb 1,27,27,0            ; scan code 76  ESC
-dcb 1,KEY_NUMLOCK,KEY_NUMLOCK,0    ; scan code 77  Num Lock
-dcb 1,KEY_F11,KEY_F11,0  ; scan code 78  F11
-dcb 1,'+','+',0          ; scan code 79  +
-dcb 1,'3','3',0          ; scan code 7A  3
-dcb 1,'-','-',0          ; scan code 7B  -
-dcb 1,'*','*',0          ; scan code 7C  *
-dcb 1,'9','9',0          ; scan code 7D  9
-dcb 1,KEY_SCROLLOCK,KEY_SCROLLOCK,0    ; scan code 7E  Scroll Lock
-dcb 0,0,0,0              ; scan code 7F  
-dcb 0,0,0,0              ; scan code 80  
-dcb 0,0,0,0              ; scan code 81  
-dcb 0,0,0,0              ; scan code 82  
-dcb 1,KEY_F7,KEY_F7,0    ; scan code 83  
-dcb 0,0,0,0              ; scan code 84  
-dcb 0,0,0,0              ; scan code 85  
-dcb 0,0,0,0              ; scan code 86  
-dcb 0,0,0,0              ; scan code 87  
-dcb 0,0,0,0              ; scan code 88  
-dcb 0,0,0,0              ; scan code 89  
-dcb 0,0,0,0              ; scan code 8A  
-dcb 0,0,0,0              ; scan code 8B  
-dcb 0,0,0,0              ; scan code 8C  
-dcb 0,0,0,0              ; scan code 8D  
-dcb 0,0,0,0              ; scan code 8E  
-dcb 0,0,0,0              ; scan code 8F  
-dcb 0,0,0,0              ; scan code 90  
-dcb 0,0,0,0              ; scan code 91  R_ALT
-dcb 0,0,0,0              ; scan code 92  
-dcb 0,0,0,0              ; scan code 93  
-dcb 0,0,0,0              ; scan code 94  R_CTRL
-dcb 0,0,0,0              ; scan code 95  
-dcb 0,0,0,0              ; scan code 96  
-dcb 0,0,0,0              ; scan code 97  
-dcb 0,0,0,0              ; scan code 98  
-dcb 0,0,0,0              ; scan code 99  
-dcb 0,0,0,0              ; scan code 9A  
-dcb 0,0,0,0              ; scan code 9B  
-dcb 0,0,0,0              ; scan code 9C  
-dcb 0,0,0,0              ; scan code 9D  
-dcb 0,0,0,0              ; scan code 9E  
-dcb 0,0,0,0              ; scan code 9F  L_WINDOWS
-dcb 0,0,0,0              ; scan code 0A0  
-dcb 0,0,0,0              ; scan code 0A1  
-dcb 0,0,0,0              ; scan code 0A2  
-dcb 0,0,0,0              ; scan code 0A3  
-dcb 0,0,0,0              ; scan code 0A4  
-dcb 0,0,0,0              ; scan code 0A5  
-dcb 0,0,0,0              ; scan code 0A6  
-dcb 0,0,0,0              ; scan code 0A7  R_WINDOWS
-dcb 0,0,0,0              ; scan code 0A8  
-dcb 0,0,0,0              ; scan code 0A9  
-dcb 0,0,0,0              ; scan code 0AA  
-dcb 0,0,0,0              ; scan code 0AB  
-dcb 0,0,0,0              ; scan code 0AC  
-dcb 0,0,0,0              ; scan code 0AD  
-dcb 0,0,0,0              ; scan code 0AE  
-dcb 0,0,0,0              ; scan code 0AF  MENU
-dcb 0,0,0,0              ; scan code 0B0  
-dcb 0,0,0,0              ; scan code 0B1  
-dcb 0,0,0,0              ; scan code 0B2  
-dcb 0,0,0,0              ; scan code 0B3  
-dcb 0,0,0,0              ; scan code 0B4  
-dcb 0,0,0,0              ; scan code 0B5  
-dcb 0,0,0,0              ; scan code 0B6  
-dcb 0,0,0,0              ; scan code 0B7  
-dcb 0,0,0,0              ; scan code 0B8  
-dcb 0,0,0,0              ; scan code 0B9  
-dcb 0,0,0,0              ; scan code 0BA  
-dcb 0,0,0,0              ; scan code 0BB  
-dcb 0,0,0,0              ; scan code 0BC  
-dcb 0,0,0,0              ; scan code 0BD  
-dcb 0,0,0,0              ; scan code 0BE  
-dcb 0,0,0,0              ; scan code 0BF  
-dcb 0,0,0,0              ; scan code 0C0  
-dcb 0,0,0,0              ; scan code 0C1  
-dcb 0,0,0,0              ; scan code 0C2  
-dcb 0,0,0,0              ; scan code 0C3  
-dcb 0,0,0,0              ; scan code 0C4  
-dcb 0,0,0,0              ; scan code 0C5  
-dcb 0,0,0,0              ; scan code 0C6  
-dcb 0,0,0,0              ; scan code 0C7  
-dcb 0,0,0,0              ; scan code 0C8  
-dcb 0,0,0,0              ; scan code 0C9  
-dcb 1,'/','/',0          ; scan code 0CA  Keypad /
-dcb 0,0,0,0              ; scan code 0CB  
-dcb 0,0,0,0              ; scan code 0CC  
-dcb 0,0,0,0              ; scan code 0CD  
-dcb 0,0,0,0              ; scan code 0CE  
-dcb 0,0,0,0              ; scan code 0CF  
-dcb 0,0,0,0              ; scan code 0D0  
-dcb 0,0,0,0              ; scan code 0D1  
-dcb 0,0,0,0              ; scan code 0D2  
-dcb 0,0,0,0              ; scan code 0D3  
-dcb 0,0,0,0              ; scan code 0D4  
-dcb 0,0,0,0              ; scan code 0D5  
-dcb 0,0,0,0              ; scan code 0D6  
-dcb 0,0,0,0              ; scan code 0D7  
-dcb 0,0,0,0              ; scan code 0D8  
-dcb 0,0,0,0              ; scan code 0D9  
-dcb 1,13,13,0            ; scan code 0DA  Keypad Enter
-dcb 0,0,0,0              ; scan code 0DB  
-dcb 0,0,0,0              ; scan code 0DC  
-dcb 0,0,0,0              ; scan code 0DD  
-dcb 0,0,0,0              ; scan code 0DE  
-dcb 0,0,0,0              ; scan code 0DF  
-dcb 0,0,0,0              ; scan code 0E0  
-dcb 0,0,0,0              ; scan code 0E1  
-dcb 0,0,0,0              ; scan code 0E2  
-dcb 0,0,0,0              ; scan code 0E3  
-dcb 0,0,0,0              ; scan code 0E4  
-dcb 0,0,0,0              ; scan code 0E5  
-dcb 0,0,0,0              ; scan code 0E6  
-dcb 0,0,0,0              ; scan code 0E7  
-dcb 0,0,0,0              ; scan code 0E8  
-dcb 1,KEY_END,KEY_END,0  ; scan code 0E9  END
-dcb 0,0,0,0              ; scan code 0EA  
-dcb 1,KEY_LEFT,KEY_LEFT,0    ; scan code 0EB  LEFT
-dcb 1,KEY_HOME,KEY_HOME,0    ; scan code 0EC   HOME
-dcb 0,0,0,0              ; scan code 0ED  
-dcb 0,0,0,0              ; scan code 0EE  
-dcb 0,0,0,0              ; scan code 0EF  
-dcb 1,KEY_INSERT,KEY_INSERT,0    ; scan code 0F0  INSERT
-dcb 1,127,127,0          ; scan code 0F1  DELETE
-dcb 1,KEY_DOWN,KEY_DOWN,0    ; scan code 0F2  DOWN
-dcb 0,0,0,0              ; scan code 0F3  
-dcb 1,KEY_RIGHT,KEY_RIGHT,0    ; scan code 0F4  RIGHT
-dcb 1,KEY_UP,KEY_UP,0    ; scan code 0F5  UP
-dcb 0,0,0,0              ; scan code 0F6  
-dcb 0,0,0,0              ; scan code 0F7  
-dcb 0,0,0,0              ; scan code 0F8  
-dcb 0,0,0,0              ; scan code 0F9  
-dcb 1,KEY_PAGEDOWN,KEY_PAGEDOWN,0    ; scan code 0FA  PAGE DOWN
-dcb 0,0,0,0              ; scan code 0FB  
-dcb 1,KEY_PRTSCREEN,KEY_PRTSCREEN,0    ; scan code 0FC  
-dcb 1,KEY_PAGEUP,KEY_PAGEUP,0    ; scan code 0FD  PAGE UP
-dcb 0,0,0,0              ; scan code 0FE  
-dcb 0,0,0,0              ; scan code 0FF  
+dcb 0 , 0 , 0 , 0              ; scan code 00
+dcb 1 , KEY_F9 , KEY_F9 , 0    ; scan code 01  F9
+dcb 0 , 0 , 0 , 0              ; scan code 02  
+dcb 1 , KEY_F5 , KEY_F5 , 0    ; scan code 03  F5
+dcb 1 , KEY_F3 , KEY_F3 , 0    ; scan code 04  F3
+dcb 1 , KEY_F1 , KEY_F1 , 0    ; scan code 05  F1
+dcb 1 , KEY_F2 , KEY_F2 , 0    ; scan code 06  F2
+dcb 1 , KEY_F12 , KEY_F12 , 0  ; scan code 07  F12
+dcb 0 , 0 , 0 , 0              ; scan code 08  
+dcb 1 , KEY_F10 , KEY_F10 , 0  ; scan code 09  F10
+dcb 1 , KEY_F8 , KEY_F8 , 0    ; scan code 0A  F8
+dcb 1 , KEY_F6 , KEY_F6 , 0    ; scan code 0B  F6
+dcb 1 , KEY_F4 , KEY_F4 , 0    ; scan code 0C  F4
+dcb 1 , 9 , 9 , 0              ; scan code 0D  Tab
+dcb 1 , '`' , '`' , 0          ; scan code 0E  `
+dcb 0 , 0 , 0 , 0              ; scan code 0F  
+dcb 0 , 0 , 0 , 0              ; scan code 10  
+dcb 0 , 0 , 0 , 0              ; scan code 11  Alt (left)
+dcb 0 , 0 , 0 , 0              ; scan code 12  Shift (Left)
+dcb 0 , 0 , 0 , 0              ; scan code 13  
+dcb 0 , 0 , 0 , 0              ; scan code 14  Ctrl (left)
+dcb 2 , 'q' , 'Q' , 0          ; scan code 15  Q
+dcb 1 , '1' , '!' , 0          ; scan code 16  1
+dcb 0 , 0 , 0 , 0              ; scan code 17  
+dcb 0 , 0 , 0 , 0              ; scan code 18  
+dcb 0 , 0 , 0 , 0              ; scan code 19  
+dcb 2 , 'z' , 'Z' , 0          ; scan code 1A  Z
+dcb 2 , 's' , 'S' , 0          ; scan code 1B  S
+dcb 2 , 'a' , 'A' , 0          ; scan code 1C  A
+dcb 2 , 'w' , 'W' , 0          ; scan code 1D  W
+dcb 1 , '2' , '"' , 0          ; scan code 1E  2
+dcb 0 , 0 , 0 , 0              ; scan code 1F  
+dcb 0 , 0 , 0 , 0              ; scan code 20  
+dcb 2 , 'c' , 'C' , 0          ; scan code 21  C
+dcb 2 , 'x' , 'X' , 0          ; scan code 22  X
+dcb 2 , 'd' , 'D' , 0          ; scan code 23  D
+dcb 2 , 'e' , 'E' , 0          ; scan code 24  E
+dcb 1 , '4' , '%' , 0          ; scan code 25  4
+dcb 1 , '3' , '3' , 0          ; scan code 26  3
+dcb 0 , 0 , 0 , 0              ; scan code 27  
+dcb 0 , 0 , 0 , 0              ; scan code 28  
+dcb 1 , ' ' , ' ' , 0          ; scan code 29  Spacebar
+dcb 2 , 'v' , 'V' , 0          ; scan code 2A  V
+dcb 2 , 'f' , 'F' , 0          ; scan code 2B  F
+dcb 2 , 't' , 'T' , 0          ; scan code 2C  T
+dcb 2 , 'r' , 'R' , 0          ; scan code 2D  R
+dcb 1 , '5' , '%' , 0          ; scan code 2E  5
+dcb 0 , 0 , 0 , 0              ; scan code 2F  
+dcb 0 , 0 , 0 , 0              ; scan code 30  
+dcb 2 , 'n' , 'N' , 0          ; scan code 31  N
+dcb 2 , 'b' , 'B' , 0          ; scan code 32  B
+dcb 2 , 'h' , 'H' , 0          ; scan code 33  H
+dcb 2 , 'g' , 'G' , 0          ; scan code 34  G
+dcb 2 , 'y' , 'Y' , 0          ; scan code 35  Y
+dcb 1 , '6' , '^' , 0          ; scan code 36  6
+dcb 0 , 0 , 0 , 0              ; scan code 37  
+dcb 0 , 0 , 0 , 0              ; scan code 38  
+dcb 0 , 0 , 0 , 0              ; scan code 39  
+dcb 2 , 'm' , 'M' , 0          ; scan code 3A  M
+dcb 2 , 'j' , 'J' , 0          ; scan code 3B  J
+dcb 2 , 'u' , 'U' , 0          ; scan code 3C  U
+dcb 1 , '7' , '&' , 0          ; scan code 3D  7
+dcb 1 , '8' , '*' , 0          ; scan code 3E  8
+dcb 0 , 0 , 0 , 0              ; scan code 3F  
+dcb 0 , 0 , 0 , 0              ; scan code 40  
+dcb 1 , ',' , '<' , 0          ; scan code 41   , 
+dcb 2 , 'k' , 'K' , 0          ; scan code 42  K
+dcb 2 , 'i' , 'I' , 0          ; scan code 43  I
+dcb 2 , 'o' , 'O' , 0          ; scan code 44  O
+dcb 1 , '0' , ')' , 0          ; scan code 45  0
+dcb 1 , '9' , '(' , 0          ; scan code 46  9
+dcb 0 , 0 , 0 , 0              ; scan code 47  
+dcb 0 , 0 , 0 , 0              ; scan code 48  
+dcb 1 , '.' , '>' , 0          ; scan code 49  .
+dcb 1 , '/' , '?' , 0          ; scan code 4A  /
+dcb 2 , 'l' , 'L' , 0          ; scan code 4B  L
+dcb 1 , ';' , ':' , 0          ; scan code 4C  ;
+dcb 2 , 'p' , 'P' , 0          ; scan code 4D  P
+dcb 1 , '-' , '_' , 0          ; scan code 4E  -
+dcb 0 , 0 , 0 , 0              ; scan code 4F  
+dcb 0 , 0 , 0 , 0              ; scan code 50  
+dcb 0 , 0 , 0 , 0              ; scan code 51  
+dcb 1 , ''' , '@' , 0          ; scan code 52  '
+dcb 0 , 0 , 0 , 0              ; scan code 53  
+dcb 1 , '[' , '{' , 0          ; scan code 54  [
+dcb 1 , '=' , '+' , 0          ; scan code 55  =
+dcb 0 , 0 , 0 , 0              ; scan code 56  
+dcb 0 , 0 , 0 , 0              ; scan code 57  
+dcb 0 , 0 , 0 , 0              ; scan code 58  Caps Lock
+dcb 0 , 0 , 0 , 0              ; scan code 59  Shift (Right)
+dcb 1 , 13 , 13 , 0            ; scan code 5A  Enter
+dcb 1 , ']' , '}' , 0          ; scan code 5B  ]
+dcb 0 , 0 , 0 , 0              ; scan code 5C  
+dcb 1 , '\' , '|' , 0          ; scan code 5D  \
+dcb 0 , 0 , 0 , 0              ; scan code 5E  
+dcb 0 , 0 , 0 , 0              ; scan code 5F  
+dcb 0 , 0 , 0 , 0              ; scan code 60  
+dcb 0 , 0 , 0 , 0              ; scan code 61  
+dcb 0 , 0 , 0 , 0              ; scan code 62  
+dcb 0 , 0 , 0 , 0              ; scan code 63  
+dcb 0 , 0 , 0 , 0              ; scan code 64  
+dcb 0 , 0 , 0 , 0              ; scan code 65  
+dcb 1 , 7 , 7 , 0              ; scan code 66  Backspace
+dcb 0 , 0 , 0 , 0              ; scan code 67  
+dcb 0 , 0 , 0 , 0              ; scan code 68  
+dcb 1 , '1' , '1' , 0          ; scan code 69  KEYPAD 1
+dcb 0 , 0 , 0 , 0              ; scan code 6A  
+dcb 1 , '4' , '4' , 0          ; scan code 6B  KEYPAD 4
+dcb 1 , '7' , '7' , 0          ; scan code 6C  KEYPAD 7
+dcb 0 , 0 , 0 , 0              ; scan code 6D  
+dcb 0 , 0 , 0 , 0              ; scan code 6E  
+dcb 0 , 0 , 0 , 0              ; scan code 6F  
+dcb 1 , '0' , '0' , 0          ; scan code 70  KEYPAD 0
+dcb 1 , '.' , '.' , 0          ; scan code 71  .
+dcb 1 , '2' , '2' , 0          ; scan code 72  2
+dcb 1 , '5' , '5' , 0          ; scan code 73  5
+dcb 1 , '6' , '6' , 0          ; scan code 74  6
+dcb 1 , '8' , '8' , 0          ; scan code 75  8
+dcb 1 , 27 , 27 , 0            ; scan code 76  ESC
+dcb 1 , KEY_NUMLOCK , KEY_NUMLOCK , 0    ; scan code 77  Num Lock
+dcb 1 , KEY_F11 , KEY_F11 , 0  ; scan code 78  F11
+dcb 1 , '+' , '+' , 0          ; scan code 79  +
+dcb 1 , '3' , '3' , 0          ; scan code 7A  3
+dcb 1 , '-' , '-' , 0          ; scan code 7B  -
+dcb 1 , '*' , '*' , 0          ; scan code 7C  *
+dcb 1 , '9' , '9' , 0          ; scan code 7D  9
+dcb 1 , KEY_SCROLLOCK , KEY_SCROLLOCK , 0    ; scan code 7E  Scroll Lock
+dcb 0 , 0 , 0 , 0              ; scan code 7F  
+dcb 0 , 0 , 0 , 0              ; scan code 80  
+dcb 0 , 0 , 0 , 0              ; scan code 81  
+dcb 0 , 0 , 0 , 0              ; scan code 82  
+dcb 1 , KEY_F7 , KEY_F7 , 0    ; scan code 83  
+dcb 0 , 0 , 0 , 0              ; scan code 84  
+dcb 0 , 0 , 0 , 0              ; scan code 85  
+dcb 0 , 0 , 0 , 0              ; scan code 86  
+dcb 0 , 0 , 0 , 0              ; scan code 87  
+dcb 0 , 0 , 0 , 0              ; scan code 88  
+dcb 0 , 0 , 0 , 0              ; scan code 89  
+dcb 0 , 0 , 0 , 0              ; scan code 8A  
+dcb 0 , 0 , 0 , 0              ; scan code 8B  
+dcb 0 , 0 , 0 , 0              ; scan code 8C  
+dcb 0 , 0 , 0 , 0              ; scan code 8D  
+dcb 0 , 0 , 0 , 0              ; scan code 8E  
+dcb 0 , 0 , 0 , 0              ; scan code 8F  
+dcb 0 , 0 , 0 , 0              ; scan code 90  
+dcb 0 , 0 , 0 , 0              ; scan code 91  R_ALT
+dcb 0 , 0 , 0 , 0              ; scan code 92  
+dcb 0 , 0 , 0 , 0              ; scan code 93  
+dcb 0 , 0 , 0 , 0              ; scan code 94  R_CTRL
+dcb 0 , 0 , 0 , 0              ; scan code 95  
+dcb 0 , 0 , 0 , 0              ; scan code 96  
+dcb 0 , 0 , 0 , 0              ; scan code 97  
+dcb 0 , 0 , 0 , 0              ; scan code 98  
+dcb 0 , 0 , 0 , 0              ; scan code 99  
+dcb 0 , 0 , 0 , 0              ; scan code 9A  
+dcb 0 , 0 , 0 , 0              ; scan code 9B  
+dcb 0 , 0 , 0 , 0              ; scan code 9C  
+dcb 0 , 0 , 0 , 0              ; scan code 9D  
+dcb 0 , 0 , 0 , 0              ; scan code 9E  
+dcb 0 , 0 , 0 , 0              ; scan code 9F  L_WINDOWS
+dcb 0 , 0 , 0 , 0              ; scan code 0A0  
+dcb 0 , 0 , 0 , 0              ; scan code 0A1  
+dcb 0 , 0 , 0 , 0              ; scan code 0A2  
+dcb 0 , 0 , 0 , 0              ; scan code 0A3  
+dcb 0 , 0 , 0 , 0              ; scan code 0A4  
+dcb 0 , 0 , 0 , 0              ; scan code 0A5  
+dcb 0 , 0 , 0 , 0              ; scan code 0A6  
+dcb 0 , 0 , 0 , 0              ; scan code 0A7  R_WINDOWS
+dcb 0 , 0 , 0 , 0              ; scan code 0A8  
+dcb 0 , 0 , 0 , 0              ; scan code 0A9  
+dcb 0 , 0 , 0 , 0              ; scan code 0AA  
+dcb 0 , 0 , 0 , 0              ; scan code 0AB  
+dcb 0 , 0 , 0 , 0              ; scan code 0AC  
+dcb 0 , 0 , 0 , 0              ; scan code 0AD  
+dcb 0 , 0 , 0 , 0              ; scan code 0AE  
+dcb 0 , 0 , 0 , 0              ; scan code 0AF  MENU
+dcb 0 , 0 , 0 , 0              ; scan code 0B0  
+dcb 0 , 0 , 0 , 0              ; scan code 0B1  
+dcb 0 , 0 , 0 , 0              ; scan code 0B2  
+dcb 0 , 0 , 0 , 0              ; scan code 0B3  
+dcb 0 , 0 , 0 , 0              ; scan code 0B4  
+dcb 0 , 0 , 0 , 0              ; scan code 0B5  
+dcb 0 , 0 , 0 , 0              ; scan code 0B6  
+dcb 0 , 0 , 0 , 0              ; scan code 0B7  
+dcb 0 , 0 , 0 , 0              ; scan code 0B8  
+dcb 0 , 0 , 0 , 0              ; scan code 0B9  
+dcb 0 , 0 , 0 , 0              ; scan code 0BA  
+dcb 0 , 0 , 0 , 0              ; scan code 0BB  
+dcb 0 , 0 , 0 , 0              ; scan code 0BC  
+dcb 0 , 0 , 0 , 0              ; scan code 0BD  
+dcb 0 , 0 , 0 , 0              ; scan code 0BE  
+dcb 0 , 0 , 0 , 0              ; scan code 0BF  
+dcb 0 , 0 , 0 , 0              ; scan code 0C0  
+dcb 0 , 0 , 0 , 0              ; scan code 0C1  
+dcb 0 , 0 , 0 , 0              ; scan code 0C2  
+dcb 0 , 0 , 0 , 0              ; scan code 0C3  
+dcb 0 , 0 , 0 , 0              ; scan code 0C4  
+dcb 0 , 0 , 0 , 0              ; scan code 0C5  
+dcb 0 , 0 , 0 , 0              ; scan code 0C6  
+dcb 0 , 0 , 0 , 0              ; scan code 0C7  
+dcb 0 , 0 , 0 , 0              ; scan code 0C8  
+dcb 0 , 0 , 0 , 0              ; scan code 0C9  
+dcb 1 , '/' , '/' , 0          ; scan code 0CA  Keypad /
+dcb 0 , 0 , 0 , 0              ; scan code 0CB  
+dcb 0 , 0 , 0 , 0              ; scan code 0CC  
+dcb 0 , 0 , 0 , 0              ; scan code 0CD  
+dcb 0 , 0 , 0 , 0              ; scan code 0CE  
+dcb 0 , 0 , 0 , 0              ; scan code 0CF  
+dcb 0 , 0 , 0 , 0              ; scan code 0D0  
+dcb 0 , 0 , 0 , 0              ; scan code 0D1  
+dcb 0 , 0 , 0 , 0              ; scan code 0D2  
+dcb 0 , 0 , 0 , 0              ; scan code 0D3  
+dcb 0 , 0 , 0 , 0              ; scan code 0D4  
+dcb 0 , 0 , 0 , 0              ; scan code 0D5  
+dcb 0 , 0 , 0 , 0              ; scan code 0D6  
+dcb 0 , 0 , 0 , 0              ; scan code 0D7  
+dcb 0 , 0 , 0 , 0              ; scan code 0D8  
+dcb 0 , 0 , 0 , 0              ; scan code 0D9  
+dcb 1 , 13 , 13 , 0            ; scan code 0DA  Keypad Enter
+dcb 0 , 0 , 0 , 0              ; scan code 0DB  
+dcb 0 , 0 , 0 , 0              ; scan code 0DC  
+dcb 0 , 0 , 0 , 0              ; scan code 0DD  
+dcb 0 , 0 , 0 , 0              ; scan code 0DE  
+dcb 0 , 0 , 0 , 0              ; scan code 0DF  
+dcb 0 , 0 , 0 , 0              ; scan code 0E0  
+dcb 0 , 0 , 0 , 0              ; scan code 0E1  
+dcb 0 , 0 , 0 , 0              ; scan code 0E2  
+dcb 0 , 0 , 0 , 0              ; scan code 0E3  
+dcb 0 , 0 , 0 , 0              ; scan code 0E4  
+dcb 0 , 0 , 0 , 0              ; scan code 0E5  
+dcb 0 , 0 , 0 , 0              ; scan code 0E6  
+dcb 0 , 0 , 0 , 0              ; scan code 0E7  
+dcb 0 , 0 , 0 , 0              ; scan code 0E8  
+dcb 1 , KEY_END , KEY_END , 0  ; scan code 0E9  END
+dcb 0 , 0 , 0 , 0              ; scan code 0EA  
+dcb 1 , KEY_LEFT , KEY_LEFT , 0    ; scan code 0EB  LEFT
+dcb 1 , KEY_HOME , KEY_HOME , 0    ; scan code 0EC   HOME
+dcb 0 , 0 , 0 , 0              ; scan code 0ED  
+dcb 0 , 0 , 0 , 0              ; scan code 0EE  
+dcb 0 , 0 , 0 , 0              ; scan code 0EF  
+dcb 1 , KEY_INSERT , KEY_INSERT , 0    ; scan code 0F0  INSERT
+dcb 1 , 127 , 127 , 0          ; scan code 0F1  DELETE
+dcb 1 , KEY_DOWN , KEY_DOWN , 0    ; scan code 0F2  DOWN
+dcb 0 , 0 , 0 , 0              ; scan code 0F3  
+dcb 1 , KEY_RIGHT , KEY_RIGHT , 0    ; scan code 0F4  RIGHT
+dcb 1 , KEY_UP , KEY_UP , 0    ; scan code 0F5  UP
+dcb 0 , 0 , 0 , 0              ; scan code 0F6  
+dcb 0 , 0 , 0 , 0              ; scan code 0F7  
+dcb 0 , 0 , 0 , 0              ; scan code 0F8  
+dcb 0 , 0 , 0 , 0              ; scan code 0F9  
+dcb 1 , KEY_PAGEDOWN , KEY_PAGEDOWN , 0    ; scan code 0FA  PAGE DOWN
+dcb 0 , 0 , 0 , 0              ; scan code 0FB  
+dcb 1 , KEY_PRTSCREEN , KEY_PRTSCREEN , 0    ; scan code 0FC  
+dcb 1 , KEY_PAGEUP , KEY_PAGEUP , 0    ; scan code 0FD  PAGE UP
+dcb 0 , 0 , 0 , 0              ; scan code 0FE  
+dcb 0 , 0 , 0 , 0              ; scan code 0FF  
 
 ; =========================================================
                    init_keyboard:
 ; =========================================================
 ; initialize the keyboard data structure
 
-ld $1, KEYBOARD_BASE     ; $1 = pointer to start of keyboard state struct
-add $2, $1, 256          ; $2 = pointer to end of keyboard state
-.loop:
-    stw 0, $1[0]
-    add $1, 4
-    bne $1, $2, .loop
+ld %1, KEYBOARD_BASE     ; %1 = pointer to start of keyboard state struct
+add %2, %1, 256          ; %2 = pointer to end of keyboard state
+@loop:
+    stw 0, %1[0]
+    add %1, 4
+    bne %1, %2, @loop
 ret
 
 ; =======================================
 ;               kprint_char
 ; =======================================
-; $1 = char to print
+; %1 = char to print
 
 kprint_char:
-ld $7, HWREGS_BASE
-stw $1, $7[HWREGS_UART_TX]
+ld %7, HWREGS_BASE
+stw %1, %7[HWREGS_UART_TX]
 ret
 
 ; =======================================
 ;               kprint_string
 ; =======================================
-; $1 = string to print
+; %1 = string to print
 
 kprint_string:
-ld $7, HWREGS_BASE
-ld $2, $1[-4]       ; $2 = length of string
-jmp .loop_cond
+ld %7, HWREGS_BASE
+ld %2, %1[-4]       ; %2 = length of string
+jmp @loop_cond
 
-.loop:
-ldb $3, $1[0]       ; $3 = next char
-stw $3, $7[HWREGS_UART_TX]
-add $1, 1
-sub $2, 1
-.loop_cond:
-bne $2, 0, .loop
+@loop:
+ldb %3, %1[0]       ; %3 = next char
+stw %3, %7[HWREGS_UART_TX]
+add %1, 1
+sub %2, 1
+@loop_cond:
+bne %2, 0, @loop
 
 ret
 
@@ -576,23 +576,23 @@ ret
 ;               kprint_hex
 ; =======================================
 ; Prints an integer to the UART as an 8 digit hex value
-; $1 = integer to print
+; %1 = integer to print
 
 kprint_hex:
-ld $7, HWREGS_BASE
-ld $6, 8               ; $6 = number of digits left to print
-ld $3, '9'
+ld %7, HWREGS_BASE
+ld %6, 8               ; %6 = number of digits left to print
+ld %3, '9'
 
-.loop:
-lsr $2, $1, 28         ; $2 = most significant nybble of number
-lsl $1, $1, 4 
-add $2, '0'            ; convert to ASCII
-bge $3,$2, .isNumber
-add $2, 7              ; convert ':' to 'A'
-.isNumber:
-stw $2, $7[HWREGS_UART_TX]
+@loop:
+lsr %2, %1, 28         ; %2 = most significant nybble of number
+lsl %1, %1, 4 
+add %2, '0'            ; convert to ASCII
+bge %3,%2, @isNumber
+add %2, 7              ; convert ':' to 'A'
+@isNumber:
+stw %2, %7[HWREGS_UART_TX]
 
-sub $6,1
-bne $6, 0, .loop
+sub %6,1
+bne %6, 0, @loop
 
 ret

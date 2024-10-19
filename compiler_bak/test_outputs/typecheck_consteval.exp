@@ -1,0 +1,4 @@
+Symbol table [fred:FUNC:()->Int  ]
+FUNCTION fred
+   RETURN
+      INTLIT 40 Int

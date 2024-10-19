@@ -3,25 +3,25 @@
 ; Testcase for multiply and divide instructions
 ;
 
-ld $1, 123
-ld $2, 456
-mul $3, $1, $2   ; = 56088    a multiply between two registers
-add $4, $3, 1    ; = 56089    uses the result of the multiply in the next instruction (force a pipeline bubble)
+ld %1, 123
+ld %2, 456
+mul %3, %1, %2   ; = 56088    a multiply between two registers
+add %4, %3, 1    ; = 56089    uses the result of the multiply in the next instruction (force a pipeline bubble)
 
-ld $5, -53
-mul $6, $2, $5   ; = -24168   multiply with negative numbers
-mul $7, $6, 12   ; = -290016  back to back multiply instructions
-divs $8, $7, $5  ; = 5472     signed division
-mods $9, $7, 126 ; = 90       signed modulo
+ld %5, -53
+mul %6, %2, %5   ; = -24168   multiply with negative numbers
+mul %7, %6, 12   ; = -290016  back to back multiply instructions
+divs %8, %7, %5  ; = 5472     signed division
+mods %9, %7, 126 ; = 90       signed modulo
 
-ld $10, 0FEDCBA98H
-divu $11, $10, 16 ; = 00FEDCBA9H  - unsigned division
-modu $11, $10, 16 ; = 8             unsigned modulo
+ld %10, 0FEDCBA98H
+divu %11, %10, 16 ; = 00FEDCBA9H  - unsigned division
+modu %11, %10, 16 ; = 8             unsigned modulo
 
-mul $12, $7, 0    ; = 0       multiply negative number by zero
-mul $13, $11, 0   ; = 0       multiply large positive
-divu $14, $8, 0   ; = FFFFFFFF divide by zero should give maximum value
-modu $15, $8, 0   ; = 5472     modulo by zero should give numerator
-divs $16, $8, 0   ; = FFFFFFFF divide by zero should give maximum value
-mods $17, $8, 0   ; = 5472     modulo by zero should give numerator
+mul %12, %7, 0    ; = 0       multiply negative number by zero
+mul %13, %11, 0   ; = 0       multiply large positive
+divu %14, %8, 0   ; = FFFFFFFF divide by zero should give maximum value
+modu %15, %8, 0   ; = 5472     modulo by zero should give numerator
+divs %16, %8, 0   ; = FFFFFFFF divide by zero should give maximum value
+mods %17, %8, 0   ; = 5472     modulo by zero should give numerator
 ret

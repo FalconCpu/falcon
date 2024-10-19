@@ -119,11 +119,11 @@ always begin
 end
 
 initial begin
-  $dumpvars(0); // long enough for one frame
-  #15000000;  
+  //$dumpvars(0); // long enough for one frame
+  //#15000000;  
 
-  //$dumpvars(5);  // Long enough for most testcases
-  //#15000; 
+  $dumpvars(5);  // Long enough for most testcases
+  #25000; 
 
   $display("TIMEOUT");
   $finish;
@@ -151,7 +151,4 @@ always @(posedge(VGA_CLK)) begin
   last_hs <= VGA_HS;
 end
 
-
-
-      
 endmodule 

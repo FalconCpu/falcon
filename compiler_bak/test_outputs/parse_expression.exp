@@ -1,0 +1,38 @@
+DECL a
+   BINOP <
+      BINOP +
+         INTLIT 1 Int
+         BINOP *
+            INTLIT 2 Int
+            INTLIT 3 Int
+      BINOP /
+         INTLIT 4 Int
+         INTLIT 5 Int
+DECL b
+   BINOP and
+      BINOP /
+         INTLIT 8 Int
+         BINOP +
+            SYMBOL a
+            SYMBOL b
+      SYMBOL c
+DECL x
+   INDEX
+      SYMBOL a
+      BINOP &
+         INTLIT 4 Int
+         INTLIT 7 Int
+DECL z
+   MEMBER f
+      SYMBOL p
+DECL g
+   BINOP +
+      UNARY -
+         SYMBOL a
+      INTLIT 1 Int
+DECL func
+   FUNCCALL
+      SYMBOL a
+      INTLIT 2 Int
+      INTLIT 3 Int
+      INTLIT 4 Int

@@ -1,24 +1,24 @@
 
 
-ld $1,0E0000000H
-ld $2,45H
-stw $2,$1[8]
-ld $2,50H
-stw $2,$1[8]
-ld $2,00H
-stw $2,$1[8]
-ld $2,31H
-stw $2,$1[8]
+ld %1,0E0000000H
+ld %2,45H
+stw %2,%1[8]
+ld %2,50H
+stw %2,%1[8]
+ld %2,00H
+stw %2,%1[8]
+ld %2,31H
+stw %2,%1[8]
 
-ld $3,800
+ld %3,800
 delay:
-sub $3,1
-bne $3, 0, delay
+sub %3,1
+bne %3, 0, delay
 
-ldw $5, $1[12]   ; should fetch 45H
-ldw $5, $1[12]   ; should fetch 50H
-ldw $5, $1[12]   ; should fetch 00H
-ldw $5, $1[12]   ; should fetch 31H
-ldw $5, $1[12]   ; should fetch -1
+ldw %5, %1[12]   ; should fetch 45H
+ldw %5, %1[12]   ; should fetch 50H
+ldw %5, %1[12]   ; should fetch 00H
+ldw %5, %1[12]   ; should fetch 31H
+ldw %5, %1[12]   ; should fetch -1
 
 ret

@@ -1,0 +1,11 @@
+FUNCTION fred
+   DECL a
+      SYMBOL Int
+   DECL b
+      SYMBOL String
+   DECL c
+      BINOP +
+         SYMBOL a
+         SYMBOL b
+DECL c
+   INTLIT 1 Int

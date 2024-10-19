@@ -6,6 +6,7 @@ module cpu_pc(
     input              stall,
     input              p2_bubble,     // indicate the decoder is unable to receive an instruction
 
+    input              instr_cache_miss,
     input              p3_jump,
     input      [31:0]  p3_jump_addr,
  
@@ -25,7 +26,7 @@ always @(*) begin
         instr_address = 32'hffff0000;
     else if (p3_jump)
         instr_address = p3_jump_addr;
-    else if (stall || p2_bubble)
+    else if (stall || p2_bubble || instr_cache_miss)
         instr_address = p2_pc;
     else
         instr_address = p1_pc;

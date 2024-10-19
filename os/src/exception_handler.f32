@@ -1,0 +1,116 @@
+
+; Task Control block
+TCB_regs                   = 0    ; space for 32 registers
+TCB_pc                     = 128
+TCB_size                   = 136
+
+
+; ==========================================================
+; CPU reset vector
+; ==========================================================
+; Execution starts here after reset
+
+jmp load_boot_code
+
+; ==========================================================
+; CPU exception vector
+; ==========================================================
+; Execution branches to here after an exception.
+; Before branching to here, the CPU will disable interupts
+; and set config registers
+;    #ecause = exception kind
+;    #epc    = location for execution to resume
+;    #edata  = more details of the exception
+;
+; And we will have initialized #escratch to point to a task control structure
+
+ld %29, #escratch, %29    ; %29 = task control block
+stw %1, %29[4]            ; save the first few registers into the TCB
+stw %2, %29[8]
+stw %3, %29[12]
+stw %4, %29[16]
+stw %5, %29[20]
+stw %6, %29[24]
+stw %7, %29[28]
+stw %8, %29[32]
+ld  %8, #escratch, 0     ; get the old value of %29, and zero #escratch
+stw %8, %29[116]
+stw %30, %29[120]
+stw %31, %29[124]
+ld %31, 4000000          ; set stack pointer to supervisor stack
+
+
+; and now jump to the handler. 
+; Registers %1-8 are availible,  %29=task control block, %30=availible, %31=supervisor stack pointer
+
+ld %8, #ecause
+lsl %8, 2
+ld %30, exception_table
+add %30, %8
+jmp %30[0]
+
+
+
+; ===========================================================
+;             Return from an exception
+; ===========================================================
+
+return_from_exception:
+ldw %1, %29[116]          ; get task's %29 into #escratch
+ld #escratch, %1
+ldw %1, %29[4]            ; save the first few registers into the TCB
+ldw %2, %29[8]
+ldw %3, %29[12]
+ldw %4, %29[16]
+ldw %5, %29[20]
+ldw %6, %29[24]
+ldw %7, %29[28]
+ldw %8, %29[32]
+ldw %30, %29[120]
+ldw %31, %29[124]
+ld %29, #escratch, %29   ; swap #escratch with %29 ==> leaves task control block in #escratch
+jmp #epc
+
+
+; ===========================================================
+;             Exception table
+; ===========================================================
+
+exception_table:
+dcw   exception_syscall
+dcw   exception_illegal_instruction
+dcw   exception_misaligned_load
+dcw   exception_misaligned_store
+dcw   exception_segfault_load
+dcw   exception_segfault_store
+dcw   exception_segfault_fetch
+
+; ===========================================================
+;             exception_syscall
+; ===========================================================
+
+
+load_boot_code:
+
+
+
+
+
+; ===========================================================
+;             exception_syscall
+; ===========================================================
+exception_syscall:
+    ld %1, "Syscall\n"
+    jsr kprint_string
+    jmp return_from_exception
+
+
+
+
+exception_illegal_instruction:
+exception_misaligned_load:
+exception_misaligned_store:
+exception_segfault_load:
+exception_segfault_store:
+exception_segfault_fetch:
+

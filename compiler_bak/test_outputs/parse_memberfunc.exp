@@ -1,0 +1,10 @@
+STRUCT Cat
+   DECL name
+      SYMBOL String
+   DECL legs
+      SYMBOL Int
+   FUNCTION greet
+      RETURN
+         BINOP +
+            SYMBOL legs
+            INTLIT 1 Int

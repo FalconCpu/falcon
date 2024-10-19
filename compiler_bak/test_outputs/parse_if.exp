@@ -1,0 +1,29 @@
+IF
+   CLAUSE
+      BINOP =
+         SYMBOL a
+         INTLIT 1 Int
+      ASSIGN
+         SYMBOL b
+         INTLIT 2 Int
+   CLAUSE
+      BINOP =
+         SYMBOL a
+         INTLIT 3 Int
+      ASSIGN
+         SYMBOL b
+         INTLIT 5 Int
+   CLAUSE
+      BINOP =
+         SYMBOL a
+         INTLIT 6 Int
+      ASSIGN
+         SYMBOL b
+         INTLIT 3 Int
+   CLAUSE
+      ASSIGN
+         SYMBOL b
+         INTLIT 1 Int
+ASSIGN
+   SYMBOL x
+   INTLIT 1 Int

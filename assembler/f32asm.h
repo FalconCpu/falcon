@@ -16,6 +16,18 @@ struct token {
 
 #define FLAG_DEFINED 1
 
+#define KIND_REGISTER '$'
+#define KIND_INTEGER  'i'
+#define KIND_LABEL    'l'
+#define KIND_ALU      'A'
+#define KIND_LD       'D'
+#define KIND_BRANCH   'B'
+#define KIND_LOAD     'L'
+#define KIND_STORE    'M'
+#define KIND_JUMP     'J'
+#define KIND_SYSCALL  'S'
+
+
 /// --------------------------------------------------
 ///                   reference
 /// --------------------------------------------------

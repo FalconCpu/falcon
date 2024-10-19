@@ -1,51 +1,89 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sun Jun 30 17:02:37 2024
+[*] Sat Oct 12 15:35:26 2024
 [*]
 [dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
-[dumpfile_mtime] "Sun Jun 30 16:56:33 2024"
-[dumpfile_size] 2675717
+[dumpfile_mtime] "Sat Oct 12 15:33:18 2024"
+[dumpfile_size] 1609720
 [savefile] "C:\Users\simon\falcon\rtl\gtkw.gtkw"
-[timestart] 0
+[timestart] 6367200
 [size] 1920 1129
 [pos] -1 -1
-*-21.919119 7075000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 6631900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.chip_top_inst.
-[treeopen] tb.chip_top_inst.gpu_inst.
 [sst_width] 197
-[signals_width] 222
+[signals_width] 190
 [sst_expanded] 1
 [sst_vpaned_height] 339
 @22
-tb.chip_top_inst.gpu_inst.gpu_command[7:0]
+tb.chip_top_inst.cpu_inst.instr_address[31:0]
+@c00022
+tb.chip_top_inst.cpu_inst.instr_data[31:0]
 @28
-tb.chip_top_inst.gpu_inst.gpu_complete
-@22
-tb.chip_top_inst.gpu_inst.gpu_x[15:0]
-tb.chip_top_inst.gpu_inst.gpu_y[15:0]
-tb.chip_top_inst.hwregs_inst.gpu_command[7:0]
-tb.chip_top_inst.hwregs_inst.hwregs_address[15:0]
-tb.chip_top_inst.hwregs_inst.hwregs_wdata[31:0]
+(0)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(1)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(2)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(3)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(4)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(5)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(6)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(7)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(8)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(9)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(10)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(11)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(12)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(13)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(14)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(15)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(16)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(17)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(18)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(19)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(20)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(21)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(22)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(23)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(24)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(25)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(26)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(27)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(28)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(29)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(30)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+(31)tb.chip_top_inst.cpu_inst.instr_data[31:0]
+@1401200
+-group_end
 @28
-tb.chip_top_inst.hwregs_inst.hwregs_write
-tb.chip_top_inst.hwregs_inst.hwregs_request
-tb.chip_top_inst.gpu_inst.gpu_busy
-@22
-tb.chip_top_inst.gpu_inst.this_x[15:0]
-tb.chip_top_inst.gpu_inst.this_y[15:0]
-tb.chip_top_inst.gpu_inst.this_draw_x[15:0]
-tb.chip_top_inst.gpu_inst.this_draw_y[15:0]
-tb.chip_top_inst.gpu_inst.gpu_address[25:0]
-tb.chip_top_inst.gpu_inst.gpu_wdata[31:0]
-tb.chip_top_inst.gpu_inst.gpu_screen_address[31:0]
+tb.chip_top_inst.cpu_inst.instr_cache_miss
+@200
+-
 @28
-tb.chip_top_inst.gpu_inst.gpu_request
+tb.chip_top_inst.instruction_cache_inst.flushing
 @22
-tb.chip_top_inst.gpu_inst.gpu_clip_x1[15:0]
-tb.chip_top_inst.gpu_inst.gpu_clip_x2[15:0]
-tb.chip_top_inst.gpu_inst.gpu_clip_y1[15:0]
+tb.chip_top_inst.instruction_cache_inst.instr_addr_q[31:0]
+tb.chip_top_inst.instruction_cache_inst.cache_tag_q[12:0]
+@28
+tb.chip_top_inst.instruction_cache_inst.fetching
+@200
+-
+@22
+tb.chip_top_inst.instruction_cache_inst.icache_address[25:0]
+@28
+tb.chip_top_inst.instruction_cache_inst.icache_request
+tb.chip_top_inst.instruction_cache_inst.icache_valid
+tb.chip_top_inst.instruction_cache_inst.icache_complete
 @23
-tb.chip_top_inst.gpu_inst.gpu_clip_y2[15:0]
+tb.chip_top_inst.instruction_cache_inst.bit_valid[7:0]
+@200
+-
+@22
+tb.chip_top_inst.cpu_inst.cpu_address[31:0]
+@28
+tb.chip_top_inst.cpu_inst.cpu_request
+tb.chip_top_inst.cpu_inst.cpu_write
+@22
+tb.chip_top_inst.cpu_inst.cpu_wdata[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

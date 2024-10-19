@@ -15,7 +15,9 @@ module cpu(
     // instruction bus
     // TODO - make this a proper icache
     output [31:0]  instr_address,
-    input  [31:0]  instr_data
+    input  [31:0]  instr_data,
+    input          instr_cache_miss,
+    input          instr_error
 );
 
 // signals driven by cpu_pc
@@ -60,6 +62,7 @@ cpu_pc  cpu_pc_inst (
     .p3_jump(p3_jump),
     .p3_jump_addr(p3_jump_addr),
     .instr_address(instr_address),
+    .instr_cache_miss(instr_cache_miss),
     .p1_pc(p1_pc),
     .p2_pc(p2_pc),
     .p3_pc(p3_pc)
@@ -70,6 +73,7 @@ cpu_decoder  cpu_decoder_inst (
     .reset(reset),
     .stall(stall),
     .instr_data(instr_data),
+    .instr_cache_miss(instr_cache_miss),
     .p2_reg_a(p2_reg_a),
     .p2_reg_b(p2_reg_b),
     .p2_src_data_a(p2_src_data_a),

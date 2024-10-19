@@ -22,11 +22,11 @@ GPU_COMMAND_PATTERN_RECTANGLE = 002H
 GPU_COMMAND_SOLID_RECTANGLE   = 003H
 
 main:
-    ld $sp, 4000000H   ; set up stack pointer to top of ram
+    ld %sp, 4000000H   ; set up stack pointer to top of ram
 
-    ld $1, 1
-    ld $2, HWREGS_BASE
-    stw $1, $2[HWREGS_7SEG]
+    ld %1, 1
+    ld %2, HWREGS_BASE
+    stw %1, %2[HWREGS_7SEG]
 
     jsr set_clip_region
 
@@ -34,161 +34,161 @@ main:
 
     ; jsr load_font
 
-    ld $1, 2
-    ld $2, HWREGS_BASE
-    stw $1, $2[HWREGS_7SEG]
+    ld %1, 2
+    ld %2, HWREGS_BASE
+    stw %1, %2[HWREGS_7SEG]
 
-    ld $1, 0
-    ld $2, 0
-    ld $3, 7
-    ld $4, 479
-    ld $5, 1
+    ld %1, 0
+    ld %2, 0
+    ld %3, 7
+    ld %4, 479
+    ld %5, 1
     ; jsr draw_rectangle
 
-    ld $1, 3
-    ld $2, HWREGS_BASE
-    stw $1, $2[HWREGS_7SEG]
+    ld %1, 3
+    ld %2, HWREGS_BASE
+    stw %1, %2[HWREGS_7SEG]
 
-    ld $1, 8
-    ld $2, 0
-    ld $3, 32
+    ld %1, 8
+    ld %2, 0
+    ld %3, 32
     jsr draw_text
 
-    ld $1, 5
-    ld $2, HWREGS_BASE
-    stw $1, $2[HWREGS_7SEG]
+    ld %1, 5
+    ld %2, HWREGS_BASE
+    stw %1, %2[HWREGS_7SEG]
 
     ; jsr draw_text_cpu
 
-    ld $1, 4
-    ld $2, HWREGS_BASE
-    stw $1, $2[HWREGS_7SEG]
+    ld %1, 4
+    ld %2, HWREGS_BASE
+    stw %1, %2[HWREGS_7SEG]
 
 
-    .forever:
-    jmp .forever
+    @forever:
+    jmp @forever
 
 set_clip_region:
-    ld $1, HWREGS_BASE
-    stw 0, $1[HWREGS_GPU_CLIP_X1]
-    stw 0, $1[HWREGS_GPU_CLIP_Y1]
-    ld $2, 640
-    stw $2, $1[HWREGS_GPU_CLIP_X2]
-    ld $2, 480
-    stw $2, $1[HWREGS_GPU_CLIP_Y2]
+    ld %1, HWREGS_BASE
+    stw 0, %1[HWREGS_GPU_CLIP_X1]
+    stw 0, %1[HWREGS_GPU_CLIP_Y1]
+    ld %2, 640
+    stw %2, %1[HWREGS_GPU_CLIP_X2]
+    ld %2, 480
+    stw %2, %1[HWREGS_GPU_CLIP_Y2]
     ret
 
 clear_screen:
-    ld $1, HWREGS_BASE
-    stw 0, $1[HWREGS_GPU_X]
-    stw 0, $1[HWREGS_GPU_Y]
-    stw 0, $1[HWREGS_GPU_COLOR1]
-    ld $2, 640
-    stw $2, $1[HWREGS_GPU_WIDTH]
-    ld $2, 480
-    stw $2, $1[HWREGS_GPU_HEIGHT]
+    ld %1, HWREGS_BASE
+    stw 0, %1[HWREGS_GPU_X]
+    stw 0, %1[HWREGS_GPU_Y]
+    stw 0, %1[HWREGS_GPU_COLOR1]
+    ld %2, 640
+    stw %2, %1[HWREGS_GPU_WIDTH]
+    ld %2, 480
+    stw %2, %1[HWREGS_GPU_HEIGHT]
     
-    .wait_for_gpu:
-    ld $2, $1[HWREGS_GPU_COMMAND]
-    bne $2, 0,  .wait_for_gpu
+    @wait_for_gpu:
+    ld %2, %1[HWREGS_GPU_COMMAND]
+    bne %2, 0,  @wait_for_gpu
 
-    ld $2, GPU_COMMAND_SOLID_RECTANGLE
-    stw $2, $1[HWREGS_GPU_COMMAND]
+    ld %2, GPU_COMMAND_SOLID_RECTANGLE
+    stw %2, %1[HWREGS_GPU_COMMAND]
     ret
 
 draw_rectangle:
-    ld $7, HWREGS_BASE
-    stw $1, $7[HWREGS_GPU_X]
-    stw $2, $7[HWREGS_GPU_Y]
-    sub $3,$1
-    sub $4,$2
-    stw $3, $7[HWREGS_GPU_WIDTH]
-    stw $4, $7[HWREGS_GPU_HEIGHT]
-    stw $5, $7[HWREGS_GPU_COLOR1]
+    ld %7, HWREGS_BASE
+    stw %1, %7[HWREGS_GPU_X]
+    stw %2, %7[HWREGS_GPU_Y]
+    sub %3,%1
+    sub %4,%2
+    stw %3, %7[HWREGS_GPU_WIDTH]
+    stw %4, %7[HWREGS_GPU_HEIGHT]
+    stw %5, %7[HWREGS_GPU_COLOR1]
 
-    .wait_for_gpu:
-    ld $2, $7[HWREGS_GPU_COMMAND]
-    bne $2, 0,  .wait_for_gpu
+    @wait_for_gpu:
+    ld %2, %7[HWREGS_GPU_COMMAND]
+    bne %2, 0,  @wait_for_gpu
 
-    ld $2, GPU_COMMAND_SOLID_RECTANGLE
-    stw $2, $7[HWREGS_GPU_COMMAND]
+    ld %2, GPU_COMMAND_SOLID_RECTANGLE
+    stw %2, %7[HWREGS_GPU_COMMAND]
     ret
 
 load_font:
-    ld $1, font
-    ld $2, 0E1000000H  ; start of pattern memory
-    ld $3, 288         ; number of words
+    ld %1, font
+    ld %2, 0E1000000H  ; start of pattern memory
+    ld %3, 288         ; number of words
 
-    .loop:
-        ldw $4, $1[0]
-        stw $4, $2[0]
-        add $1,4
-        add $2,4
-        sub $3,1
-        bne $3, 0, .loop
+    @loop:
+        ldw %4, %1[0]
+        stw %4, %2[0]
+        add %1,4
+        add %2,4
+        sub %3,1
+        bne %3, 0, @loop
     ret
 
 
 
 draw_text:
-    ; $1 = X 
-    ; $2 = Y
-    ; $3 = char
+    ; %1 = X 
+    ; %2 = Y
+    ; %3 = char
 
-    ld $7, HWREGS_BASE
-    stw $1, $7[HWREGS_GPU_X]
-    stw $2, $7[HWREGS_GPU_Y]
+    ld %7, HWREGS_BASE
+    stw %1, %7[HWREGS_GPU_X]
+    stw %2, %7[HWREGS_GPU_Y]
 
-    sub $3,32         ; skip control chars at start of ascii table
-    lsl $4, $3, 2
-    lsl $3, $3, 3
-    add $3, $4        ; multiply $3 by 12  (height of font)
-    stw $3, $7[HWREGS_GPU_PATTERN_OFFSET]
-    ld $1, 1
-    stw $1, $7[HWREGS_GPU_PATTERN_WIDTH]
-    stw 0, $7[HWREGS_GPU_PATTERN_DEPTH]
-    ld $1, 8
-    stw $1, $7[HWREGS_GPU_WIDTH]
-    ld $1, 480
-    stw $1, $7[HWREGS_GPU_HEIGHT]
-    ld $1, 8
-    stw $1, $7[HWREGS_GPU_COLOR0]
-    ld $1, 15
-    stw $1, $7[HWREGS_GPU_COLOR1]
+    sub %3,32         ; skip control chars at start of ascii table
+    lsl %4, %3, 2
+    lsl %3, %3, 3
+    add %3, %4        ; multiply %3 by 12  (height of font)
+    stw %3, %7[HWREGS_GPU_PATTERN_OFFSET]
+    ld %1, 1
+    stw %1, %7[HWREGS_GPU_PATTERN_WIDTH]
+    stw 0, %7[HWREGS_GPU_PATTERN_DEPTH]
+    ld %1, 8
+    stw %1, %7[HWREGS_GPU_WIDTH]
+    ld %1, 480
+    stw %1, %7[HWREGS_GPU_HEIGHT]
+    ld %1, 8
+    stw %1, %7[HWREGS_GPU_COLOR0]
+    ld %1, 15
+    stw %1, %7[HWREGS_GPU_COLOR1]
     
-    .wait_for_gpu:
-    ld $2, $7[HWREGS_GPU_COMMAND]
-    bne $2, 0,  .wait_for_gpu
+    @wait_for_gpu:
+    ld %2, %7[HWREGS_GPU_COMMAND]
+    bne %2, 0,  @wait_for_gpu
     
-    ld $1, GPU_COMMAND_PATTERN_RECTANGLE
-    stw $1, $7[HWREGS_GPU_COMMAND]
+    ld %1, GPU_COMMAND_PATTERN_RECTANGLE
+    stw %1, %7[HWREGS_GPU_COMMAND]
     ret
 
 
 draw_text_cpu:
-    ld $2,   3f80040H  ; screen address
-    ld $5, font; 0E1000000H  ; font address
-    add $6, $5, 480    ; end of font
-    ld $4, 15
-    ld $8, 8
+    ld %2,   3f80040H  ; screen address
+    ld %5, font; 0E1000000H  ; font address
+    add %6, %5, 480    ; end of font
+    ld %4, 15
+    ld %8, 8
 
-    .loop_y:
-    ldb $1, $5[0]     ; $1 = Byte of char data
-    add $7, $2, 8     ; $7 = address of end of char
+    @loop_y:
+    ldb %1, %5[0]     ; %1 = Byte of char data
+    add %7, %2, 8     ; %7 = address of end of char
 
-    .loop_x:
-    stb $8, $2[0]     ; draw the color to the screen
-    and $3, $1, 1     ; test to see if this bit is set
-    beq $3, 0, .skip
-    stb $4, $2[0]     ; draw the color to the screen
-    .skip:
-    add $2, 1
-    lsr $1, $1, 1
-    bne $2, $7, .loop_x
+    @loop_x:
+    stb %8, %2[0]     ; draw the color to the screen
+    and %3, %1, 1     ; test to see if this bit is set
+    beq %3, 0, @skip
+    stb %4, %2[0]     ; draw the color to the screen
+    @skip:
+    add %2, 1
+    lsr %1, %1, 1
+    bne %2, %7, @loop_x
 
-    add $2, 632      ; move to next row in display
-    add $5, 1
-    bne $5, $6, .loop_y
+    add %2, 632      ; move to next row in display
+    add %5, 1
+    bne %5, %6, @loop_y
     ret
 
 
@@ -198,7 +198,7 @@ dcb 0,0,0,0,0,0,0,0,0,0,0,0 ;
 dcb 24,24,24,24,24,24,24,0,24,0,0,0 ; !
 dcb 102,102,0,0,0,0,0,0,0,0,0,0 ; "
 dcb 54,54,54,127,54,127,118,54,54,0,0,0 ; #
-dcb 12,62,3,3,62,96,96,62,12,0,0,0 ; $
+dcb 12,62,3,3,62,96,96,62,12,0,0,0 ; %
 dcb 99,51,48,24,24,12,12,102,102,0,0,0 ; %
 dcb 30,51,3,6,6,31,51,51,110,0,0,0 ; &
 dcb 24,24,0,0,0,0,0,0,0,0,0,0 ; '

@@ -24,7 +24,7 @@ const char* DEFAULT = "\e[0m";
 #define COMMAND_WORD_ERROR 0x01E007B0
 #define COMMAND_WORD_DATA 0x7ADA07B0
 
-#define NUM_DISK_BLOCKS 16
+#define NUM_DISK_BLOCKS 64
 #define BLOCK_SIZE 512
 int* diskImage;
 

@@ -27,7 +27,7 @@ static int* ram;
 static int finished;
 
 static int debug=0;   // 0 = nothing, 1=register writes, 2=instructions executed
-extern char* disassemble_line(int addr);
+extern char* disassemble_line(int addr, int instr);
 
 int cycle_count = 0;
 
@@ -308,7 +308,7 @@ static void exception(int cause, int data) {
 
 static void executeInstruction(int instr) {
     if (debug>=2)
-         fprintf(debug_trace,"%-5d %08X: %-30s   ",cycle_count, pc-4, disassemble_line(pc-4));
+         fprintf(debug_trace,"%-5d %08X: %-30s   ",cycle_count, pc-4, disassemble_line(pc-4, instr));
     cycle_count++;
     null_as_exception = 0;
 
