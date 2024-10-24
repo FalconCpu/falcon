@@ -1,0 +1,21 @@
+fun main(a:Int, b:Int) -> Int 
+    val c = a + b
+    var d =  c * 2
+
+@-------------------
+Block
+  Function main
+    PARAM  a
+      TypeName Int
+    PARAM  b
+      TypeName Int
+    TypeName Int
+    Block
+      DECL val c
+        Binop +
+          ID a
+          ID b
+      DECL var d
+        Binop *
+          ID c
+          IntLiteral 2  

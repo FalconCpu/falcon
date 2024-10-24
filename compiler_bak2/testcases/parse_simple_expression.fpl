@@ -1,0 +1,12 @@
+val a = 4*3-5*2
+
+@-------------------------------
+Block
+  DECL val a
+    Binop -
+      Binop *
+        IntLiteral 4
+        IntLiteral 3
+      Binop *
+        IntLiteral 5
+        IntLiteral 2

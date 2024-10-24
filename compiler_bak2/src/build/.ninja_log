@@ -1,0 +1,22 @@
+# ninja log v5
+45	268	7511377541467754	CMakeFiles/fplcomp.dir/lexer.c.obj	14cacbc193e38bb2
+38	212	7511377540863658	CMakeFiles/fplcomp.dir/utils.c.obj	28b16d612c2ffdf6
+15	311	7511309358679346	parser.c	ae1c7ded420769f9
+15	311	7511309358679346	parser.h	ae1c7ded420769f9
+15	311	7511309358679346	C:/Users/simon/falcon/compiler/src/build/parser.c	ae1c7ded420769f9
+15	311	7511309358679346	C:/Users/simon/falcon/compiler/src/build/parser.h	ae1c7ded420769f9
+51	253	7511377541243732	CMakeFiles/fplcomp.dir/parser.c.obj	aba8ce21c6c6b405
+31	238	7511377541163774	CMakeFiles/fplcomp.dir/main.c.obj	6438693dfbb38cc2
+124	296	7511377814800957	C:/Users/simon/falcon/bin/fplcomp.exe	c4f41dc4e264438a
+99	273	7511377541534606	CMakeFiles/fplcomp.dir/AST_IntLiteral.c.obj	5c40a59042771be6
+59	225	7511377540963716	CMakeFiles/fplcomp.dir/AST.c.obj	33046ae65082c73c
+90	262	7511377541397844	CMakeFiles/fplcomp.dir/Symbol.c.obj	c0637a50ea7133e
+108	283	7511377541637982	CMakeFiles/fplcomp.dir/AST_Identifier.c.obj	b07cc69edf20cd45
+117	287	7511377541682044	CMakeFiles/fplcomp.dir/AST_Binop.c.obj	60b9e68be5f3bc25
+29	123	7511377813330449	CMakeFiles/fplcomp.dir/Block.c.obj	18dca10e1d0b4896
+128	301	7511377541845676	CMakeFiles/fplcomp.dir/AST_Declaration.c.obj	b4b7b8f1088d98f2
+138	303	7511377541855695	CMakeFiles/fplcomp.dir/AST_Typename.c.obj	6ae37caf63a261ab
+150	313	7511377541968335	CMakeFiles/fplcomp.dir/AST_Parameter.c.obj	50ee7f60437631ca
+73	243	7511377541133632	CMakeFiles/fplcomp.dir/AST_list.c.obj	aa63947d334c7be4
+164	321	7511377542049487	CMakeFiles/fplcomp.dir/AST_Function.c.obj	134f7aec0623652b
+82	248	7511377541213742	CMakeFiles/fplcomp.dir/type.c.obj	c968143a5e4bd1ea

@@ -1,0 +1,12 @@
+val a = 4
+var b : Int = a+3
+
+@-------------------------------
+Block
+  DECL val a
+    IntLiteral 4
+  DECL var b
+    TypeName Int
+    Binop +
+      ID a
+      IntLiteral 3

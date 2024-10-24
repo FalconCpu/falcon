@@ -1,0 +1,98 @@
+[
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\main.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\main.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\main.c",
+  "output": "CMakeFiles\\fplcomp.dir\\main.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\utils.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\utils.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\utils.c",
+  "output": "CMakeFiles\\fplcomp.dir\\utils.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\lexer.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\lexer.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\lexer.c",
+  "output": "CMakeFiles\\fplcomp.dir\\lexer.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\parser.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\build\\parser.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\build\\parser.c",
+  "output": "CMakeFiles\\fplcomp.dir\\parser.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\Block.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Block.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Block.c",
+  "output": "CMakeFiles\\fplcomp.dir\\Block.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_list.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_list.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_list.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_list.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\type.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\type.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\type.c",
+  "output": "CMakeFiles\\fplcomp.dir\\type.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\Symbol.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Symbol.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Symbol.c",
+  "output": "CMakeFiles\\fplcomp.dir\\Symbol.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_IntLiteral.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_IntLiteral.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_IntLiteral.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_IntLiteral.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Identifier.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Identifier.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Identifier.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Identifier.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Binop.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Binop.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Binop.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Binop.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Declaration.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Declaration.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Declaration.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Declaration.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Typename.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Typename.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Typename.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Typename.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Parameter.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Parameter.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Parameter.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Parameter.c.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/src/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -Wall -std=c99 -o CMakeFiles\\fplcomp.dir\\AST_Function.c.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\AST_Function.c",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\AST_Function.c",
+  "output": "CMakeFiles\\fplcomp.dir\\AST_Function.c.obj"
+}
+]

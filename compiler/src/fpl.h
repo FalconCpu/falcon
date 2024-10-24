@@ -1,26 +1,17 @@
-#ifndef FPL_H
-#define FPL_H
+#include <iostream>
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
 
-typedef const char* String;
-typedef struct Location Location;
-typedef struct Type* Type;
-typedef struct AST* AST;
+// ==============================================================================================
+//                                         Lexer
+// ==============================================================================================
 
-
-// =====================================================
-//                    Location
-// =====================================================
-
-struct Location {
-    String filename;
-    int line;
-    int column;
-};
-
-
-// =====================================================
-//                    Token
-// =====================================================
+void open_file(string filename);
+int  yylex();
+int  yyparse();
+string get_token_name(int token);
 
 #define TOKEN_EOF        0x00
 #define TOKEN_EOL        0x01
@@ -69,51 +60,186 @@ struct Location {
 #define TOKEN_CLASS      0x2C
 #define TOKEN_ENUM       0x2D
 #define TOKEN_RETURN     0x2E
-#define TOKEN_ERROR      0x2F
+#define TOKEN_FUN        0x2F
+#define TOKEN_ERROR      0x30
 
-// =====================================================
-//                    Type
-// =====================================================
 
-struct Type {
-    int kind;
-    String name;
+// ==============================================================================================
+//                                         Location
+// ==============================================================================================
+
+struct Location {
+    string filename;
+    int    line;
+    int     column;
+
+    string get_location() const {return filename + ":" + std::to_string(line) + "." + std::to_string(column);}
+    Location(string filename, int line, int column) : filename(filename), line(line), column(column) {}    
+    Location(const Location& other) : filename(other.filename), line(other.line), column(other.column) {}
+    Location() : filename(""), line(0), column(0) {}   
+
+    // Add the copy assignment operator
+    Location& operator=(const Location& other) {
+        this->filename = other.filename;
+        this->line = other.line;
+        this->column = other.column;
+        return *this;
+    } 
 };
 
 
-// =====================================================
-//                    Compiler Stop At
-// =====================================================
+// ==============================================================================================
+//                                         Ast
+// ==============================================================================================
 
-typedef enum CompilerStopAt {
-    STOP_AT_NONE,
-    STOP_AT_LEXER,
-    STOP_AT_AST,
-    STOP_AT_IR,
-    STOP_AT_ASM
-} CompilerStopAt;
+class Ast{
+    protected:
+    Location location;
 
-// =====================================================
-//                    Lexer
-// =====================================================
+    public:
+    Ast(Location location) : location(location) {}
+    virtual void tree_print(int indent) = 0;
+};
 
-void open_file(String filename);
-int yylex();
-String token_kind_name(int kind);
+// ==============================================================================================
+//                                         Ast_block
+// ==============================================================================================
 
-int yyparse();
+class Ast_block : public Ast {
+    vector<Ast*>     statements;
+    Ast_block*       parent;
 
-// =====================================================
-//                    Utils
-// =====================================================
+    public:
+    Ast_block(Location location) : Ast(location) {}
+    void add(Ast* statement);
+    virtual void tree_print(int indent);
+};
 
-void  fatal(String message, ...);  
-void  error(Location* location, String message, ...);
-void* my_malloc(int size);
-void* my_realloc(void* ptr, int size);
-void  my_free(void* ptr);
-#define new(T) ((T*)my_malloc(sizeof(T)))
-#define new_array(T, n) ((T*)my_malloc(sizeof(T) * n))
-#define assert(cond) if (!(cond)) fatal("Assertion failed: %s at %s.%d", #cond, __FILE__, __LINE__)
+// ==============================================================================================
+//                                         Ast_top
+// ==============================================================================================
 
-#endif // FPL_H
+class Ast_top : public Ast_block {
+
+    public:
+    Ast_top() : Ast_block(Location()) {}
+};
+
+
+// ==============================================================================================
+//                                         Ast_expression
+// ==============================================================================================
+
+class Ast_expression : public Ast {
+    public:
+    Ast_expression(Location location) : Ast(location) {}
+};
+
+// ==============================================================================================
+//                                         Ast_identifier
+// ==============================================================================================
+
+class Ast_identifier : public Ast_expression {
+    string* name;    
+
+    public:
+    Ast_identifier(Location location, string* name) : Ast_expression(location), name(name) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_int_literal
+// ==============================================================================================
+
+class Ast_intlit : public Ast_expression {
+    int value;
+
+    public:
+    Ast_intlit(Location location, string* name);
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_binop
+// ==============================================================================================
+
+class Ast_binop : public Ast_expression {
+    Ast_expression *lhs;
+    Ast_expression *rhs;
+    int op;
+
+    public:
+    Ast_binop(Location location, int op, Ast_expression* lhs, Ast_expression* rhs) : 
+        Ast_expression(location), lhs(lhs), rhs(rhs), op(op) {}
+    void tree_print(int indent);
+};
+
+
+// ==============================================================================================
+//                                         Ast_funccalll
+// ==============================================================================================
+
+class Ast_funccall : public Ast_expression {
+    Ast_expression*         lhs;
+    vector<Ast_expression*> args;
+
+    public:
+    Ast_funccall(Location location, Ast_expression* lhs, vector<Ast_expression*> args) :
+        Ast_expression(location), lhs(lhs), args(args) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_index
+// ==============================================================================================
+
+class Ast_index : public Ast_expression {
+    Ast_expression*         lhs;
+    Ast_expression*         rhs;
+
+    public:
+    Ast_index(Location location, Ast_expression* lhs, Ast_expression* rhs) :
+        Ast_expression(location), lhs(lhs), rhs(rhs) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_member
+// ==============================================================================================
+
+class Ast_member : public Ast_expression {
+    Ast_expression*         lhs;
+    const string*           name;
+
+    public:
+    Ast_member(Location location, Ast_expression* lhs, const string* name) :
+        Ast_expression(location), lhs(lhs), name(name) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_unary
+// ==============================================================================================
+
+class Ast_unary : public Ast_expression {
+    int                     op;
+    Ast_expression*         arg;
+
+    public:
+    Ast_unary(Location location, int op, Ast_expression* arg):
+        Ast_expression(location), op(op), arg(arg) {}
+    void tree_print(int indent);
+};
+
+
+
+
+
+
+
+// ==============================================================================================
+//                                         Utils
+// ==============================================================================================
+
+void fatal(const string message, ...);
+void error(const Location& location, const string message, ...);
