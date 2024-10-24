@@ -49,6 +49,14 @@ cmake_ninja_workdir = C$:/Users/simon/falcon/compiler/build/
 
 build cmake_object_order_depends_target_fplcomp: phony || parser.cpp parser.h
 
+build CMakeFiles/fplcomp.dir/src/Ast_assign.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_assign.cpp || cmake_object_order_depends_target_fplcomp
+  DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_assign.cpp.obj.d
+  FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
+  OBJECT_DIR = CMakeFiles\fplcomp.dir
+  OBJECT_FILE_DIR = CMakeFiles\fplcomp.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\fplcomp.dir\
+  TARGET_PDB = C:\Users\simon\falcon\bin\fplcomp.pdb
+
 build CMakeFiles/fplcomp.dir/src/Ast_binop.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_binop.cpp || cmake_object_order_depends_target_fplcomp
   DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_binop.cpp.obj.d
   FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
@@ -59,6 +67,14 @@ build CMakeFiles/fplcomp.dir/src/Ast_binop.cpp.obj: CXX_COMPILER__fplcomp_unscan
 
 build CMakeFiles/fplcomp.dir/src/Ast_block.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_block.cpp || cmake_object_order_depends_target_fplcomp
   DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_block.cpp.obj.d
+  FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
+  OBJECT_DIR = CMakeFiles\fplcomp.dir
+  OBJECT_FILE_DIR = CMakeFiles\fplcomp.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\fplcomp.dir\
+  TARGET_PDB = C:\Users\simon\falcon\bin\fplcomp.pdb
+
+build CMakeFiles/fplcomp.dir/src/Ast_declaration.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_declaration.cpp || cmake_object_order_depends_target_fplcomp
+  DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_declaration.cpp.obj.d
   FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
   OBJECT_DIR = CMakeFiles\fplcomp.dir
   OBJECT_FILE_DIR = CMakeFiles\fplcomp.dir\src
@@ -113,6 +129,22 @@ build CMakeFiles/fplcomp.dir/src/Ast_top.cpp.obj: CXX_COMPILER__fplcomp_unscanne
   TARGET_COMPILE_PDB = CMakeFiles\fplcomp.dir\
   TARGET_PDB = C:\Users\simon\falcon\bin\fplcomp.pdb
 
+build CMakeFiles/fplcomp.dir/src/Ast_unary.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_unary.cpp || cmake_object_order_depends_target_fplcomp
+  DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_unary.cpp.obj.d
+  FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
+  OBJECT_DIR = CMakeFiles\fplcomp.dir
+  OBJECT_FILE_DIR = CMakeFiles\fplcomp.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\fplcomp.dir\
+  TARGET_PDB = C:\Users\simon\falcon\bin\fplcomp.pdb
+
+build CMakeFiles/fplcomp.dir/src/Ast_while.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/Ast_while.cpp || cmake_object_order_depends_target_fplcomp
+  DEP_FILE = CMakeFiles\fplcomp.dir\src\Ast_while.cpp.obj.d
+  FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
+  OBJECT_DIR = CMakeFiles\fplcomp.dir
+  OBJECT_FILE_DIR = CMakeFiles\fplcomp.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\fplcomp.dir\
+  TARGET_PDB = C:\Users\simon\falcon\bin\fplcomp.pdb
+
 build CMakeFiles/fplcomp.dir/src/lexer.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Debug C$:/Users/simon/falcon/compiler/src/lexer.cpp || cmake_object_order_depends_target_fplcomp
   DEP_FILE = CMakeFiles\fplcomp.dir\src\lexer.cpp.obj.d
   FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic
@@ -153,7 +185,7 @@ build CMakeFiles/fplcomp.dir/parser.cpp.obj: CXX_COMPILER__fplcomp_unscanned_Deb
 #############################################
 # Link the executable C:\Users\simon\falcon\bin\fplcomp.exe
 
-build C$:/Users/simon/falcon/bin/fplcomp.exe: CXX_EXECUTABLE_LINKER__fplcomp_Debug CMakeFiles/fplcomp.dir/src/Ast_binop.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_block.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_funccall.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_identifier.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_index.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_intlit.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_member.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_top.cpp.obj CMakeFiles/fplcomp.dir/src/lexer.cpp.obj CMakeFiles/fplcomp.dir/src/main.cpp.obj CMakeFiles/fplcomp.dir/src/util.cpp.obj CMakeFiles/fplcomp.dir/parser.cpp.obj
+build C$:/Users/simon/falcon/bin/fplcomp.exe: CXX_EXECUTABLE_LINKER__fplcomp_Debug CMakeFiles/fplcomp.dir/src/Ast_assign.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_binop.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_block.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_declaration.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_funccall.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_identifier.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_index.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_intlit.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_member.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_top.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_unary.cpp.obj CMakeFiles/fplcomp.dir/src/Ast_while.cpp.obj CMakeFiles/fplcomp.dir/src/lexer.cpp.obj CMakeFiles/fplcomp.dir/src/main.cpp.obj CMakeFiles/fplcomp.dir/src/util.cpp.obj CMakeFiles/fplcomp.dir/parser.cpp.obj
   FLAGS = -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd
   LINK_FLAGS = -Xlinker /subsystem:console
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -loldnames

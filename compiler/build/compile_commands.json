@@ -1,6 +1,12 @@
 [
 {
   "directory": "C:/Users/simon/falcon/compiler/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_assign.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_assign.cpp",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_assign.cpp",
+  "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_assign.cpp.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/build",
   "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_binop.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_binop.cpp",
   "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_binop.cpp",
   "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_binop.cpp.obj"
@@ -10,6 +16,12 @@
   "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_block.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_block.cpp",
   "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_block.cpp",
   "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_block.cpp.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_declaration.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_declaration.cpp",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_declaration.cpp",
+  "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_declaration.cpp.obj"
 },
 {
   "directory": "C:/Users/simon/falcon/compiler/build",
@@ -46,6 +58,18 @@
   "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_top.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_top.cpp",
   "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_top.cpp",
   "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_top.cpp.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_unary.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_unary.cpp",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_unary.cpp",
+  "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_unary.cpp.obj"
+},
+{
+  "directory": "C:/Users/simon/falcon/compiler/build",
+  "command": "C:\\PROGRA~2\\MICROS~2\\2022\\BUILDT~1\\VC\\Tools\\Llvm\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -std=gnu++17 -Wall -Wextra -Wpedantic -o CMakeFiles\\fplcomp.dir\\src\\Ast_while.cpp.obj -c C:\\Users\\simon\\falcon\\compiler\\src\\Ast_while.cpp",
+  "file": "C:\\Users\\simon\\falcon\\compiler\\src\\Ast_while.cpp",
+  "output": "CMakeFiles\\fplcomp.dir\\src\\Ast_while.cpp.obj"
 },
 {
   "directory": "C:/Users/simon/falcon/compiler/build",

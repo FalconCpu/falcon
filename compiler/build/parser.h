@@ -41,7 +41,7 @@
    enum yytokentype {
      EOL = 1,
      INDENT = 2,
-     OUTDENT = 3,
+     DEDENT = 3,
      IDENTIFIER = 4,
      INTLIT = 5,
      REALLIT = 6,
@@ -101,12 +101,15 @@ typedef union YYSTYPE
     string*                  string;
     Ast*                     ast;
     Ast_expression*          expr;
+    Ast_typeexpr*            type;
+    Ast_statement*           stmt;
+    Ast_block*               block;
     vector<Ast_expression*>* expr_list;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 110 "C:/Users/simon/falcon/compiler/build/parser.h"
+#line 113 "C:/Users/simon/falcon/compiler/build/parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

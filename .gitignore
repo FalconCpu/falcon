@@ -25,19 +25,21 @@ core.*
 
 # Build directory
 compiler/src/build
+compiler/build
 compiler/test_outputs
 compiler/.vscode
 compiler/compiler_output.txt
 compiler/example.fpl
 compiler/expected_output.txt
+compiler/bin
 src/build
 src/.vscode
 f32/src/build
 f32/src/.vscode
 assembler/build
-
 */a.out
 a.txt
+build/*
 
 # binaries
 bin

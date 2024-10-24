@@ -102,16 +102,44 @@ class Ast{
 };
 
 // ==============================================================================================
+//                                         Ast_expression
+// ==============================================================================================
+
+class Ast_expression : public Ast {
+    public:
+    Ast_expression(Location location) : Ast(location) {}
+};
+
+// ==============================================================================================
+//                                         Ast_statement
+// ==============================================================================================
+
+class Ast_statement : public Ast {
+    public:
+    Ast_statement(Location location) : Ast(location) {}
+};
+
+// ==============================================================================================
+//                                         Ast_typeexpr
+// ==============================================================================================
+
+class Ast_typeexpr : public Ast {
+    public:
+    Ast_typeexpr(Location location) : Ast(location) {}
+};
+
+
+// ==============================================================================================
 //                                         Ast_block
 // ==============================================================================================
 
-class Ast_block : public Ast {
+class Ast_block : public Ast_statement {
+    protected:
     vector<Ast*>     statements;
     Ast_block*       parent;
 
     public:
-    Ast_block(Location location) : Ast(location) {}
-    void add(Ast* statement);
+    Ast_block(Location location, vector<Ast_statement*> statements) : Ast_statement(location)
     virtual void tree_print(int indent);
 };
 
@@ -123,16 +151,6 @@ class Ast_top : public Ast_block {
 
     public:
     Ast_top() : Ast_block(Location()) {}
-};
-
-
-// ==============================================================================================
-//                                         Ast_expression
-// ==============================================================================================
-
-class Ast_expression : public Ast {
-    public:
-    Ast_expression(Location location) : Ast(location) {}
 };
 
 // ==============================================================================================
@@ -231,6 +249,48 @@ class Ast_unary : public Ast_expression {
     void tree_print(int indent);
 };
 
+// ==============================================================================================
+//                                         Ast_declaration
+// ==============================================================================================
+
+class Ast_declaration : public Ast_statement {
+    int                     op;         // Var/Val
+    const string*           name;
+    Ast_expression*         init_val;
+    Ast_typeexpr*           type_expr;
+
+    public:
+    Ast_declaration(Location location, int op, const string* name, Ast_typeexpr* type_expr, Ast_expression* init_val) :
+        Ast_statement(location), op(op), name(name), init_val(init_val), type_expr(type_expr) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_assign
+// ==============================================================================================
+
+class Ast_assign : public Ast_statement {
+    Ast_expression*         lhs;
+    Ast_expression*         rhs;
+
+    public:
+    Ast_assign(Location location, Ast_expression* lhs, Ast_expression* rhs) :
+        Ast_statement(location), lhs(lhs), rhs(rhs) {}
+    void tree_print(int indent);
+};
+
+// ==============================================================================================
+//                                         Ast_while
+// ==============================================================================================
+
+class Ast_while : public Ast_block {
+    Ast_expression*         condition;
+
+    public:
+    Ast_while(Location location, Ast_expression* condition) :
+        Ast_block(location), condition(condition) {}
+    void tree_print(int indent);
+};
 
 
 
