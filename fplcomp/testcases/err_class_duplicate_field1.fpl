@@ -1,0 +1,10 @@
+class Cat(var name : String, var age : Int, var age:Int)    # error as field name is duplicated
+
+fun main()
+    val c = new Cat("pootle", 5)
+    print("Name = %s, Age = %d", c.name, c.age)
+
+@-----------------------
+testcase_outputs/err_class_duplicate_field1.fpl:1:49: Duplicate symbol age
+testcase_outputs/err_class_duplicate_field1.fpl:4:34: Expected 3 arguments, got 2
+Failed with 2 errors

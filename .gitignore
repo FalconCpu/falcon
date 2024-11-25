@@ -1,0 +1,21 @@
+# Ignore log files and executables
+*.log
+*.exe
+*.pdb
+*.hex
+*.out
+*.bin
+
+build/
+fpga/
+bin/
+obj/
+testcase_outputs/
+
+# Ignore compiled code
+*.o
+*.pyc
+*.class
+
+# Ignore personal IDE config files
+idea/

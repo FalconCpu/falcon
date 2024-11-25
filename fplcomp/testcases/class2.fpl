@@ -1,0 +1,9 @@
+class Cat(var name : String, ageYears : Int)
+    var ageMonths = ageYears * 12
+
+fun main()
+    val c = new Cat("pootle", 5)
+    print("Name = %s, Age = %d", c.name, c.ageMonths)
+
+@------------------------
+Name = pootle, Age = 60

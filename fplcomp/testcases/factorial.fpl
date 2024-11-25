@@ -1,0 +1,11 @@
+
+fun factorial(n: Int) -> Int
+    if n<2
+        return 1
+    return n*factorial(n-1)
+
+fun main(a: Int) 
+    print("factorial 5! = %d\n", factorial(5))
+
+@------------------------
+factorial 5! = 120

@@ -1,0 +1,8 @@
+class Cat(var name : String, var age : Int)
+
+fun main()
+    val c = new Cat("pootle", 5)
+    print("Name = %s, Age = %d", c.name, c.age)
+
+@------------------------
+Name = pootle, Age = 5

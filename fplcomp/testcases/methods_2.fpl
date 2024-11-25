@@ -1,0 +1,17 @@
+# test of method calls that take arguments
+
+class Dog(var name: String) 
+    fun bark(times: Int)
+        var i = 0
+        while i < times
+            print("%s barks!\n", name)
+            i = i + 1
+
+fun main() 
+    val d = new Dog("Fido")
+    d.bark(3)
+
+@-------------------
+Fido barks!
+Fido barks!
+Fido barks!

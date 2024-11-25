@@ -1,0 +1,118 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Fri Nov 22 12:27:10 2024
+[*]
+[dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
+[dumpfile_mtime] "Fri Nov 22 12:18:03 2024"
+[dumpfile_size] 502124
+[savefile] "C:\Users\simon\falcon\rtl\src\gtkwave.gtkw"
+[timestart] 860150
+[size] 1920 1129
+[pos] -1 -1
+*-14.252831 955800 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] Falcon_tb.
+[treeopen] Falcon_tb.Falcon_inst.
+[treeopen] Falcon_tb.Falcon_inst.cpu_inst.
+[treeopen] Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.
+[treeopen] Falcon_tb.Falcon_inst.hwregs_inst.
+[sst_width] 197
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 339
+@28
+Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.clock
+@c00022
+Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+@28
+(0)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(1)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(2)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(3)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(4)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(5)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(6)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(7)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(8)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(9)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(10)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(11)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(12)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(13)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(14)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(15)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(16)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(17)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(18)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(19)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(20)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(21)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(22)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(23)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(24)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(25)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(26)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(27)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(28)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(29)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(30)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+(31)Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+@1401200
+-group_end
+@28
+Falcon_tb.Falcon_inst.cpu_inst.cpu_pc_inst.p3_jump
+Falcon_tb.Falcon_inst.cpu_inst.stall
+@200
+-
+-DECODER
+@2022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+Falcon_tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+@22
+Falcon_tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_reg_a[4:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_reg_b[4:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_reg_d[4:0]
+@28
+Falcon_tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p3_is_latent
+@200
+-
+-ALU
+@22
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p2_pc[31:0]
+@2022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_op[8:0]
+@22
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_data_a[31:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_data_b[31:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_data_c[31:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_out[31:0]
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.p4_out[31:0]
+@28
+Falcon_tb.Falcon_inst.cpu_inst.p2_pipeline_bubble
+@200
+-
+-ARBITER
+@22
+Falcon_tb.Falcon_inst.sdram_arbiter_inst.sdram_rdata[31:0]
+Falcon_tb.Falcon_inst.sdram_arbiter_inst.sdram_valid[3:0]
+Falcon_tb.Falcon_inst.sdram_arbiter_inst.dcache_rdata[31:0]
+@200
+-
+-SDRAM
+@28
+Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_request
+@22
+Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_address[25:0]
+Falcon_tb.Falcon_inst.sdram_controller_inst.this_counter[6:0]
+@28
+Falcon_tb.Falcon_inst.sdram_controller_inst.this_state[2:0]
+@22
+Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_rdata[31:0]
+Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_valid[3:0]
+@200
+-
+-VGA
+@29
+Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.cpu_divider_inst.start
+[pattern_trace] 1
+[pattern_trace] 0

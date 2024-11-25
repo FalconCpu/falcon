@@ -1,0 +1,37 @@
+
+/_start:
+sub $sp, 4
+stw $30, $sp[0]
+jsr /main
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/Math:
+ret
+
+/Math/add:
+add $8, $2, $3
+ret
+
+/main:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $1, 0
+jsr /malloc
+ld $9, $8
+ld $1, $9
+jsr /Math
+ld $1, $9
+ld $2, 2
+ld $3, 3
+jsr /Math/add
+ld $1, _string_0
+ld $2, $8
+jsr /print
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+_string_0: dcb "Result: %d",0

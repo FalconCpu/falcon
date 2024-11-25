@@ -1,0 +1,24 @@
+# Test PC-relative JMP
+start:
+    ld $1, 0x100
+    jmp target1
+    ld $2, 0xdead     # Should skip
+
+finish:
+    # code jumps back to here from the end
+    ld $5, 0x1234
+    ret
+
+target1:
+    ld $2, 0xbeef
+
+# Test register-relative JMPR    
+    ld $3, target2
+    jmp $3[0]
+    ld $4, 0xdead     # Should skip
+
+target2:
+    ld $4, 0xcafe
+
+# Test negative offsets
+    jmp finish         # Jump backwards

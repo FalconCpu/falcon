@@ -1,0 +1,14 @@
+# Test left shifts
+ld $1, 0x1
+lsl $2, $1, 4      # Should be 0x10
+lsl $3, $1, 8      # Should be 0x100
+lsl $4, $1, 31     # Should be 0x80000000
+
+# Test logical right shifts
+ld $5, 0x80000000
+lsr $6, $5, 4      # Should be 0x08000000
+lsr $7, $5, 31     # Should be 1
+
+# Test arithmetic right shifts
+asr $8, $5, 4      # Should be 0xf8000000
+asr $9, $5, 31     # Should be 0xffffffff

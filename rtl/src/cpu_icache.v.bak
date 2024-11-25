@@ -1,0 +1,21 @@
+`timescale 1ns / 1ns
+
+module cpu_icache(
+    input               clock,
+
+    input      [31:0]   inst_address,
+    output reg [31:0]   inst_rdata,
+    output reg          inst_ack
+);
+
+reg [31:0] iram[0:16383];
+
+initial begin
+    $readmemh("asm.hex", iram);
+end
+
+always @(posedge clock) begin
+    inst_rdata <= iram[inst_address[15:2]];
+end
+
+endmodule

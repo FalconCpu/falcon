@@ -1,0 +1,18 @@
+# Initialize registers
+ld $1, 0xE0000000   # Base address for hwregs
+ld $2, 0x123456     # Initial display pattern
+
+# Main loop
+loop:
+   stw $2, $1[0]       # Update display
+   ldw $3, $1[8]       # Read switches
+   stw $3, $1[4]       # Write to LEDs
+   add $2, $2, 1       # Increment pattern
+
+    # Delay loop
+    ld $4, 0x10000    # Delay value
+    delay_loop:
+        sub $4, $4, 1
+        bne $4, 0, delay_loop
+
+beq 0,0, loop       # temporary until jmp is implemented

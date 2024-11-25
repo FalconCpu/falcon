@@ -1,0 +1,42 @@
+
+109876 543 21098 76543 21098765 43210 
+100000 III DDDDD AAAAA ........ BBBBB   ALU $d, $a, $b        Alu register to register
+100001 III DDDDD AAAAA ######## #####   ALU $d, $a, #s13      Alu immediate
+100010 III DDDDD AAAAA ######## #####   LDz $d, $a [#s13]     Load from memory
+100011 III ##### AAAAA ######## BBBBB   STz $b, $a [#s13]     Store to memory
+100100 III ##### ##### ######## BBBBB   Bcc $a, $b, #s13      Branch
+100101 ### DDDDD ##### ######## #####   JMP $d, #s21          Jump
+100110 ... DDDDD AAAAA ######## #####   JMP $d, $a[#s13]      Calculated Jump
+100111 ### DDDDD ##### ######## #####   LDU $d, #s21          Load upper literal
+101000 ### DDDDD ##### ######## #####   LDPC $d, #s21         Load PC relative
+
+
+
+ALU Ops:
+000  AND
+001  OR
+010  XOR
+011  SHIFT   (+ve = lsl , -ve=lsr)
+100  ADD
+101  SUB
+110  CLT     (Compare less than)
+111  CLTU    (Compare less than unsigned)
+
+LOAD Ops:
+000  LDB
+001  LDH
+010  LDW
+
+STORE ops:
+000  STB
+001  STH
+010  STW
+
+BRANCH ops:
+000  BEQ
+001  BNE    
+010  BLT
+011  BGE
+100  BLTU   
+101  BGEU
+

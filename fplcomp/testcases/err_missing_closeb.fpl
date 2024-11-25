@@ -1,0 +1,7 @@
+
+fun main()
+    print("Hello World!\n"
+
+@------------------------
+testcase_outputs/err_missing_closeb.fpl:3:28: Expected CloseB but got <End of Line>
+Failed with 1 errors

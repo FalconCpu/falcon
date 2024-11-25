@@ -1,0 +1,160 @@
+HWREG_BASE = 0xE0000000
+HWREG_SEVEN_SEG = 0       # 6 digit hexadecimal seven segment display
+HWREG_LEDR      = 4       # 10 LEDs
+HWREG_SW        = 8       # 10 Switches    
+HWREG_KEY       = 12      #  4 Push buttons
+HWREG_UART_TX   = 16      # Write = byte of data to transmit, read = uart tx busy
+HWREG_UART_RX   = 20      # Byte of data from the uart, -1 if no data
+
+#
+# Do a RAM self test before loading the boot code.
+#
+
+start:
+    ld $10, HWREG_BASE             # HW regs base
+    ld $1, 0x00000000              # SDRAM base
+    ld $2, 0                       # Counter/pattern
+    ld $3, 0x04000000              # End address (64MB)
+    ld $4, 1       
+    stw $4, $10[HWREG_LEDR]        # Turn on LED1 to indicate progress
+
+write_loop:
+    stw $2, $1[0]                  # Write pattern
+    add $1, 4                      # Next address
+    add $2, 1                      # Increment pattern
+    stw $2, $10[HWREG_SEVEN_SEG]   # Show progress
+    blt $1, $3, write_loop
+
+# Reset for read verification
+    ld $1, 0x00000000              # SDRAM base
+    ld $2, 0                       # Reset pattern
+    ld $4, 2        
+    stw $4, $10[4]                 # Turn on LED2 to indicate doing the read
+
+read_loop:
+    ldw $4, $1[0]                  # Read value
+    stw $4, $10[0]                 # Show value
+    bne $4, $2, fail               # Compare
+    add $1, 4                      # Next address
+    add $2, 1                      # Increment expected
+    blt $1, $3, read_loop
+
+pass:
+    ld $2, 0xAAAA                  # Success pattern
+    stw $2, $10[0]                 # Display success
+    
+# Blank the RAM before loading the boot code
+    ld $1, 0x00000000              # SDRAM base
+blank_loop:
+    stw 0, $1[0]                  # Write zero
+    add $1, 4                      # Next address
+    blt $1, $3, blank_loop
+    jmp load_boot_code
+
+fail:
+    ld $2, 0xDEAD                  # Failure pattern
+    stw $2, $10[0]                 # Display failure
+    jmp fail_flash_leds
+
+#
+# The boot code gets loaded at address 0xffff0000
+# overwriting the memory check code above.
+# leave as much space in the memory as possible for the boot code.
+#
+ds 0xfe80
+
+# now we are right up at the top end of memory
+# leaving almost 64kb for the program 
+
+
+#
+# Wait for start sequence (0xB0)
+#
+
+load_boot_code:
+    ld $10, HWREG_BASE              # $10 = hwregs base
+    ld $9, 0xB0                     # Start marker
+
+wait_start:                         # Wait for start marker
+    jsr read_byte                   
+    bne $8, $9, wait_start
+
+                                    # start marker found - read the rest of the boot code
+    ld $4, 4                        # Turn on LED 2 to indicate we are receiving the boot code
+    stw $4, $10[HWREG_LEDR]
+    ld $11, 0xffff0000              # address to store program at
+    ld $1, 0
+
+read_word:
+    jsr read_byte                   # Read the first byte of a word 
+    blt $8, 0, read_code_complete   # Timeout indicates we have reaced the end of the boot code
+    ld  $9, $8                      # Store first byte in $9 (will build complete word here)
+    jsr read_byte                   # Read second byte
+    blt $8, 0, fail_flash_leds           # Timeout here indicates an error - incomplete word. Flash LEDs to indicate failure.
+    lsl $8, 8                       # Shift second byte left by 8 bits
+    or  $9, $8                      # Combine with first byte
+    jsr read_byte                   # Same for third byte
+    blt $8, 0, fail_flash_leds
+    lsl $8, 16
+    or  $9, $8
+    jsr read_byte                   # Read fourth byte (most significant byte)
+    blt $8, 0, fail_flash_leds
+    lsl $8, 24
+    or  $9, $8                      # Combine to form complete 32-bit word
+
+    stw $9, $11[0]                  # Store the word
+    add $11, 4                      # Increment the address
+    jmp read_word                   # Loop for the next word
+
+                                    # We have successfully read the boot code.
+                                    # Give a little flash on the LEDs to indicate success.
+                                    # then jump to the loaded code
+read_code_complete:
+    ld $4, 0x1                      # first LED
+    ld $5, 0x400                    # last LED
+
+led_loop:
+    stw $4, $10[HWREG_LEDR]         # turn on one LED
+    ld $1, 1000000                  # delay
+    led_delay:
+    sub $1, 1
+    bne $1, 0, led_delay
+    lsl $4, 1                       # shift to next LED
+    blt $4, $5, led_loop
+
+    ld $8, 0xffff0000                # get address of loaded code 
+    jmp $8                           # jump to loaded code
+
+
+# ########################################################################################
+# Read a byte from the UART
+# Returns byte in $8 or -1 if there is a timeout
+# ########################################################################################
+
+read_byte:
+    ld $1, 100000                    # Timeout counter
+
+read_byte_loop:
+    ldw $8, $10[HWREG_UART_RX]
+    bge $8, 0 , read_byte_done
+    sub $1, 1
+    bne $1, 0, read_byte_loop
+
+read_byte_done:   
+    ret
+
+# ########################################################################################
+# In the event of a failure to load the boot code, sit in a loop flashing the LEDs
+# ########################################################################################
+
+fail_flash_leds:
+    ld $3, 0
+
+fail_flash_leds_loop:
+    stw $3, $10[HWREG_LEDR]        # Write LED pattern to hardware register
+    xor $3, 0x3ff                  # Invert all 10 LED bits (0-9)
+    ld $4, 10000000                # Load delay counter value
+    delay_loop:       
+        sub $4, 1                  # Decrement counter
+        bge $4, 0, delay_loop      # Loop until counter reaches 0
+    jmp fail_flash_leds_loop       # Jump back to start to keep flashing LEDs

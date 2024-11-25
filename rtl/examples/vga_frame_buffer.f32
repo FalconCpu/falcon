@@ -1,0 +1,32 @@
+# Checkerboard test pattern for palette mode
+start:
+    ld $1, 0x3F80000    # Frame buffer base address
+    ld $2, 0            # X coordinate
+    ld $3, 0            # Y coordinate
+    ld $4, 307200       # Total pixels
+    ld $10, 0xE0000000  # HW regs base
+
+pattern_loop:
+    # Walk through the color palette in a checkerboard pattern
+    lsr $5, $2, 5      # Get X divided by 32
+    lsr $6, $3, 5      # Get Y divided by 32
+    lsl $6, 2          # Multiply Y by 20 (20 rectangles per line)
+    lsl $7, $6, 2
+    add $7, $6
+    add $5, $7         # Add X and Y blocks
+    stb $5, $1[0]      # Store color index
+
+    # Update coordinates
+    add $1, 1          # Next pixel address
+    add $2, 1          # Increment X
+    ld $5, 640         # 640 pixels per line
+    blt $2, $5, skip_newline
+    ld $2, 0           # Reset X
+    add $3, 1          # Increment Y
+skip_newline:
+    sub $4, 1          # Decrement total count
+    stw $4, $10[0]     # Show progress
+    bne $4, 0, pattern_loop
+
+done:
+    jmp done

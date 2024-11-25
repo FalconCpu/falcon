@@ -1,0 +1,17 @@
+# Initialize registers
+ld $1, 0xE0000000   # Base address for hwregs
+
+# Send a byte sequence
+ld $2, 0x41         # ASCII 'A'
+
+send_loop:
+    ldw $3, $1[16]  # Check if TX ready
+    bne $3, 0, send_loop
+    stw $2, $1[16]  # Send byte
+
+# Echo received bytes
+echo_loop:
+    ldw $3, $1[20]  # Try to read byte
+    ld $4, -1       # Check for no data
+    beq $3, $4, echo_loop
+    stw $3, $1[16]  # Echo it back

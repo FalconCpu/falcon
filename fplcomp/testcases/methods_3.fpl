@@ -1,0 +1,13 @@
+# Try corner-case of a class with methods no fields
+
+class Math 
+    fun add(a: Int, b: Int) -> Int 
+        return a + b
+
+fun main() 
+    val m = new Math()
+    val result = m.add(2, 3)
+    print("Result: %d", result)
+
+@---------------------
+Result: 5

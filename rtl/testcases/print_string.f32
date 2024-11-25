@@ -1,0 +1,24 @@
+
+UART_TX = 0x10
+
+ld $1, message
+ld $2, 0xE0000000
+
+print_string:
+    ldb $4, $1[0]           # get the byte to print
+    beq $4, 0, finished
+
+wait_uart:
+    ldw $3, $2[UART_TX]     # check to see there is space in the fifo
+    beq $3, 0, wait_uart
+
+    stw $4, $2[UART_TX]
+    add $1, 1
+    jmp print_string
+
+finished:
+
+    ld $11,0
+    jmp $11
+
+message: dcb "Hello world", 10, 0

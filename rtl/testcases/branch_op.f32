@@ -1,0 +1,5 @@
+ld $1,10
+loop:
+sub $1,1
+bne $1,0,loop
+ld $2,20

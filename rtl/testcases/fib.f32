@@ -1,0 +1,25 @@
+# Program to calculate the first 10 numbers of the Fibonacci sequence
+# Inputs: None
+# Output: The 10th Fibonacci number in register $3
+
+start:
+    ld  $1, 0         # $1 = first number (F0)
+    ld  $2, 1         # $2 = second number (F1)
+    ld  $4, 10        # $4 = loop counter (10 numbers)
+    ld  $5, 2         # $5 = current position (starting from F2)
+
+fib_loop:
+    add $3, $1, $2    # $3 = $1 + $2 (next Fibonacci number)
+    ld  $1, $2        # $1 = $2 (shift $2 to $1)
+    ld  $2, $3        # $2 = $3 (shift $3 to $2)
+    add $5, 1         # Increment position
+    bge $5, $4, done  # If current position >= 10, finish loop
+    jmp fib_loop      # Repeat the loop
+
+done:
+    ld $6, 0xE0000000 # Base address of the memory-mapped IO
+    stw $3, $6[0]     # Display the 10th Fibonacci number
+
+# End of program
+ld $11,0
+jmp $11

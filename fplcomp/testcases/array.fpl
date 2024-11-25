@@ -1,0 +1,20 @@
+
+fun sum(a: Array<Int>) -> Int
+    var sum = 0
+    var index = 0
+    while index < 10
+        sum = sum + a[index]
+        index = index + 1
+    return sum
+
+fun main()
+    var a = new Array<Int>(10)
+    var index = 0
+    while index < 10
+        a[index] = index
+        index = index + 1
+    val b = sum(a)
+    print("Total = %d", b)
+
+@-------------------------------
+Total = 45

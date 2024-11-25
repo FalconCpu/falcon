@@ -1,0 +1,30 @@
+# Initialize the registers
+ld      $1, 100           # Load 100 into register $1
+ld      $2, 20            # Load 20 into register $2
+ld      $3, -50           # Load -50 into register $3
+ld      $4, 0             # Load 0 into register $4
+ld      $5, 123456789     # Load a large number into register $5
+ld      $6, 98765         # Load another number into register $6
+
+# Testcase 1: Simple division
+divu    $10, $1, $2      # $10 = $1 / $2 (100 / 20 = 5)
+modu    $11, $1, $2      # $11 = $1 % $2 (100 % 20 = 0)
+
+# Testcase 2: Division by zero
+divu    $12, $1, $4      # $12 = $1 / $4 (100 / 0, should handle division by zero)
+modu    $13, $1, $4      # $13 = $1 % $4 (100 % 0, should handle division by zero)
+
+# Testcase 3: Signed division
+divs    $14, $3, $2      # $14 = $3 / $2 (-50 / 20 = -2)
+mods    $15, $3, $2      # $15 = $3 % $2 (-50 % 20 = -10)
+
+# Testcase 4: Large number division
+divu    $16, $5, $6      # $16 = $5 / $6 (123456789 / 98765)
+modu    $17, $5, $6      # $17 = $5 % $6 (123456789 % 98765)
+
+# Testcase 5: Large signed division
+ld      $7, -123456789   # Load a large negative number into $7
+divs    $18, $7, $6      # $18 = $7 / $6 (-123456789 / 98765)
+mods    $19, $7, $6      # $19 = $7 % $6 (-123456789 % 98765)
+
+# Finish the test

@@ -1,0 +1,8 @@
+class Cat(var name : String, var age : Int) 
+    fun meow()
+        print("%s says 'Meow'!", name)
+
+fun main()
+    val c = new Cat("pootle", 5)
+    c.meow()
+

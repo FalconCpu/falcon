@@ -1,0 +1,25 @@
+# Program to calculate the factorial of a number
+# Input: number in register $1
+# Output: factorial in register $2
+
+start:
+    ld  $1, 5           # Load the number 5 into register $1 (to calculate 5!)
+
+    # Initialize registers
+    ld  $2, 1            # $2 will hold the result (start with 1)
+    ld  $3, 1            # $3 will hold the current multiplier (start with 1)
+ 
+factorial_loop: 
+    mul $2, $3           # do the multiplication
+    add $3, 1            # increment the multiplier
+    bge $1, $3, factorial_loop # If $1 >= $3, we are done
+
+done:
+    # Display the result
+    ld $10, 0xE0000000   # Load the base address of the hardware registers
+    stw $2, $10[0]       # Display the result on the 7-segment display
+
+# End of program
+
+ld $11,0
+jmp $11

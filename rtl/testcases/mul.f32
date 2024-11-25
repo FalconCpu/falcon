@@ -1,0 +1,37 @@
+# Initialize the registers
+ld  $1, 10           # Load 10 into register $1
+ld  $2, 20           # Load 20 into register $2
+ld  $3, -5           # Load -5 into register $3
+ld  $4, 0            # Load 0 into register $4
+ld  $5, 123456       # Load a large number into register $5
+ld  $6, 654321       # Load another large number into register $6
+ld  $7, -123456      # Load a negative large number into register $7
+ld  $8, -654321      # Load another negative large number into register $8
+
+# Testcase 1: Simple multiplication
+mul     $10, $1, $2      # $10 = $1 * $2 (10 * 20 = 200)
+
+# Testcase 2: Multiplication with one negative number
+mul     $11, $1, $3      # $11 = $1 * $3 (10 * -5 = -50)
+
+# Testcase 3: Multiplication with zero
+mul     $12, $1, $4      # $12 = $1 * $4 (10 * 0 = 0)
+
+# Testcase 4: Multiplication of two large numbers
+mul     $13, $5, $6      # $13 = $5 * $6 (123456 * 654321)
+
+# Testcase 5: Multiplication of large positive and negative numbers
+mul     $14, $5, $8      # $14 = $5 * $8 (123456 * -654321)
+
+# Testcase 6: Multiplication of large negative numbers
+mul     $15, $7, $8      # $15 = $7 * $8 (-123456 * -654321)
+
+# Testcase 7: Multiplication of two negative numbers
+mul     $16, $3, $8      # $16 = $3 * $8 (-5 * -654321)
+
+# Testcase 8: Multiplication where the result overflows (using large values)
+ld      $17, 2147483647  # Load ma$ positive 32-bit value (2^31 - 1)
+ld      $18, 2           # Load 2 into register $18
+mul     $19, $17, $18    # $19 = $17 * $18 (2147483647 * 2, should overflow)
+
+

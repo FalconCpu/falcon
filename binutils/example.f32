@@ -1,0 +1,3 @@
+ld $5,3
+fred:
+jmp fred
