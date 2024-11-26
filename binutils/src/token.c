@@ -196,6 +196,7 @@ void open_file(string filename) {
     fopen_s(&filehandle, filename, "r");
     if (filehandle==0)
         fatal("could not open file '%s'", filename);
+    line_number = 1;
 }
 
 // ================================================

@@ -20,6 +20,8 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
         AddSymbol(Location.unknown, new TypeSymbol("String", StringType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Real", RealType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Unit", UnitType.Instance));
+        AddSymbol(Location.unknown, IntegerSymbol.Make("true", BoolType.Instance, 1));
+        AddSymbol(Location.unknown, IntegerSymbol.Make("false", BoolType.Instance, 0));
         return this;
     }
 

@@ -1,6 +1,4 @@
 
-using System.Runtime.InteropServices;
-
 class Parser(Lexer lexer)
 {
     private readonly Lexer lexer = lexer;
@@ -84,8 +82,14 @@ class Parser(Lexer lexer)
     private AstExpression ParseBracket() {
         Expect(TokenKind.OpenB);
         AstExpression exp = ParseExpression();
+        if (CanTake(TokenKind.Colon)) {
+            AstType type = ParseType();
+            Expect(TokenKind.CloseB);
+            return new AstTypecast(lookahead.location, exp, type);
+        } else {
         Expect(TokenKind.CloseB);
         return exp;
+        }
     }
 
     private AstExpression ParseNew() {
@@ -411,6 +415,20 @@ class Parser(Lexer lexer)
         ret.SetCond(cond);
     }
 
+    private void ParseFor(AstBlock block) {
+        Token loc = Expect(TokenKind.For);
+        AstIdentifier name = ParseIdentifier();
+        Expect(TokenKind.Eq);
+        AstExpression start = ParseExpression();
+        Expect(TokenKind.To);
+        AstExpression end = ParseExpression();
+        ExpectEol();
+        AstFor ret = new(loc.location, name, start, end, block);
+        block.Add(ret);
+        ParseIndentedBlock(ret);
+        CheckEnd(TokenKind.For);
+    }
+    
     private void parseAssign(AstBlock block) {
         AstExpression lhs = ParsePostfix();
         if (lookahead.kind == TokenKind.Eq) {
@@ -497,6 +515,7 @@ class Parser(Lexer lexer)
                 case TokenKind.Indent: ParseUnexpectedIndent(block); break;
                 case TokenKind.If: ParseIf(block); break;
                 case TokenKind.Return: ParseReturn(block); break;
+                case TokenKind.For: ParseFor(block); break;
                 case TokenKind.Print: parsePrint(block); break;
                 case TokenKind.Class: ParseClass(block); break;
                 case TokenKind.Identifier:

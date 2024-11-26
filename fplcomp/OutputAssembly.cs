@@ -66,6 +66,7 @@ class OutputAssembly(StreamWriter filehandle) {
                     case AluOp.XOR_I: WriteLine($"xor {alui.dest.name}, {alui.lhs.name}, {alui.value}"); break;
                     case AluOp.LSL_I: WriteLine($"lsl {alui.dest.name}, {alui.lhs.name}, {alui.value}"); break;
                     case AluOp.LSR_I: WriteLine($"lsr {alui.dest.name}, {alui.lhs.name}, {alui.value}"); break;
+                    case AluOp.ASR_I: WriteLine($"asr {alui.dest.name}, {alui.lhs.name}, {alui.value}"); break;
                     default: throw new NotImplementedException($"AluOp {alui.op}");
                 }
                 break;

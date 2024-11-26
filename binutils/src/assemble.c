@@ -335,7 +335,7 @@ static void assemble_line(Token* line) {
     CASE("A$,r,r")          { add_instr(fmt_r(KIND_ALU, V0, V1, V3, V5)); }
     CASE("A$,r")            { add_instr(fmt_r(KIND_ALU, V0, V1, V1, V3)); }
     CASE("A$,i")            { add_instr(fmt_i(KIND_ALUI, V0, V1, V1, V3)); }
-    CASE("A$,$,i")          { add_instr(fmt_i(KIND_ALUI, V0, V1, V3, V5)); }
+    CASE("A$,r,i")          { add_instr(fmt_i(KIND_ALUI, V0, V1, V3, V5)); }
     CASE("H$,r,i")          { add_instr(fmt_i(KIND_ALUI, 3, V1, V3, (V0<<5) | V5)); }
     CASE("H$,i")            { add_instr(fmt_i(KIND_ALUI, 3, V1, V1, (V0<<5) | V3)); }
     CASE("H$,r,$")          { add_instr(fmt_i(KIND_ALU, 3, V1, V3, (V0<<5) | V5)); }

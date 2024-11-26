@@ -40,6 +40,7 @@ class Lexer (string fileName) {
         {"~" , TokenKind.Tilde},
         {"?" , TokenKind.Qmark},
         {"!" , TokenKind.Emark},
+        {"to" , TokenKind.To},
         {"(" , TokenKind.OpenB},
         {"[" , TokenKind.OpenSq},
         {"{" , TokenKind.OpenCl},
@@ -48,6 +49,7 @@ class Lexer (string fileName) {
         {"}" , TokenKind.CloseCl},
         {"val" , TokenKind.Val},
         {"var" , TokenKind.Var},
+        {"const" , TokenKind.Const},
         {"if" , TokenKind.If},
         {"else" , TokenKind.Else},
         {"elsif" , TokenKind.Elsif},
@@ -57,6 +59,7 @@ class Lexer (string fileName) {
         {"while" , TokenKind.While},
         {"repeat" , TokenKind.Repeat},
         {"until" , TokenKind.Until},
+        {"for" , TokenKind.For},
         {"Array" , TokenKind.Array}, 
         {"class" , TokenKind.Class},
         {"print" , TokenKind.Print}

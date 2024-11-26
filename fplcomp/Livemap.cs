@@ -53,6 +53,12 @@ class Livemap {
         }
     }
 
+    private void ChangeToNop(Instr instr) {
+        Debug.PrintLn($"Replacing {instr.index} with NOP");
+        func.code[instr.index] = new InstrNop();
+        madeChange = true;
+    }
+
     public Livemap(AstFunction func) {
         this.func = func;
         livemap = new BitArray[func.code.Count];
@@ -69,6 +75,15 @@ class Livemap {
             Debug.PrintLn($"Propagate {func.name}");
             Propagate();
         } while (madeChange);
+
+        // Do a cleanup pass to remove dead code
+        for(int index=0; index<func.code.Count; index++) {
+            Instr ins = func.code[index];
+            if (ins is InstrCall || ins is InstrCallr)  continue; // Don't touch calls as they may have side effects
+            Symbol? dest = ins.GetDest();
+            if (dest!=null && livemap[index+1][dest.index] == false)
+                ChangeToNop(ins);
+        }
     }
 
     public void Print() {

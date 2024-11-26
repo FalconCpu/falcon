@@ -22,20 +22,22 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
     };
 
     static readonly List<BinopEntry> binopTable = [
-        new(TokenKind.Plus,      IntType.Instance, IntType.Instance, AluOp.ADD_I, IntType.Instance),
-        new(TokenKind.Minus,     IntType.Instance, IntType.Instance, AluOp.SUB_I, IntType.Instance),
-        new(TokenKind.Star,      IntType.Instance, IntType.Instance, AluOp.MUL_I, IntType.Instance),
-        new(TokenKind.Slash,     IntType.Instance, IntType.Instance, AluOp.DIV_I, IntType.Instance),
-        new(TokenKind.Percent,   IntType.Instance, IntType.Instance, AluOp.MOD_I, IntType.Instance),
-        new(TokenKind.Ampersand, IntType.Instance, IntType.Instance, AluOp.AND_I, IntType.Instance),
-        new(TokenKind.Bar,       IntType.Instance, IntType.Instance, AluOp.OR_I,  IntType.Instance),
-        new(TokenKind.Carat,     IntType.Instance, IntType.Instance, AluOp.XOR_I, IntType.Instance),
-        new(TokenKind.Eq,        IntType.Instance, IntType.Instance, AluOp.EQ_I,  BoolType.Instance),
-        new(TokenKind.Neq,       IntType.Instance, IntType.Instance, AluOp.NE_I,  BoolType.Instance),
-        new(TokenKind.Lt,        IntType.Instance, IntType.Instance, AluOp.LT_I,  BoolType.Instance),
-        new(TokenKind.Lte,       IntType.Instance, IntType.Instance, AluOp.LE_I,  BoolType.Instance),
-        new(TokenKind.Gt,        IntType.Instance, IntType.Instance, AluOp.GT_I,  BoolType.Instance),
-        new(TokenKind.Gte,       IntType.Instance, IntType.Instance, AluOp.GE_I,  BoolType.Instance)
+        new(TokenKind.Plus,      IntType.Instance,  IntType.Instance,  AluOp.ADD_I,  IntType.Instance),
+        new(TokenKind.Minus,     IntType.Instance,  IntType.Instance,  AluOp.SUB_I,  IntType.Instance),
+        new(TokenKind.Star,      IntType.Instance,  IntType.Instance,  AluOp.MUL_I,  IntType.Instance),
+        new(TokenKind.Slash,     IntType.Instance,  IntType.Instance,  AluOp.DIV_I,  IntType.Instance),
+        new(TokenKind.Percent,   IntType.Instance,  IntType.Instance,  AluOp.MOD_I,  IntType.Instance),
+        new(TokenKind.Ampersand, IntType.Instance,  IntType.Instance,  AluOp.AND_I,  IntType.Instance),
+        new(TokenKind.Bar,       IntType.Instance,  IntType.Instance,  AluOp.OR_I,   IntType.Instance),
+        new(TokenKind.Carat,     IntType.Instance,  IntType.Instance,  AluOp.XOR_I,  IntType.Instance),
+        new(TokenKind.Eq,        IntType.Instance,  IntType.Instance,  AluOp.EQ_I,   BoolType.Instance),
+        new(TokenKind.Neq,       IntType.Instance,  IntType.Instance,  AluOp.NE_I,   BoolType.Instance),
+        new(TokenKind.Lt,        IntType.Instance,  IntType.Instance,  AluOp.LT_I,   BoolType.Instance),
+        new(TokenKind.Lte,       IntType.Instance,  IntType.Instance,  AluOp.LE_I,   BoolType.Instance),
+        new(TokenKind.Gt,        IntType.Instance,  IntType.Instance,  AluOp.GT_I,   BoolType.Instance),
+        new(TokenKind.Gte,       IntType.Instance,  IntType.Instance,  AluOp.GE_I,   BoolType.Instance),
+        new(TokenKind.And,       BoolType.Instance, BoolType.Instance, AluOp.AND_B,  BoolType.Instance),
+        new(TokenKind.Or,        BoolType.Instance, BoolType.Instance, AluOp.OR_B,   BoolType.Instance)
     ];
 
     public override void TypeCheckRvalue(AstBlock scope) {

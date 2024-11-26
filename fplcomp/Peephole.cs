@@ -37,10 +37,22 @@ class Peephole {
         };
     }
 
+    private static bool IsPowerOfTwo(int x) {
+        return x != 0 && (x & (x - 1)) == 0;
+    }   
+
+    private static int log2(int x) {
+        int r = 0;
+        while (x > 1) {
+            x >>= 1;
+            r++;
+        }
+        return r;
+    }
+
     private void Optimize(Instr instr) {
         // Still to do:
         // Constant Folding: If both operands of an ALU instruction are constants, replace the instruction with an immediate constant assignment.
-        // Dead Code Removal: Remove blocks of code that are unreachable (e.g., instructions following an unconditional JMP).
         // Strength Reduction: Replace expensive operations with cheaper equivalents (e.g., MUL x, 2 → LSL x, 1).
         // Branch-to-Jump Simplification: Convert conditional branches to unconditional jumps if the condition is always true or false.
 
@@ -78,16 +90,16 @@ class Peephole {
             case InstrAlui alui: {
                 if (alui.value==0 && (alui.op==AluOp.ADD_I || alui.op==AluOp.SUB_I || alui.op==AluOp.OR_I || alui.op==AluOp.XOR_I || alui.op==AluOp.LSL_I || alui.op==AluOp.LSR_I))
                     ReplaceWith(alui, new InstrMov(alui.dest, alui.lhs));
-                if (alui.value==0 && (alui.op==AluOp.AND_I || alui.op==AluOp.MUL_I))
+                else if (alui.value==0 && (alui.op==AluOp.AND_I || alui.op==AluOp.MUL_I))
                     ReplaceWith(alui, new InstrLdi(alui.dest, 0));
-                if (alui.value==1 && (alui.op==AluOp.MUL_I))
+                else if (alui.value==1 && (alui.op==AluOp.MUL_I))
                     ReplaceWith(alui, new InstrMov(alui.dest, alui.lhs));
-                if (alui.value==2 && (alui.op==AluOp.MUL_I))
-                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.LSL_I, alui.lhs, 1));
-                if (alui.value==4 && (alui.op==AluOp.MUL_I))
-                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.LSL_I, alui.lhs, 2));
-                if (alui.value==8 && (alui.op==AluOp.MUL_I))
-                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.LSL_I, alui.lhs, 3));
+                else if (IsPowerOfTwo(alui.value) && (alui.op==AluOp.MUL_I))
+                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.LSL_I, alui.lhs, log2(alui.value)));
+                else if (IsPowerOfTwo(alui.value) && (alui.op==AluOp.DIV_I))
+                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.ASR_I, alui.lhs, log2(alui.value)));
+                else if (IsPowerOfTwo(alui.value) && (alui.op==AluOp.MOD_I))
+                    ReplaceWith(alui, new InstrAlui(alui.dest, AluOp.AND_I, alui.lhs, alui.value-1) );
                 break;
             }
 
@@ -95,10 +107,16 @@ class Peephole {
             case InstrBra bra: {
                 if (bra.label.index == bra.index+1)
                     ChangeToNop(bra);
-                if (bra.label.index == bra.index+2 && func.code[bra.index+1] is InstrJmp jmp) {
+                else if (bra.label.index == bra.index+2 && func.code[bra.index+1] is InstrJmp jmp) {
                     ReplaceWith(bra, new InstrBra(InvertBra(bra.op), bra.lhs, bra.rhs, jmp.label));
                     ChangeToNop(jmp);
                 }
+                else if (bra.lhs is IntegerSymbol isym && isym.value==0)
+                    ReplaceWith(bra, new InstrBra(bra.op, RegisterSymbol.registers[0], bra.rhs, bra.label));
+                else if (bra.rhs is IntegerSymbol irsym && irsym.value==0)
+                    ReplaceWith(bra, new InstrBra(bra.op, bra.lhs, RegisterSymbol.registers[0], bra.label));
+                else if (func.code[bra.label.index+1] is InstrJmp jmpb)
+                    ReplaceWith(bra, new InstrBra(bra.op, bra.lhs, bra.rhs, jmpb.label));
                 break;
             }
 

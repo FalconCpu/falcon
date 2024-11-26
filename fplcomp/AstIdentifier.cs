@@ -1,7 +1,7 @@
 
 class AstIdentifier (Location location,string name) : AstExpression(location) {
     public string name = name;
-    private Symbol symbol = Symbol.undefined;
+    public Symbol symbol = Symbol.undefined;
 
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + "IDENTIFIER " + name + " (" + type + ")");
@@ -68,6 +68,10 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
                 Symbol ret = func.NewTemp(type);
                 func.Add(new InstrLoadField(type.GetSize(), ret, func.thisSymbol, fieldSymbol));
                 return ret;
+
+            case IntegerSymbol isymbol:
+                func.Add(new InstrLdi(isymbol, isymbol.value));
+                return symbol;
 
             default:
                 throw new NotImplementedException();
