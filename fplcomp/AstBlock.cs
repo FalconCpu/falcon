@@ -10,6 +10,10 @@ abstract class AstBlock(Location location, AstBlock? parent) : AstStatement(loca
 
     // Look up a symbol in the current block, or recursively in parent blocks
     public Symbol? GetSymbol(string name) {
+        // Console.WriteLine($"Looking for {name} in Symbol table {this} parent={parent}");
+        // foreach(Symbol s in symbols.Values)
+        //     Console.WriteLine(s.name);
+
         Symbol? symbol = symbols.GetValueOrDefault(name);
         if (symbol == null && parent != null)
             symbol = parent.GetSymbol(name);

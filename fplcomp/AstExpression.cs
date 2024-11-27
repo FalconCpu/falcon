@@ -25,6 +25,10 @@ abstract class AstExpression(Location location) : Ast(location) {
 
     public abstract Symbol CodeGenRvalue(AstFunction func);
 
+    public virtual Symbol? GetConstValue() {
+        return null;
+    }
+
     public virtual void CodeGenLvalue(AstFunction func, Symbol value) {
         Log.Error(location, "Not an lvalue");
     }

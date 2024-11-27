@@ -1,0 +1,10 @@
+# simple test of constant declarations
+
+const ten = 10
+
+fun main() 
+    var x = ten
+    print("x = %d\n", x)
+
+@----------------------
+x = 10

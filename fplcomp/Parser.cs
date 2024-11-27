@@ -1,4 +1,6 @@
 
+using System.Runtime.InteropServices;
+
 class Parser(Lexer lexer)
 {
     private readonly Lexer lexer = lexer;
@@ -92,18 +94,24 @@ class Parser(Lexer lexer)
         }
     }
 
-    private AstExpression ParseNew() {
+    private AstNew ParseNew() {
         Expect(TokenKind.New);
         AstType type = ParseType();
-        Expect(TokenKind.OpenB);
+        bool hasInitializer;
         List<AstExpression> args = [];
-        if (lookahead.kind != TokenKind.CloseB) {
-            do {
-                args.Add(ParseExpression());
-            } while(CanTake(TokenKind.Comma));
+
+        if (CanTake(TokenKind.OpenB)) {
+            hasInitializer = false;
+            args = ParseExpressionList();
+            Expect(TokenKind.CloseB);
+        } else if (CanTake(TokenKind.OpenCl)) {
+            hasInitializer = true;
+            args = ParseExpressionList();
+            Expect(TokenKind.CloseCl);
+        } else {
+            throw new ParseError(lookahead.location, $"Expected '(' or '{{' but got '{lookahead.text}'");
         }
-        Expect(TokenKind.CloseB);
-        return new AstNew(lookahead.location, type, args);
+        return new AstNew(lookahead.location, type, args, hasInitializer);
     }
 
     private AstExpression ParsePrimary() {
@@ -120,12 +128,7 @@ class Parser(Lexer lexer)
 
     private AstFuncCall ParseFuncCall(AstExpression left) {
         Token loc = Expect(TokenKind.OpenB);
-        List<AstExpression> args = [];
-        if (lookahead.kind != TokenKind.CloseB) {
-            do {
-                args.Add(ParseExpression());
-            } while(CanTake(TokenKind.Comma));
-        }
+        List<AstExpression> args = ParseExpressionList();
         Expect(TokenKind.CloseB);
         return new AstFuncCall(loc.location, left, args);
     }
@@ -230,6 +233,17 @@ class Parser(Lexer lexer)
             return ParseOr();
     }
 
+    private List<AstExpression> ParseExpressionList() {
+        List<AstExpression> ret = [];
+        if (lookahead.kind==TokenKind.CloseB || lookahead.kind==TokenKind.CloseCl)
+            return ret;
+        
+        ret.Add(ParseExpression());
+        while (CanTake(TokenKind.Comma))
+            ret.Add(ParseExpression());
+        return ret;
+    }
+
     private AstExpression? ParseOptExpression() {
         if (CanTake(TokenKind.Eq))
             return ParseExpression();
@@ -244,10 +258,12 @@ class Parser(Lexer lexer)
 
     private AstTypeArray ParseTypeArray() {
         Token loc = Expect(TokenKind.Array);
-        Expect(TokenKind.Lt);
-        AstType type = ParseType();
-        Expect(TokenKind.Gt);
-        return new AstTypeArray(loc.location, type);
+        AstType? elementType = null;
+        if (CanTake(TokenKind.Lt)) {
+            elementType = ParseType();
+            Expect(TokenKind.Gt);
+        }
+        return new AstTypeArray(loc.location, elementType);
     }
 
     private AstType ParseType() {
@@ -354,6 +370,16 @@ class Parser(Lexer lexer)
         block.Add(new AstDeclaration(name.location, kind.kind, name, astType, expr));
     }
 
+    private void ParseConst(AstBlock block) {
+        Expect(TokenKind.Const);
+        AstIdentifier name = ParseIdentifier();
+        AstType? astType = ParseOptType();
+        Expect(TokenKind.Eq);
+        AstExpression expr = ParseExpression();
+        ExpectEol();
+        block.Add(new AstConst(name.location, name, astType, expr));
+    }
+
     private void ParseIndentedBlock(AstBlock block) {
         if (lookahead.kind != TokenKind.Indent) {
             Log.Error(lookahead.location, "Expected indented block");
@@ -446,10 +472,7 @@ class Parser(Lexer lexer)
     private void parsePrint(AstBlock block) {
         Token loc = Expect(TokenKind.Print);
         Expect(TokenKind.OpenB);
-        List<AstExpression> args = [];
-        do {
-            args.Add(ParseExpression());
-        } while (CanTake(TokenKind.Comma));
+        List<AstExpression> args = ParseExpressionList();
         Expect(TokenKind.CloseB);
         ExpectEol();
 
@@ -518,6 +541,7 @@ class Parser(Lexer lexer)
                 case TokenKind.For: ParseFor(block); break;
                 case TokenKind.Print: parsePrint(block); break;
                 case TokenKind.Class: ParseClass(block); break;
+                case TokenKind.Const: ParseConst(block); break;
                 case TokenKind.Identifier:
                 case TokenKind.OpenB: parseAssign(block); break;
                 default: throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting a statement");

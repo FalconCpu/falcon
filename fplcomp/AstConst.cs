@@ -1,8 +1,9 @@
+
 class AstConst(
     Location location,
     AstIdentifier identifier,
     AstType? astType,
-    AstExpression? initializer
+    AstExpression initializer
 ) : AstStatement(location) {
     private readonly AstIdentifier  identifier  = identifier;
     private readonly AstType?       astType     = astType;
@@ -17,33 +18,22 @@ class AstConst(
 
     public override void TypeCheck(AstBlock scope) {
         initializer.TypeCheckRvalue(scope);
-        initializer.CheckIsConstant();
+        Symbol? value = initializer.GetConstValue();
 
-        // TODO - handle the type if present
-        Type type = astType?.ResolveAsType(scope) ??
-                    initializer?.type ?? ErrorType.MakeErrorType(identifier.location,$"Cannot determine type for '{identifier}'");
-
-        bool isMutable = kind==TokenKind.Var;
-
-        Symbol sym;
-        if (scope is AstClass astClass) {
-            sym = new FieldSymbol(identifier.name, type, isMutable);
-            astClass.classType.AddField((FieldSymbol)sym);
-        } else {
-            bool isGlobal  = scope is AstTop;
-            sym = new VariableSymbol(identifier.name, type, isGlobal, isMutable);
-        }
-        scope.AddSymbol(location, sym);
-        identifier.SetSymbol(sym);
-
-        if (initializer!=null)
-            sym.type.CheckAssignableFrom(initializer);
+        Symbol newSym;
+        if (value==null) {
+            Log.Error(location, "Initializer is not a constant");
+            newSym = IntegerSymbol.AliasSymbol(identifier.name, ErrorType.Instance, 0);
+        } else if (value is IntegerSymbol isym)
+            newSym = IntegerSymbol.AliasSymbol(identifier.name, isym.type, isym.value);
+        else if (value is StringLitSymbol slsym)
+            throw new NotImplementedException("String literals as constants");
+        else
+            throw new NotImplementedException("Other constant types");
+        scope.AddSymbol(location, newSym);
     }
 
     public override void CodeGen(AstFunction func) {
-        if (initializer==null)
-            return;
-        Symbol rhs = initializer.CodeGenRvalue(func);
-        identifier.CodeGenLvalue(func, rhs);
+
     }
 }

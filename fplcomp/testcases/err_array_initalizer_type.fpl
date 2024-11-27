@@ -1,0 +1,11 @@
+# test mixed type in an array flags an error
+
+fun main()
+    val a = new Array{1,2,"three"}    # Flag an error 
+
+    for i = 0 to 2
+        print("element %d = %d\n",i,a[i])
+
+@---------------
+testcase_outputs/err_array_initalizer_type.fpl:4:34: Type String is not assignable to Int
+Failed with 1 errors
