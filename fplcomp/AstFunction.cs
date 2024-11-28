@@ -72,6 +72,11 @@ class AstFunction(Location location, string name, List<AstParameter> parameters,
         return sym;
     }
 
+    public TempSymbol NewTemp(Type type, int value) {
+        TempSymbol sym = new($"&{nextTemp++}", type, value);
+        return sym;
+    }
+
     public override void CodeGen(AstFunction func) {
         Add(new InstrStart()); 
         labels.Add(endLabel);

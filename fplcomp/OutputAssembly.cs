@@ -24,10 +24,10 @@ class OutputAssembly(StreamWriter filehandle) {
                 break;
 
             case InstrLea lea:
-                if (lea.value is StringLitSymbol sls)
-                    WriteLine($"ld {lea.dest.name}, {sls.stringLabel}");
+                if (lea.value is ConstObjectSymbol sls)
+                    WriteLine($"ld {lea.dest.name}, {sls.name}");
                 else
-                    WriteLine($"ld {lea.dest.name}, {lea.value}");
+                    throw new ArgumentException("lea: value is not a ConstObjectSymbol");
                 break;
 
             case InstrAlu alu:
@@ -162,6 +162,19 @@ class OutputAssembly(StreamWriter filehandle) {
             WriteLine($"stw $30, $sp[{offset}]");
             offset += 4;
         }
+    }
+
+    public void Output(ConstObjectSymbol cos) {
+        WriteLine($"{cos.name}:");
+        if (cos.type is ArrayType arry && arry.elementType is CharType) {
+            // Special case for arrays of chars = use dcb instead of dcw
+            foreach(int[] d in cos.value.Chunk(4))
+                WriteLine($"dcb {string.Join(',', d)}");
+            return;
+        }
+
+        foreach(int d in cos.value)
+            WriteLine($"dcw 0x{d:X8}");
     }
 
     private void GenPostamble(AstFunction func) {

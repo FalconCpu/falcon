@@ -25,9 +25,11 @@ abstract class AstExpression(Location location) : Ast(location) {
 
     public abstract Symbol CodeGenRvalue(AstFunction func);
 
-    public virtual Symbol? GetConstValue() {
-        return null;
-    }
+    public virtual bool HasKnownIntValue() => false;
+    public virtual int  GetKnownIntValue() => throw new ArgumentException("Attempt to get Int value from non-int"); 
+
+    public virtual bool HasKnownConstObjectValue() => false;
+    public virtual ConstObjectSymbol GetKnownConstObjectValue() => throw new ArgumentException("Attempt to get ConstObject value from non-ConstObject");
 
     public virtual void CodeGenLvalue(AstFunction func, Symbol value) {
         Log.Error(location, "Not an lvalue");

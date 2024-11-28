@@ -76,14 +76,14 @@ class Peephole {
                 if (mov.src == mov.dest)
                     ChangeToNop(mov);
 
-                else if (mov.src is IntegerSymbol isym)
-                    ReplaceWith(mov, new InstrLdi(mov.dest, isym.value));
+                else if (mov.src.IsInteger())
+                    ReplaceWith(mov, new InstrLdi(mov.dest, mov.src.GetIntegerValue()));
                 break;
             }
 
             case InstrAlu alu: {
-                if (alu.rhs is IntegerSymbol isym && isym.value>=-0x1000 && isym.value<0x1000)
-                    ReplaceWith(alu, new InstrAlui(alu.dest, alu.op, alu.lhs, isym.value));
+                if (alu.rhs.IsSmallInteger())
+                    ReplaceWith(alu, new InstrAlui(alu.dest, alu.op, alu.lhs, alu.rhs.GetIntegerValue()));
                 break;
             }
 
@@ -111,9 +111,9 @@ class Peephole {
                     ReplaceWith(bra, new InstrBra(InvertBra(bra.op), bra.lhs, bra.rhs, jmp.label));
                     ChangeToNop(jmp);
                 }
-                else if (bra.lhs is IntegerSymbol isym && isym.value==0)
+                else if (bra.lhs.IsIntegerZero())
                     ReplaceWith(bra, new InstrBra(bra.op, RegisterSymbol.registers[0], bra.rhs, bra.label));
-                else if (bra.rhs is IntegerSymbol irsym && irsym.value==0)
+                else if (bra.rhs.IsIntegerZero())
                     ReplaceWith(bra, new InstrBra(bra.op, bra.lhs, RegisterSymbol.registers[0], bra.label));
                 else if (func.code[bra.label.index+1] is InstrJmp jmpb)
                     ReplaceWith(bra, new InstrBra(bra.op, bra.lhs, bra.rhs, jmpb.label));

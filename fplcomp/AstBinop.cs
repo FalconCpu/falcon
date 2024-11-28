@@ -30,6 +30,9 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
         new(TokenKind.Ampersand, IntType.Instance,  IntType.Instance,  AluOp.AND_I,  IntType.Instance),
         new(TokenKind.Bar,       IntType.Instance,  IntType.Instance,  AluOp.OR_I,   IntType.Instance),
         new(TokenKind.Carat,     IntType.Instance,  IntType.Instance,  AluOp.XOR_I,  IntType.Instance),
+        new(TokenKind.Lsl,       IntType.Instance,  IntType.Instance,  AluOp.LSL_I,  IntType.Instance),
+        new(TokenKind.Lsr,       IntType.Instance,  IntType.Instance,  AluOp.LSR_I,  IntType.Instance),
+        new(TokenKind.Asr,       IntType.Instance,  IntType.Instance,  AluOp.ASR_I,  IntType.Instance),
         new(TokenKind.Eq,        IntType.Instance,  IntType.Instance,  AluOp.EQ_I,   BoolType.Instance),
         new(TokenKind.Neq,       IntType.Instance,  IntType.Instance,  AluOp.NE_I,   BoolType.Instance),
         new(TokenKind.Lt,        IntType.Instance,  IntType.Instance,  AluOp.LT_I,   BoolType.Instance),
@@ -49,12 +52,35 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
             return;
         }
 
+        // Do automatic type promotion of Char to Int
+        Type leftType = (left.type==CharType.Instance) ? IntType.Instance : left.type;
+        Type rightType = (right.type==CharType.Instance) ? IntType.Instance : right.type;
+
         foreach (var entry in binopTable) {
-            if (entry.op == kind && entry.leftType.IsAssignableFrom(left.type) && entry.rightType.IsAssignableFrom(right.type)) {
+            if (entry.op == kind && entry.leftType.IsAssignableFrom(leftType) && entry.rightType.IsAssignableFrom(rightType)) {
                 aluOp = entry.aluOp;
                 SetType(entry.resultType);
                 return;
             }
+        }
+
+        // Some special cases for = and !=
+        if (kind == TokenKind.Eq || kind==TokenKind.Neq) {
+            aluOp = kind == TokenKind.Eq ? AluOp.EQ_I : AluOp.NE_I;
+            SetType(BoolType.Instance);
+            
+            bool leftIsReferenceType = leftType is PointerType || leftType is NullableType || leftType is NullType ||
+                                       leftType is ArrayType || leftType is StringType || leftType is ClassType;  
+            bool rightIsReferenceType = rightType is PointerType || rightType is NullableType || rightType is NullType ||
+                                        rightType is ArrayType || rightType is StringType || rightType is ClassType;
+
+            // allow T? = null checks
+            if (leftType  is NullableType && rightType is NullType)   return;
+            if (rightType is NullableType && leftType  is NullType)   return;
+
+            // allow comparisons between type Pointer and any reference type
+            if (leftType is PointerType && rightIsReferenceType)      return;
+            if (rightType is PointerType && leftIsReferenceType)      return;
         }
 
         SetError( location, $"Invalid operation {kind} on types {left.type} and {right.type}");

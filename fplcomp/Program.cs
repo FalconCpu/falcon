@@ -90,8 +90,8 @@ class Program {
         OutputAssembly output = new( new StreamWriter("output.f32"));
         foreach(AstFunction func in AstFunction.allFunctions)
             output.Output(func);
-        foreach(StringLitSymbol str in StringLitSymbol.allStringLit.Values)
-            output.WriteLine($"{str.stringLabel}: dcb \"{str.GetEscapedString()}\",0");
+        foreach(ConstObjectSymbol cos in ConstObjectSymbol.allConstObjects)
+            output.Output(cos);
         output.Close();
         return 0;
     }

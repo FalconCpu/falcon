@@ -18,6 +18,7 @@ enum TokenKind {
     Integer,
     String,
     RealLit,
+    CharLit,
     Plus,   // Tokens after this point are line continuation tokens
     Minus,
     Star,
@@ -42,6 +43,11 @@ enum TokenKind {
     Then,
     New,
     To,
+    Downto,
+    Lsl,
+    Lsr,
+    Asr,
+    Rc,
     OpenB,
     OpenSq,
     OpenCl,     // Tokens before this point are line continuation tokens
@@ -67,5 +73,6 @@ enum TokenKind {
     Until,
     Class,
     Print,
+    Delete,
     Error
 }

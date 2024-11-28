@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Runtime.CompilerServices;
 
 abstract class Type (string name) {
     public string name = name;
@@ -11,12 +9,21 @@ abstract class Type (string name) {
     }
 
     public bool IsAssignableFrom(Type other) {
-        return this == other || this == ErrorType.Instance || other == ErrorType.Instance;
+        return this == other || this == ErrorType.Instance || other == ErrorType.Instance ||
+        (this==PointerType.Instance && (other is ArrayType || other is ClassType || other is NullableType || other is NullType || other is StringType)) ||
+        (this is NullableType && other is NullType) ||
+        (this is NullableType nt && nt.elementType.IsAssignableFrom(other))
+        ;
     }
 
-    public void CheckAssignableFrom(AstExpression other) {
-        if (!IsAssignableFrom(other.type))
-            Log.Error(other.location, $"Type {other.type} is not assignable to {this}");
+    public void CheckAssignableFrom(AstExpression expr) {
+        // Special case -> allow integer expressions to be assigned to char, if can be proved within range at compile time.
+        // Bit messy as I currently allow for both signed and unsigned bytes. 
+        if (this is CharType && expr.HasKnownIntValue() && expr.GetKnownIntValue() is >=-128 and <=255 )
+            return;
+
+        if (!IsAssignableFrom(expr.type))
+            Log.Error(expr.location, $"Type {expr.type} is not assignable to {this}");
     }
 
     public bool IsErrorType() {
@@ -75,6 +82,12 @@ class UnitType : Type {
     public static readonly UnitType Instance = new();
     private UnitType() : base("Unit") {}
 }
+
+class PointerType : Type {
+    public static readonly PointerType Instance = new();
+    private PointerType() : base("Pointer") {}
+}
+
 
 class ErrorType : Type {
     public static readonly ErrorType Instance = new();

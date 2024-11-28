@@ -1,0 +1,169 @@
+# #####################################################
+#              Memory allocation routines
+# #####################################################
+#
+# Current plan is to use a 16 byte header for each chunk
+# (Its certainly possible to cut this down - but for now
+# lets make it robust)
+#
+# Having a (randomly generated) magic number in the header
+# acts as a small guard against buffer overruns
+#
+# Currently allocated chunks have a string as their 
+# descriptor. This could become a vtable or similar later.
+#
+# Plan on using (manual) reference counting to track memory.
+# 
+# possibly look into automating this in the future
+
+class FreeMemChunk
+    var magic    : Int
+    var size     : Int           # size in bytes, including header
+    var next     : FreeMemChunk? # list of free chunks in order of size
+    var unused   : Int           # reserverd for future use
+
+class AllocatedMemChunk
+    var magic      : Int
+    var size       : Int
+    var descriptor : String
+    var refcount   : Int
+
+const MAGIC_FREE = 0x3096506D
+const MAGIC_ALLOCATED = 0x23CAD9B8
+
+
+const ERR_OUT_OF_MEMORY = 0x1000
+const ERR_MEMORY_LIST_CORRUPTED = 0x1001
+const ERR_DOUBLE_FREE = 0x1002
+
+# ######################################################
+#                     System variables
+# ######################################################
+# One instance of this table is created at boot time
+# at the fixed address 0x00000100. 
+
+class SystemVariables
+    var memfree : Int            # Total free memory
+    var freeList : FreeMemChunk? # Pointer to first free block
+
+const startOfHeap  = 0x00001000
+const endOfHeap    = 0x03f70000    # 64Mb - Screen - Stack
+
+# ######################################################
+#                     initializeMemorySystem
+# ######################################################
+# Setup the memory system. Called from the boot code.
+fun initializeMemorySystem()
+    val sysvars = (0x00000100:SystemVariables)
+    
+    sysvars.memfree  = endOfHeap - startOfHeap
+
+    val firstChunk    = (startOfHeap:FreeMemChunk)
+    firstChunk.magic  = MAGIC_FREE
+    firstChunk.size   = endOfHeap - startOfHeap
+    firstChunk.next   = null
+    firstChunk.unused = 0
+    sysvars.freeList  = (startOfHeap:FreeMemChunk)
+
+# ######################################################
+#                     dummpMemorySystem
+# ######################################################
+# Dump the memory system for debugging
+fun dumpMemorySystem()
+    val sysvars = (0x00000100:SystemVariables)
+    var chunk = (startOfHeap:FreeMemChunk)
+    while (chunk:Int) < (endOfHeap:Int)
+        if chunk.magic = MAGIC_FREE
+            print("%x %x FREE\n", chunk, chunk.size)
+        elsif chunk.magic = MAGIC_ALLOCATED
+            val chunkA = (chunk:AllocatedMemChunk)
+            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
+            if chunkA.refcount > 1
+                print(" (*%d)", chunkA.refcount)
+            print("\n")
+        else
+            print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
+        chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
+
+# ######################################################
+#                 addChunkToFreeList
+# ######################################################
+# insert a chunk into the free list
+fun addChunkToFreeList(chunk:FreeMemChunk, size:Int)
+    if size=0
+        return
+    chunk.magic = MAGIC_FREE
+    chunk.size = size
+    # print("Add free list %x %x\n", chunk, size)
+
+    val sysvars = (0x00000100:SystemVariables)
+    var ptr = sysvars.freeList
+    if ptr = null
+        # the free list was empty before we add this chunk
+        chunk.next = null
+        sysvars.freeList = chunk
+    elsif ptr.size >= size
+        # The first entry in the free list is bigger than us -> add us to the start
+        chunk.next = ptr
+        sysvars.freeList = chunk
+    else
+        # The free list contains chunks smaller than us. Walk the list to find where to insert
+        while ptr.next != null and ptr.next.size < size
+            ptr = ptr.next
+        chunk.next = ptr.next
+        ptr.next = chunk
+
+# ######################################################
+#                     malloc
+# ######################################################
+fun malloc(size:Int, desc:String) -> Pointer
+    if size = 0
+        return null
+    var roundedSize = ((size+31)&-16)   # Round up to multiple of 16, and add header
+    val sysvars = (0x00000100:SystemVariables)
+
+    # Find the smallest free chunk that will fit the request
+    var chunk = sysvars.freeList
+    var prevChunk : FreeMemChunk? = null
+    while chunk!=null and chunk.size < roundedSize
+        prevChunk = chunk
+        chunk = chunk.next
+    
+    # If we didn't find a chunk, we're out of memory
+    if chunk=null
+        abort(ERR_OUT_OF_MEMORY)
+
+    # unlink the chunk from the free list
+    if prevChunk=null
+        sysvars.freeList = chunk.next
+    else
+        prevChunk.next = chunk.next
+        if prevChunk.magic != MAGIC_FREE
+            abort(ERR_MEMORY_LIST_CORRUPTED)
+
+    # If the chunk is larger than we need, split it
+    addChunkToFreeList( (((chunk:Int)+roundedSize):FreeMemChunk) , chunk.size - roundedSize)
+
+    # Mark the chunk as allocated
+    val chunkA = (chunk:AllocatedMemChunk)
+    chunkA.magic = MAGIC_ALLOCATED
+    chunkA.size = roundedSize
+    chunkA.descriptor = desc
+    chunkA.refcount = 1
+    # print("Malloc %x %s\n",(chunk:Int)+16, desc)
+    return ((chunk:Int)+16:Pointer)
+
+# ######################################################
+#                     free
+# ######################################################
+fun free(ptr:Pointer) 
+    # print("Free %x\n",ptr)
+    if ptr=null
+        return
+    val chunk = ((ptr:Int)-16:FreeMemChunk)
+    if chunk.magic = MAGIC_ALLOCATED
+        addChunkToFreeList((chunk:FreeMemChunk), chunk.size)
+    elsif chunk.magic = MAGIC_FREE
+        abort(ERR_DOUBLE_FREE)
+    else
+        abort(ERR_MEMORY_LIST_CORRUPTED)

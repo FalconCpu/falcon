@@ -12,8 +12,14 @@ class AstUnary(Location location, TokenKind op, AstExpression expr) : AstExpress
         switch(op) {
             case TokenKind.Minus: {
                 expr.TypeCheckRvalue(scope);
-                if (expr.type is not IntType)
-                    Log.Error(location, $"Unary minus requires an integer expression");
+                IntType.Instance.CheckAssignableFrom(expr);
+                SetType(expr.type);
+                break;
+            }
+
+            case TokenKind.Not: {
+                expr.TypeCheckRvalue(scope);
+                BoolType.Instance.CheckAssignableFrom(expr);
                 SetType(expr.type);
                 break;
             }
@@ -33,11 +39,25 @@ class AstUnary(Location location, TokenKind op, AstExpression expr) : AstExpress
                 return ret;
             }
 
+            case TokenKind.Not: {
+                Symbol rhs = expr.CodeGenRvalue(func);
+                Symbol ret = func.NewTemp(type);
+                func.Add(new InstrAlui(ret, AluOp.XOR_I, rhs, 1));
+                return ret;
+            }
+
             default:
                 throw new NotImplementedException($"Unary operator {op}");
-
         }
-
-
     }
+
+    public override bool HasKnownIntValue() =>  expr.HasKnownIntValue();
+    public override int GetKnownIntValue() {
+        switch(op) {
+            case TokenKind.Minus: return -expr.GetKnownIntValue();
+            case TokenKind.Not: return expr.GetKnownIntValue() == 0 ? 1 : 0;
+            default: throw new NotImplementedException($"Unary operator {op}");
+        }
+    }
+
 }

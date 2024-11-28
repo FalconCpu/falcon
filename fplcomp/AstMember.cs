@@ -21,8 +21,11 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
             SetError();
             return;
         }
+        // For now - allow access through nullables - later we will need to check for null
+        Type leftType = left.type is NullableType nt ? nt.elementType : left.type;
 
-        if (left.type is ClassType classType) {
+
+        if (leftType is ClassType classType) {
             field = classType.GetField(identifier.name) ?? UndefinedField();
             SetType(field.type);
         } else {
@@ -34,7 +37,7 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         TypeCheckRvalue(scope);
         if (type.IsErrorType()) return;
         if (field is FieldSymbol ff) {
-            if (!ff.mutable)
+            if (!ff.isMutable)
                 Log.Error(location, $"Field {field.name} is not mutable");
         } else {
             Log.Error(location, $"Field {field.name} is not mutable");

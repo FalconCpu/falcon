@@ -1,8 +1,9 @@
-class AstFor(Location location, AstIdentifier astId, AstExpression astStart, AstExpression astEnd, AstBlock? parent)
+class AstFor(Location location, AstIdentifier astId, AstExpression astStart, AstExpression astEnd, TokenKind direction, AstBlock? parent)
 : AstBlock(location, parent) {
     public AstIdentifier astId = astId;
     public AstExpression astStart = astStart;
     public AstExpression astEnd = astEnd;
+    public bool downto = direction == TokenKind.Downto;
 
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + "FOR EXPR");
@@ -35,9 +36,15 @@ class AstFor(Location location, AstIdentifier astId, AstExpression astStart, Ast
         func.Add(new InstrLabel(labStart));
         foreach (AstStatement stmt in statements)
             stmt.CodeGen(func);
-        func.Add(new InstrAlui(iterSym, AluOp.ADD_I, iterSym, 1));
+        if (downto)
+            func.Add(new InstrAlui(iterSym, AluOp.SUB_I, iterSym, 1));
+        else
+            func.Add(new InstrAlui(iterSym, AluOp.ADD_I, iterSym, 1));
         func.Add(new InstrLabel(labCond));
-        func.Add(new InstrBra(AluOp.LE_I, iterSym, end, labStart));
+        if (downto)
+            func.Add(new InstrBra(AluOp.GE_I, iterSym, end, labStart));
+        else
+            func.Add(new InstrBra(AluOp.LE_I, iterSym, end, labStart));
     }
 }
 

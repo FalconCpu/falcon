@@ -228,7 +228,7 @@ static void generate_dcb(Token* line) {
     while(1) {
         switch(line[i]->kind) {
             case 'i':
-                if (line[i]->value<0 || line[i]->value>255)
+                if (line[i]->value<-128 || line[i]->value>255 )
                     error("Invalid byte %d", line[i]->value);
                 out_byte(line[i]->value);
                 break;

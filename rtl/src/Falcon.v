@@ -156,6 +156,10 @@ wire [9:0] mouse_x;
 wire [9:0] mouse_y;
 wire [2:0] mouse_buttons;
 
+// Signals from the keyboard
+wire  [7:0]  keyboard_code;
+wire         keyboard_strobe;
+
 wire [31:0]        debug_pc;
 
 //=======================================================
@@ -197,7 +201,7 @@ address_decoder  address_decoder_inst (
     .cpu_request(cpu_request),
     .cpu_address(cpu_address),
     .dmem_request(dmem_request),
-	.imem_request(imem_request),
+	  .imem_request(imem_request),
     .hwregs_request(hwregs_request),
     .error_request(error_request)
   );
@@ -211,7 +215,7 @@ instruction_memory  instruction_memory_inst (
     .wdata(cpu_wdata),
     .rdata(imem_rdata),
     .ack(imem_ack),
-	.instr_address(instr_addr[15:2]),
+	  .instr_address(instr_addr[15:2]),
     .instr_data(instr_data)
   );
 
@@ -258,7 +262,9 @@ hwregs  hwregs_inst (
     .uart_tx_complete(uart_tx_complete),
     .mouse_x(mouse_x),
     .mouse_y(mouse_y),
-    .mouse_buttons(mouse_buttons)
+    .mouse_buttons(mouse_buttons),
+    .keyboard_code(keyboard_code),
+    .keyboard_strobe(keyboard_strobe)
 );
 
 reg prev_key;
@@ -376,6 +382,15 @@ mouse_interface  mouse_interface_inst (
     .mouse_x(mouse_x),
     .mouse_y(mouse_y),
     .mouse_buttons(mouse_buttons)
+  );
+
+keyboard_if  keyboard_if_inst (
+    .clock(clock),
+    .reset(reset),
+    .PS2_CLK2(PS2_CLK2),
+    .PS2_DAT2(PS2_DAT2),
+    .keyboard_code(keyboard_code),
+    .keyboard_strobe(keyboard_strobe)
   );
 
 

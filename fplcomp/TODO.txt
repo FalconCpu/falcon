@@ -1,5 +1,3 @@
 
-
-
-For loops
-classes
+For loops  => find a more generic structure
+static functions

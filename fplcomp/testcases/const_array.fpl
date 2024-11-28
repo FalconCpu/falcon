@@ -1,0 +1,13 @@
+# test const array's
+
+const array = new Array{1,2,3}
+
+fun main()
+
+    for i = 0 to 2
+        print("element %d = %d\n",i,array[i])
+
+@---------------
+element 0 = 1
+element 1 = 2
+element 2 = 3

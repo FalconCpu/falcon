@@ -1,0 +1,87 @@
+
+# Reserve a region 40 pixels high at the bottom of the screen for the palette
+const PALETTE_Y = 440
+
+class Paint
+    val keyboard = new Keyboard()
+
+    # keep track of previous mouse position
+    var prev_x = 0
+    var prev_y = 0
+    var mouse_x = 0
+    var mouse_y = 0
+    var prev_btn = 0
+    var mouse_btn = 0
+
+    # And current color
+    var color = 1
+
+    # Text cursor position
+    var textX = 0
+    var textY = 0
+    var textX0 = 0
+
+    fun drawPalette()
+        for color = 0 to 255
+            val y1 = PALETTE_Y + 10 * (color / 64)
+            val x1 = 9 * (color % 64)
+            fillRect(x1+1, y1+1, x1+7, y1+9, color)
+
+    fun updateMouse()
+        val hwregs = (0xe0000000:Hwregs)
+        prev_x = mouse_x
+        prev_y = mouse_y
+        prev_btn = mouse_btn
+        mouse_x = hwregs.mouse_x
+        mouse_y = hwregs.mouse_y
+        mouse_btn = hwregs.mouse_btn & 1
+
+    fun handleKey(key:Char)
+        if key >=32
+            drawChar(textX, textY, key, color)
+            textX = textX + 8
+        elsif key = 13
+            textX = textX0
+            textY = textY + 12
+            if textY+12>PALETTE_Y 
+                textY = 0
+        elsif key = 7
+            if textX>8
+                textX = textX - 8
+                fillRect(textX, textY, textX+7, textY+11, 0)
+        else
+            print("Key=%d\n",key)
+
+    fun handlePaletteClick()
+        # look for the button being clicked in the palette area
+        if mouse_x<576
+            color = (mouse_x/9) + ((mouse_y-PALETTE_Y)/10)*64
+            fillRect(580,PALETTE_Y+1,639,PALETTE_Y+38,color)
+
+    fun eventLoop()
+        updateMouse()
+
+        if mouse_btn=1 and mouse_y<PALETTE_Y
+            drawLine(prev_x, prev_y, mouse_x, mouse_y, color)
+
+        if mouse_btn=1 and prev_btn=0 and mouse_y>=PALETTE_Y
+            handlePaletteClick()
+
+        if mouse_btn=1 and prev_btn=0 and mouse_y<PALETTE_Y
+            textX = mouse_x
+            textX0 = mouse_x
+            textY = mouse_y
+        val key = keyboard.getKey()
+        if key!=0
+            handleKey(key)
+
+
+
+
+
+fun main()
+    val paint = new Paint()
+    paint.drawPalette()
+    while true
+        paint.eventLoop()
+

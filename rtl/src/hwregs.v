@@ -14,6 +14,8 @@
 // E0000018  MOUSE_X    R    10 bit mouse x position
 // E000001C  MOUSE_Y    R    10 bit mouse y position
 // E0000020  MOUSE_BTN  R    3 bit mouse buttons
+// E0000024  KEYBOARD   R    Scan codes from the keyboard, -1 if no data
+// E0000030  SIM_MODE   R    1 if in simulation mode, 0 if in hardware
 
 module  hwregs(
     // Connection to the cpu bus
@@ -42,13 +44,19 @@ module  hwregs(
 
     input [9:0]      mouse_x,
     input [9:0]      mouse_y,
-    input [2:0]      mouse_buttons
+    input [2:0]      mouse_buttons,
+
+    input [7:0]      keyboard_code,
+    input            keyboard_strobe
 );
 
 reg uart_rx_read;                   // Set to indicate we have read a byte from the uart
+reg keyboard_read; 
 wire uart_rx_valid;                 // Set to indicate there is valid data in the uart rx fifo
 wire [7:0] latched_uart_rx_data;    // data at the front of the uart rx fifo
 wire [9:0] uart_tx_slots_free;      // Number of slots free in the uart tx fifo
+wire [7:0] latched_keyboard_code;   // data at the front of the keyboard rx fifo
+wire       keyboard_valid;
 
 // synthesis translate_off
 integer  uart_log_file;
@@ -61,6 +69,7 @@ initial
 always @(posedge clock) begin
     ack <= request;
     uart_rx_read <= 1'b0;
+    keyboard_read <= 1'b0;
 
     if (request && write)
         case (address)
@@ -92,6 +101,13 @@ always @(posedge clock) begin
             16'h0018: rdata <= {22'h0, mouse_x};
             16'h001C: rdata <= {22'h0, mouse_y};
             16'h0020: rdata <= {29'h0, mouse_buttons};
+            16'h0024: begin
+                if (keyboard_valid) begin
+                    rdata <= {24'h0, latched_keyboard_code};
+                    keyboard_read <= 1'b1;
+                end else
+                    rdata <= -1;
+                end 
             
             16'h0030:  begin 
                 // Simulation mode flag. Reads as 1 in simulation, 0 in hardware
@@ -129,5 +145,17 @@ byte_fifo  uart_rx_fifo (
     .slots_free(),
     .not_empty(uart_rx_valid)
   );
+
+byte_fifo  keyboard_fifo (
+    .clk(clock),
+    .reset(reset),
+    .write_enable(keyboard_strobe),
+    .write_data(keyboard_code),
+    .read_enable(keyboard_read),
+    .read_data(latched_keyboard_code),
+    .slots_free(),
+    .not_empty(keyboard_valid)
+  );
+
 
 endmodule

@@ -278,7 +278,7 @@ static void execute_instruction(int instr) {
 
 void execute() {
     pc = 0xffff0000;
-    int timeout = 1000;
+    int timeout = 100000;
     reg_log = fopen("sim_reg.log", "w");
     uart_log = fopen("sim_uart.log", "wb");
 
@@ -292,4 +292,6 @@ void execute() {
             fprintf(trace_file, "\n");
         timeout--;    
     }
+    if (timeout==0)
+        printf("Timeout\n");
 }

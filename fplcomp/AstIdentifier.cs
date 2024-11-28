@@ -1,4 +1,6 @@
 
+using System.Reflection.Metadata;
+
 class AstIdentifier (Location location,string name) : AstExpression(location) {
     public string name = name;
     public Symbol symbol = Symbol.undefined;
@@ -30,12 +32,22 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
 
     public override void TypeCheckLvalue(AstBlock scope) {
         TypeCheckRvalue(scope);
-        if (symbol is VariableSymbol variableSymbol) {
-            if (!variableSymbol.isMutable)
-                Log.Error(location, $"Symbol '{symbol}' is immutable");
-            return;
-        } else {
-            Log.Error(location, $"Symbol '{symbol}' is not an lvalue");
+        switch(symbol) {
+            case VariableSymbol variableSymbol:
+                if (variableSymbol.isGlobal)
+                    throw new NotImplementedException();
+                if (!variableSymbol.isMutable)
+                    Log.Error(location, $"Symbol '{symbol}' is immutable");
+                break;
+
+            case FieldSymbol fieldSymbol:
+                if (!fieldSymbol.isMutable)
+                    Log.Error(location, $"Symbol '{symbol}' is immutable");
+                break;
+
+            default:
+                Log.Error(location, $"Symbol '{symbol}' is not an lvalue");
+                break;
         }
     }
 
@@ -51,6 +63,8 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
             throw new ArgumentException($"Symbol '{thisSymbol}' is not a class type");
     }
 
+    public override bool HasKnownIntValue() => symbol is ConstantSymbol;
+    public override int GetKnownIntValue() => (symbol is ConstantSymbol constantSymbol) ? constantSymbol.value : throw new InvalidOperationException(); 
 
     public override Symbol CodeGenRvalue(AstFunction func) {
         switch (symbol) {
@@ -69,9 +83,14 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
                 func.Add(new InstrLoadField(type.GetSize(), ret, func.thisSymbol, fieldSymbol));
                 return ret;
 
-            case IntegerSymbol isymbol:
+            case ConstantSymbol isymbol:
                 func.Add(new InstrLdi(isymbol, isymbol.value));
                 return symbol;
+
+            case ConstObjectAliasSymbol cas: 
+                ret = func.NewTemp(type);
+                func.Add(new InstrLea(ret, cas.alias));
+                return ret;
 
             default:
                 throw new NotImplementedException();

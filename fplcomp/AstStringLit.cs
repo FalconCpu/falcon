@@ -1,8 +1,8 @@
-using System.Text;
-using  System.Collections.Concurrent;
 
 class AstStringLit(Location location, string value) : AstExpression(location) {
     public string value = value;
+    private ConstObjectSymbol symbol = genSym(value);
+
 
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + "STRING " + value + " (" + type + ")");
@@ -13,37 +13,34 @@ class AstStringLit(Location location, string value) : AstExpression(location) {
     }
 
     public override Symbol CodeGenRvalue(AstFunction func) {
-        Symbol ret = StringLitSymbol.Make(value);
-        func.Add(new InstrLea(ret, ret));
+        Symbol ret = func.NewTemp(type);
+        func.Add(new InstrLea(ret, symbol));
         return ret;
     }
+
+    public static ConstObjectSymbol genSym(string value) {
+        List<int> data = [value.Length];
+        foreach(char[] s in (value+"\0").Chunk(4)) {
+            int v = 0;
+            foreach(char c in s.Reverse()) 
+                v = (v<<8) | c;
+            data.Add(v);
+        }
+
+        return ConstObjectSymbol.Make(StringType.Instance, data);
+    }
+
+    // public static string EscapeString(string str) {
+    //     StringBuilder ret = new();
+    //     foreach(char c in str)
+    //         ret.Append(c switch {
+    //             '\n' => "\\n",
+    //             '\t' => "\\t",
+    //             '\r' => "\\r",
+    //             '\0' => "\\0",
+    //             _ => c,
+    //         });
+    //     return ret.ToString();
+    // }
 }
 
-class StringLitSymbol : Symbol {
-    public readonly string value;
-    public readonly string stringLabel;
-
-    public string GetEscapedString() {
-        StringBuilder ret = new();
-        foreach(char c in value)
-            ret.Append(c switch {
-                '\n' => "\\n",
-                '\t' => "\\t",
-                '\r' => "\\r",
-                '\0' => "\\0",
-                _ => c,
-            });
-        return ret.ToString();
-    }
-
-    private StringLitSymbol(Type type, string value) : base(UniqueName(), type) {
-        this.value = value;
-        stringLabel = $"_string_{allStringLit.Count}";
-    }
-
-    public static readonly ConcurrentDictionary<string, StringLitSymbol> allStringLit = [];
-
-    public static StringLitSymbol Make(string value) {
-        return allStringLit.GetOrAdd(value, _ => new StringLitSymbol(StringType.Instance, value));
-    }
-}

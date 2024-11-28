@@ -17,6 +17,7 @@ def run_test(test_name: str):
     outname = f"testcase_outputs/{basename}.out"
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
+    stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuffer.fpl stdlib/Memory.fpl"
 
     # Split the source file into the executable and expected sections
     expected_output = []
@@ -31,11 +32,11 @@ def run_test(test_name: str):
             else:
                 src.write(line)
 
-    command = f".\\bin\\Debug\\net8.0\\fplcomp.exe {srcname} > {outname}"
+    command = f".\\bin\\Debug\\net8.0\\fplcomp.exe {stdlib} {srcname} > {outname}"
     err = os.system(command)
 
     if err==0:
-        asmcommand = f"f32asm.exe stdlib/print.f32 output.f32 "
+        asmcommand = f"f32asm.exe stdlib/start.f32 output.f32 "
         err = os.system(asmcommand)
         if err!=0:
             print(f"%-30s {RED}FAIL-ASM{DEFAULT}"%basename)

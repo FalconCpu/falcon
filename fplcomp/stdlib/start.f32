@@ -1,0 +1,279 @@
+# ############################################################
+#                        MEMORY MAP
+# ############################################################
+# Address	  Size(kb)	
+# 00000000 	        1	System Variables
+# 00000400 	   64,959 	Heap
+# 03F70000 	       64	Stack
+# 03F80000 	      300	VGA display
+# 03FCB000        212	Spare
+# 04000000  3,604,480 	Unpopulated
+# E0000000 	       64	Mmap registers
+# E0010000 	  524,160	Unpopulated
+# FFFF0000 	       64	Program memory
+
+SYSREGS_BASE = 0x00000000
+HEAP_BASE    = 0x00000400
+STACK_BASE   = 0x03F70000
+VGA_BASE     = 0x03F80000
+HWREG_BASE   = 0xE0000000
+PROGMEM_BASE = 0xFFFF0000
+
+# hardware registers
+HWREG_7SEG       = 0x00     # 7-segment display
+HWREG_LED        = 0x04     # 10 status LED's
+HWREG_UART_TX    = 0x10     # Write to this to send a byte. Read gives free slots in fifo
+HWREG_UART_RX    = 0x14     # Read to get a byte. -1 if empty
+HWREG_SIMULATION = 0x30     # Reads as 1 in simulator, 0 on silicon
+
+# system variables
+SYSREGS_HEAP_PTR   = 0x100      # Track the start of free space after heap
+SYSREGS_END_HEAP   = 0x104 
+
+# Error codes
+ERR_OK             = 0x0000
+ERR_OUT_OF_MEMORY  = 0x1000
+
+
+
+# ############################################################
+#                        BOOT entry point
+# ############################################################
+
+Boot:
+    ld $sp, VGA_BASE              # Initialize the stack pointer
+
+    ld $1, HWREG_BASE
+    stw 0, $1[HWREG_7SEG]         # Turn off the 7-segment display
+    stw 0, $1[HWREG_LED]          # Turn off the LED's
+
+    jsr /initializeMemorySystem
+
+    jsr /_start                    # Call the entry point of the user program
+    ld $1, $8                     # if it returns a value then exit with that value
+    jmp _success
+
+# ############################################################
+#                        _success
+# ############################################################
+# The program has completed. In simulation we do a jump to address 0
+# This fires a trap in the simulator which causes the program to stop
+# On the FPGA we just loop sweeping the LED's 
+#
+# Input: $1 = error code
+
+_success:
+    ld $2, HWREG_BASE
+    stw $1, $2[HWREG_7SEG]        # Display the error code on the 7-segment display
+    ldw $1, $2[HWREG_SIMULATION]  # Check if we are running on FPGA or in a simulation
+    ld $3, 1
+    beq $1, 0, .on_fpga
+
+    ld $2, 0                      # If we are in a simulation jump to address 0
+    jmp $2                        # This will cause a trap in the simulator which stops the program
+
+.on_fpga:                         # on the FPGA we just loop forever flashing the LED's
+    stw $3, $2[HWREG_LED]         # Turn on one LED
+    lsl $3, 1                     # Shift the LED
+    lsr $4, $3, 10                # Rotate the LED
+    or $3, $4
+    ld  $1, 5000000              # Delay number
+.delay:
+    sub $1, 1
+    bne $1, 0, .delay
+    jmp .on_fpga
+
+# ############################################################
+#                        abort
+# ############################################################
+# Exit the Program. In simulation we do a jump to address 0
+# This fires a trap in the simulator which causes the program to stop
+# On the FPGA we just loop forever flashing the LED's
+#
+# Input: $1 = error code
+
+/abort:
+    ld $2, HWREG_BASE
+    stw $1, $2[HWREG_7SEG]        # Display the error code on the 7-segment display
+    ldw $1, $2[HWREG_SIMULATION]  # Check if we are running on FPGA or in a simulation
+    beq $1, 0, .on_fpga
+
+    ld $2, 0                      # If we are in a simulation jump to address 0
+    jmp $2                        # This will cause a trap in the simulator which stops the program
+
+.on_fpga:                         # on the FPGA we just loop forever flashing the LED's
+    xor $1, 0x3FF                 # Toggle the LED's
+    stw $1, $2[HWREG_LED]         # Set all the LED's
+    ld  $3, 10000000              # Delay number
+.delay:
+    sub $3, 1
+    bne $3, 0, .delay
+    jmp .on_fpga
+
+# ############################################################
+#                        memcpy
+# ############################################################
+# $1 = destination
+# $2 = source
+# $3 = number of bytes
+/memcpy:
+    beq $3, 0, .end
+
+    # test to see in everything is aligned to 4 bytes
+    or $4, $1, $2
+    or $4, $3
+    and $4, 3
+    bne $4, 0, .not_aligned
+
+    # everything is aligned -> copy words at a time
+.loop:
+    ldw $4, $2[0]
+    stw $4, $1[0]
+    add $1, 4
+    add $2, 4
+    sub $3, 4
+    bne $3, 0, .loop
+.end:    
+    ret
+
+    # not aligned -> copy bytes at a time
+.not_aligned:
+    ldb $4, $2[0]
+    stb $4, $1[0]
+    add $1, 1
+    add $2, 1
+    sub $3, 1
+    bne $3, 0, .not_aligned
+    ret
+
+
+
+# ############################################################
+#                         print
+# ############################################################
+# Output a string to the uart
+# Input: $1 = format string
+#        $2,$3,$4,$5 = arguments (max 4)
+
+# uses   $8 = current location in format string
+#        $9 = end of format string
+#        $7 = HWREGS_BASE
+#        $6 = current character
+#        $5 = temporary
+
+/print:
+    sub $sp,4                   # allocate some space on the stack
+    stw $9, $sp[0]
+    ldw $9,$1[0]                # get length of format string
+    add $8, $1, 4               # $8 = pointer to first char in format string
+    add $9, $8                  # $9 = end of format string
+    ld $7, HWREG_BASE           # Load base address of hardware registers
+
+.shift_args:
+    ld $1, $2                   # Shift the arguments down - so $1 is the first argument
+    ld $2, $3
+    ld $3, $4
+    ld $4, $5
+
+.format_loop:
+    beq $8, $9, .format_done    # End of string
+    ldb $6, $8[0]               # Load next character  -> $6
+    add $8, 1                   # Increment pointer
+    ld $5, '%'                  # Check for '%'
+    beq $6, $5, .check_specifier
+
+.output_char:                   # Output character
+    ldw $5, $7[HWREG_UART_TX]   # check for space in fifo
+    beq $5, 0, .output_char
+    stw $6, $7[HWREG_UART_TX]
+    jmp .format_loop
+
+.check_specifier:               # We have receied a '%'
+    beq $8, $9, .format_done    # End of string
+    ldb $6, $8[0]               # Load next character  -> $6
+    add $8, 1
+
+    ld $5, 'd'                  # Check for 'd'
+    beq $6, $5, .print_int
+    ld $5, 's'                  # Check for 's'
+    beq $6, $5, .print_str
+    ld $5, 'c'                  # Check for 'c'
+    beq $6, $5, .print_char
+    ld $5, 'x'                  # Check for 'x'
+    beq $6, $5, .print_hex
+    jmp .output_char            # Default case: print the character
+
+.print_int:                     # print an integer in $1
+    ldw $5, $7[HWREG_UART_TX]   # Make sure we have at least 10 slots in FIFO
+    sub $5, 10
+    blt $5, 0, .print_int
+
+    bge $1, 0, .print_int_pos   # Check for negative
+    ld $5, '-'                  # Print '-'
+    stw $5, $7[HWREG_UART_TX]
+    sub $1, 0, $1               # Make it positive
+
+.print_int_pos:                 # generate the digits in reverse order
+    sub $sp, 16                 # Make space on stack
+    ld $5, $sp                  # $5 = pointer to space
+
+.int_digit_loop:
+    modu $6, $1, 10             # Get the next digit
+    add $6, '0'                 # Convert to ASCII
+    stb $6, $5[0]               # Store digit
+    add $5, 1                   # Increment pointer
+    divu $1, 10                 # Divide by 10
+    bne $1, 0, .int_digit_loop
+
+.print_int_reverse:             # Print the digits in reverse order
+    sub $5, 1                   # Point to last digit
+    ldb $6, $5[0]               # Load digit
+    stw $6, $7[HWREG_UART_TX]
+    bne $5, $sp, .print_int_reverse
+    add $sp, 16                 # Restore stack
+    jmp .shift_args
+
+.print_str:                     # print a string in $1
+    ldw $5, $1[0]               # get the length of the string
+    add $1, 4                   # $1 = pointer to first char in string
+    add $5, $1                  # $5 = end of string
+
+.print_str_loop:
+    beq $1, $5, .shift_args     # End of string
+    ldw $6, $7[HWREG_UART_TX]   # check for space in fifo
+    beq $6, 0, .print_str_loop  # Wait for space
+
+    ldb $6, $1[0]               # Load next character  -> $6
+    add $1, 1                   # Increment pointer
+    stw $6, $7[HWREG_UART_TX]   # Output character
+    jmp .print_str_loop
+
+.print_char:                    # Print character in $1
+    ldw $5, $7[HWREG_UART_TX]   # check for space in fifo
+    beq $5, 0, .print_char
+    stw $1, $7[HWREG_UART_TX]
+    jmp .shift_args
+
+.print_hex:                     # Print hex in $2
+    ld $5, 8                    # Number of digits left to print -> $5
+    ldw $6, $7[HWREG_UART_TX]   # check for space in fifo for whole number
+    blt $6, $5 , .print_hex     #
+    
+.print_hex_loop:
+    lsr $6, $1, 28              # Get the first nibble  -> $6
+    lsl $1, 4                   # Shift $1 to the left
+    sub $6, 10                  # Check if $5 is a number or a letter
+    blt $6, 0, .print_hex_digit
+    add $6, 7                   # Convert to letter
+.print_hex_digit:
+    add $6, 58                 # Convert to ASCII
+    stw $6, $7[HWREG_UART_TX]   # Print the digit
+    sub $5, 1                   # Decrement number of digits left to print
+    bne $5, 0, .print_hex_loop
+    jmp .shift_args             # If we have printed all digits, we are done
+
+.format_done:
+    ldw $9, $sp[0]
+    add $sp, 4                   # Restore stack
+    ret
+

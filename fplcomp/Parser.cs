@@ -1,5 +1,5 @@
 
-using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 
 class Parser(Lexer lexer)
 {
@@ -25,6 +25,13 @@ class Parser(Lexer lexer)
             return NextToken();
         throw new ParseError(lookahead.location, $"Expected {kind} but got {lookahead.text}");
     }
+
+    private Token Expect(TokenKind kind1, TokenKind kind2) {
+        if (lookahead.kind == kind1 || lookahead.kind == kind2)
+            return NextToken();
+        throw new ParseError(lookahead.location, $"Expected {kind1} or {kind2} but got {lookahead.text}");
+    }
+
 
     private void SkipToEndOfLine() {
         while (lookahead.kind != TokenKind.EndOfLine && lookahead.kind != TokenKind.EndOfFile)
@@ -65,6 +72,11 @@ class Parser(Lexer lexer)
     private AstStringLit ParseStringLit() {
         Token tok = Expect(TokenKind.String);
         return new(lookahead.location, tok.text);
+    }
+
+    private AstCharLit ParseCharLit() {
+        Token tok = Expect(TokenKind.CharLit);
+        return new(lookahead.location, tok.text[1]);
     }
 
     private AstRealLit ParseRealLit() {
@@ -120,6 +132,7 @@ class Parser(Lexer lexer)
             case TokenKind.Integer:     return ParseIntLit();
             case TokenKind.String:      return ParseStringLit();
             case TokenKind.RealLit:     return ParseRealLit();
+            case TokenKind.CharLit:     return ParseCharLit();
             case TokenKind.New:         return ParseNew();
             case TokenKind.OpenB:       return ParseBracket();
             default:                    throw new ParseError(lookahead.location, $"Got '{lookahead.text}' when expecting primary exppression");;
@@ -158,18 +171,24 @@ class Parser(Lexer lexer)
     }
 
     private AstExpression ParsePrefix() {
-        if (lookahead.kind == TokenKind.Minus || lookahead.kind == TokenKind.Tilde) {
+        if (lookahead.kind == TokenKind.Minus || lookahead.kind == TokenKind.Tilde || lookahead.kind == TokenKind.Not) {
             Token op = NextToken();
             AstExpression right = ParsePrefix();
             return new AstUnary(op.location, op.kind, right);
-        } else
+        } else if (lookahead.kind==TokenKind.Rc) {
+            Token op = NextToken();
+            AstExpression right = ParsePrefix();
+            return new AstRc(op.location, right);
+        }
             return ParsePostfix();
     }
 
     private AstExpression ParseMul() {
         AstExpression ret = ParsePrefix();
         while (lookahead.kind == TokenKind.Star || lookahead.kind == TokenKind.Slash || 
-               lookahead.kind == TokenKind.Percent || lookahead.kind == TokenKind.Ampersand) {
+               lookahead.kind == TokenKind.Percent || lookahead.kind == TokenKind.Ampersand||
+               lookahead.kind == TokenKind.Lsl || lookahead.kind == TokenKind.Lsr ||
+               lookahead.kind == TokenKind.Asr ) {
             Token op = NextToken();
             AstExpression right = ParsePrefix();
             ret = new AstBinop(op.location, op.kind, ret, right);
@@ -337,15 +356,14 @@ class Parser(Lexer lexer)
 
     private void ParseFunction(AstBlock block) {
         Token loc = Expect(TokenKind.Fun);
-        AstIdentifier name = ParseIdentifier();
+        Token name = Expect(TokenKind.Identifier, TokenKind.Delete);
         List<AstParameter> parameters = ParseParameterList();
         AstType? astReturnType = ParseOptReturnType();
         ExpectEol();
-        AstFunction ret = new(loc.location, name.name, parameters, astReturnType, block);
+        AstFunction ret = new(loc.location, name.text, parameters, astReturnType, block);
         block.Add(ret);
         ParseIndentedBlock(ret);
         CheckEnd(TokenKind.Fun);
-        
     }
 
     private void ParseClass(AstBlock block) {
@@ -446,10 +464,10 @@ class Parser(Lexer lexer)
         AstIdentifier name = ParseIdentifier();
         Expect(TokenKind.Eq);
         AstExpression start = ParseExpression();
-        Expect(TokenKind.To);
+        Token direction = Expect(TokenKind.To, TokenKind.Downto);
         AstExpression end = ParseExpression();
         ExpectEol();
-        AstFor ret = new(loc.location, name, start, end, block);
+        AstFor ret = new(loc.location, name, start, end, direction.kind, block);
         block.Add(ret);
         ParseIndentedBlock(ret);
         CheckEnd(TokenKind.For);
@@ -465,8 +483,10 @@ class Parser(Lexer lexer)
         } else if (lhs is AstFuncCall) {
             ExpectEol();
             block.Add(new AstFuncCallStatement(lhs.location, lhs));
-        } else
+        } else {
+            ExpectEol();
             Log.Error(lhs.location, "Expression has no effect");
+        }
     }
 
     private void parsePrint(AstBlock block) {
@@ -477,6 +497,13 @@ class Parser(Lexer lexer)
         ExpectEol();
 
         block.Add(new AstPrint(loc.location, args));
+    }
+
+    private void ParseDelete(AstBlock block) {
+        Token loc = Expect(TokenKind.Delete);
+        AstExpression expr = ParseExpression();
+        ExpectEol();
+        block.Add(new AstDelete(loc.location, expr));
     }
 
     private void ParseUnexpectedIndent(AstBlock block) {
@@ -542,6 +569,7 @@ class Parser(Lexer lexer)
                 case TokenKind.Print: parsePrint(block); break;
                 case TokenKind.Class: ParseClass(block); break;
                 case TokenKind.Const: ParseConst(block); break;
+                case TokenKind.Delete: ParseDelete(block); break;
                 case TokenKind.Identifier:
                 case TokenKind.OpenB: parseAssign(block); break;
                 default: throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting a statement");

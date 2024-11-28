@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 abstract class Symbol(string name, Type type) {
     public readonly string name = name;
     public readonly Type type = type;
@@ -18,16 +16,18 @@ abstract class Symbol(string name, Type type) {
     private static int nextId = 0;
     public static string UniqueName() => $"&{nextId++}";  
 
-    public bool IsSmallInteger() => (this is IntegerSymbol sym) && (sym.value>=-0x1000 && sym.value<0x1000);
-    public int  GetIntegerValue() => (this is IntegerSymbol sym) ? sym.value : throw new Exception("not an integer");
+    public bool IsInteger() => (this is TempSymbol ts) && ts.hasKnownValue;
+    public bool IsIntegerZero() => (this is TempSymbol ts) && ts.hasKnownValue && ts.value==0;
+    public bool IsSmallInteger() => (this is TempSymbol ts) && ts.hasKnownValue && (ts.value>=-0x1000 && ts.value<0x1000);
+    public int  GetIntegerValue() => (this is TempSymbol ts) ? ts.value : throw new Exception("not an integer");
 }
 
 class FunctionSymbol(string name, Type type, AstFunction function) : Symbol(name, type) {
     public readonly AstFunction function = function;
 }
 
-class FieldSymbol(string name, Type type, bool mutable) : Symbol(name, type) {
-    public readonly bool mutable = mutable;
+class FieldSymbol(string name, Type type, bool isMutable) : Symbol(name, type) {
+    public readonly bool isMutable = isMutable;
     public int offset = 0;
     public static new FieldSymbol undefined = new FieldSymbol("<undefined>", UndefinedType.Instance, false);
 }
@@ -35,7 +35,38 @@ class FieldSymbol(string name, Type type, bool mutable) : Symbol(name, type) {
 class TypeSymbol(string name, Type type) : Symbol( name, type) {
 }
 
+class ConstantSymbol(string name, Type type, int value) : Symbol(name, type) {
+    public readonly int value = value;
+}
+
+class ConstObjectAliasSymbol(string name, Symbol alias) : Symbol(name, alias.type) {
+    public readonly Symbol alias = alias;
+}
+
+// Used to represent a constant object (i.e. a string literal)
+class ConstObjectSymbol(string name, Type type, List<int> value) : Symbol(name, type) {
+    public List<int> value = value;
+    
+    public static readonly List<ConstObjectSymbol> allConstObjects = [];
+    
+    public static ConstObjectSymbol Make(Type type, List<int> value) {
+        foreach (var cos in allConstObjects)
+            if (cos.type==type && cos.value.SequenceEqual(value))
+                return cos;
+        ConstObjectSymbol ret = new($"_object{allConstObjects.Count}", type, value);
+        allConstObjects.Add(ret);
+        return ret;
+    }
+}
+
 class TempSymbol(string name, Type type) : Symbol(name, type) {
+    public readonly bool hasKnownValue = false;
+    public readonly int  value;
+
+    public TempSymbol(string name, Type type, int value) : this(name, type) {
+        this.value = value;
+        hasKnownValue = true;
+    }
 }   
 
 class RegisterSymbol(string name) : Symbol(name, UndefinedType.Instance)
@@ -78,36 +109,5 @@ class RegisterSymbol(string name) : Symbol(name, UndefinedType.Instance)
     public static RegisterSymbol zero = registers[0];
 }
 
-class IntegerSymbol : Symbol {
-    public readonly int value;
 
-    private IntegerSymbol(Type type, int value) : base(UniqueName(), type) {
-        this.value = value;
-    }
-
-    private IntegerSymbol(string name, Type type, int value) : base(name, type) {
-        this.value = value;
-    }
-
-    private static readonly ConcurrentDictionary<Tuple<int, Type>, IntegerSymbol> cache = [];
-
-    public static IntegerSymbol Make(Type type, int value) {
-        var key = Tuple.Create(value, type);
-        return cache.GetOrAdd(key, _ => new IntegerSymbol(type, value));
-    }
-
-    public static IntegerSymbol Make(int value) {
-        return Make(IntType.Instance, value);
-    }
-
-    public static IntegerSymbol Make(string name, Type type, int value) {
-        var key = Tuple.Create(value, type);
-        return cache.GetOrAdd(key, _ => new IntegerSymbol(name, type, value));
-    }
-
-    public static IntegerSymbol AliasSymbol(string name, Type type, int value) {
-        return new IntegerSymbol(name, type, value);
-    }
-
-}
 

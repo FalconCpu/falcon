@@ -1,0 +1,116 @@
+
+class Terminal
+    val screenWidth = 80
+    val screenHeight = 40
+    val fontWidth = 8
+    val fontHeight = 12
+
+    var posX = 0        # The location text is drawn at
+    var posY = 0
+    var color = 15
+    var bgColor = 0
+    var cursorColor = 3
+
+    var homeX = 0
+    var homeY = 0
+
+    fun clearScreen()
+        fillRect(0, 0, screenWidth*fontWidth, screenHeight*fontHeight, 0)
+        posX = 0
+        posY = 0
+
+    fun clearToEndOfLine()
+        fillRect(posX*fontWidth, posY*fontHeight, screenWidth*fontHeight, (posY+1)*fontHeight-1, 0)
+
+    fun printChar(c:Char)
+        if c = '\n'
+            posX = 0
+            posY = posY + 1
+        else
+            drawCharBg(posX*fontWidth, posY*fontHeight, c, color, bgColor)
+            posX = posX + 1
+            if posX >= screenWidth
+                posX = 0
+                posY = posY + 1
+        
+        if posY >= screenHeight
+            scrollScreen(fontHeight)
+            posY = posY - 1
+            homeY = homeY - 1
+
+    fun printString(s:String)
+        var i = 0
+        while s[i]!=0
+            printChar(s[i])
+            i = i + 1
+
+    fun printStringAndCursor(s:String, cursor:Int)
+        var i = 0
+        while s[i]!=0
+            bgColor = if i = cursor then cursorColor else 0
+            printChar(s[i])
+            i = i + 1
+        # print one more space at the end
+        bgColor = if i = cursor then cursorColor else 0
+        printChar(' ')
+        bgColor = 0
+
+    fun setHome()
+        homeX = posX
+        homeY = posY
+
+    fun goHome()
+        posX = homeX
+        posY = homeY
+
+
+fun readLine(terminal:Terminal, keyboard:Keyboard, stringBuffer:StringBuffer) 
+    var cursor = 0
+
+    terminal.setHome()
+    terminal.printStringAndCursor(stringBuffer.getString(), cursor)
+
+    while true
+        var key : Char
+        repeat 
+            key = keyboard.getKey()
+        until key!=0
+
+        if key = '\n'
+            return
+        elsif key=KEY_LEFT
+            if cursor!=0
+                cursor = cursor - 1
+        elsif key=KEY_RIGHT
+            if cursor!=stringBuffer.len
+                cursor = cursor + 1
+        elsif key=7 
+            if cursor!=0
+                stringBuffer.remove(cursor-1)
+                cursor = cursor - 1
+        elsif key=KEY_HOME
+            cursor = 0
+        elsif key=KEY_END
+            cursor = stringBuffer.len
+        elsif key=KEY_DELETE
+            if cursor!=stringBuffer.len
+                stringBuffer.remove(cursor)
+        elsif key>=' ' and key<='~'
+            stringBuffer.insert(cursor,key)
+            cursor = cursor + 1
+        else 
+            print("Key %d\n",key)
+
+        terminal.goHome()
+        terminal.printStringAndCursor(stringBuffer.getString(), cursor)
+
+fun main()
+    val terminal = new Terminal()
+    val keyboard = new Keyboard()
+    val stringBuffer = new StringBuffer()
+
+    readLine(terminal, keyboard, stringBuffer)
+
+    terminal.printString("\nYou typed: ")
+    terminal.printString(stringBuffer.getString())
+    terminal.printChar('\n')

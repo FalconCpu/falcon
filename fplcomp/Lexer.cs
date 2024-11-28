@@ -34,6 +34,9 @@ class Lexer (string fileName) {
         {"then" , TokenKind.Then},
         {"new" , TokenKind.New},
         {"->" , TokenKind.Arrow},
+        {"lsl" , TokenKind.Lsl},
+        {"lsr" , TokenKind.Lsr},
+        {"asr" , TokenKind.Asr},
         {"." , TokenKind.Dot},
         {"," , TokenKind.Comma},
         {":" , TokenKind.Colon},
@@ -41,6 +44,7 @@ class Lexer (string fileName) {
         {"?" , TokenKind.Qmark},
         {"!" , TokenKind.Emark},
         {"to" , TokenKind.To},
+        {"downto" , TokenKind.Downto},
         {"(" , TokenKind.OpenB},
         {"[" , TokenKind.OpenSq},
         {"{" , TokenKind.OpenCl},
@@ -62,7 +66,9 @@ class Lexer (string fileName) {
         {"for" , TokenKind.For},
         {"Array" , TokenKind.Array}, 
         {"class" , TokenKind.Class},
-        {"print" , TokenKind.Print}
+        {"print" , TokenKind.Print},
+        {"rc",     TokenKind.Rc},
+        {"delete", TokenKind.Delete}
     };
 
     private char NextChar() {
@@ -87,8 +93,8 @@ class Lexer (string fileName) {
 
     private void SkipWhiteSpaceAndComments() {
         while ((lookahead==' ' || lookahead=='\t' || lookahead == '#' || lookahead=='\r' || lookahead==0 || (lookahead=='\n' && lineContinues)) && !eof)
-            if (lookahead == '#' && !eof)
-                while (lookahead != '\n')
+            if (lookahead == '#')
+                while (lookahead != '\n' && !eof)
                     NextChar();
             else
                 NextChar();
@@ -137,6 +143,23 @@ class Lexer (string fileName) {
             Log.Error(location, "Unterminated string");
         else
             NextChar();
+        return ret.ToString();
+    }
+
+    private string ReadCharLit(Location location) {
+        StringBuilder ret = new();
+        ret.Append(NextChar());  // Skip over the opening quote
+
+        if (lookahead == '\'')
+            Log.Error(location, "Empty char literal");
+        else
+            ret.Append(ReadEscapeChar());
+
+        if (lookahead != '\'')
+            Log.Error(location, "Unterminated char literal");
+        else
+            ret.Append(NextChar());
+
         return ret.ToString();
     }
 
@@ -189,6 +212,10 @@ class Lexer (string fileName) {
         } else if (lookahead == '"') {
             text = ReadString(location);
             kind = TokenKind.String;
+
+        } else if (lookahead == '\'') {
+            text = ReadCharLit(location);
+            kind = TokenKind.CharLit;
 
         } else {
             text = ReadPunctuation();

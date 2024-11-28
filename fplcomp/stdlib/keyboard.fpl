@@ -1,0 +1,360 @@
+
+# Assign codes >127 for Non-ascii keys
+const KEY_UP = -1
+const KEY_DOWN = -2
+const KEY_LEFT = -3
+const KEY_RIGHT = -4
+const KEY_HOME = -5
+const KEY_END = -6
+const KEY_INSERT = -7
+const KEY_DELETE = -8
+const KEY_PAGEUP = -9
+const KEY_PAGEDOWN = -10
+const KEY_F1 = -11
+const KEY_F2 = -12
+const KEY_F3 = -13
+const KEY_F4 = -14
+const KEY_F5 = -15
+const KEY_F6 = -16
+const KEY_F7 = -17
+const KEY_F8 = -18
+const KEY_F9 = -19
+const KEY_F10 = -20
+const KEY_F11 = -21
+const KEY_F12 = -22
+const KEY_NUMLOCK = -23
+const KEY_SCROLLOCK = -24
+const KEY_PRTSCREEN = -25
+
+# lookup table of Scan codes to ASCII
+# One row per scan code
+# First entry is for the key pressed on its own
+# Second entry for the key pressed with shift
+# Third entry for the key pressed with Caps Lock
+# Fourth entry for the key pressed with Ctrl
+
+const keycode_table = new Array<Char> {
+    0,       0,       0,       0,          # scan code 00
+    KEY_F9,  KEY_F9,  KEY_F9,  KEY_F9,     # scan code 01  F9
+    0,       0,       0,       0,          # scan code 02
+    KEY_F5,  KEY_F5,  KEY_F5,  KEY_F5,     # scan code 03  F5
+    KEY_F3,  KEY_F3,  KEY_F3 , KEY_F3,     # scan code 04  F3
+    KEY_F1,  KEY_F1,  KEY_F1 , KEY_F1,     # scan code 05  F1
+    KEY_F2,  KEY_F2,  KEY_F2 , KEY_F2,     # scan code 06  F2
+    KEY_F12, KEY_F12, KEY_F12, KEY_F12,    # scan code 07  F12
+    0,       0,       0,       0,          # scan code 08
+    KEY_F10, KEY_F10 ,KEY_F10, KEY_F10,    # scan code 09  F10
+    KEY_F8,  KEY_F8  ,KEY_F8,  KEY_F8,     # scan code 0A  F8
+    KEY_F6,  KEY_F6  ,KEY_F6,  KEY_F6,     # scan code 0B  F6
+    KEY_F4,  KEY_F4  ,KEY_F4,  KEY_F4,     # scan code 0C  F4
+    9,       9,       9,       9,          # scan code 0D  Tab
+    '`',     '`',     '`',     '`',        # scan code 0E  `
+    0,       0,       0,       0,          # scan code 0F
+    0,       0,       0,       0,          # scan code 10
+    0,       0,       0,       0,          # scan code 11  Alt (left)
+    0,       0,       0,       0,          # scan code 12  Shift (Left)
+    0,       0,       0,       0,          # scan code 13
+    0,       0,       0,       0,          # scan code 14  Ctrl (left)
+    'q',     'Q',     'Q',     17,         # scan code 15  Q
+    '1',     '!',     '1',     '1',        # scan code 16  1
+    0,       0,       0,       0,          # scan code 17
+    0,       0,       0,       0,          # scan code 18
+    0,       0,       0,       0,          # scan code 19
+    'z',     'Z',     'Z',     26,         # scan code 1A  Z
+    's',     'S',     'S',     19,         # scan code 1B  S
+    'a',     'A',     'A',     1,          # scan code 1C  A
+    'w',     'W',     'W',     23,         # scan code 1D  W
+    '2',     '"',     '2',     '"',        # scan code 1E  2
+    0,       0,       0,       0,          # scan code 1F
+    0,       0,       0,       0,          # scan code 20
+    'c',     'C',     'C',     3,          # scan code 21  C
+    'x',     'X',     'X',     24,         # scan code 22  X
+    'd',     'D',     'D',     4,          # scan code 23  D
+    'e',     'E',     'E',     5,          # scan code 24  E
+    '4',     '$',     '4',     '4',        # scan code 25  4
+    '3',     '£',      '3',    '3',        # scan code 26  3
+    0,       0,        0,      0,          # scan code 27
+    0,       0,        0,      0,          # scan code 28
+    ' ',     ' ',      ' ',    ' ',        # scan code 29  Spacebar
+    'v',     'V',      'V',    22,         # scan code 2A  V
+    'f',     'F',      'F',    6,          # scan code 2B  F
+    't',     'T',      'T',    20,         # scan code 2C  T
+    'r',     'R',      'R',    18,         # scan code 2D  R
+    '5',     '%',      '5',    '5',        # scan code 2E  5
+    0,        0,       0,      0,          # scan code 2F
+    0,        0,       0,      0,          # scan code 30
+    'n',     'N',      'N',    14,         # scan code 31  N
+    'b',     'B',      'B',    2,          # scan code 32  B
+    'h',     'H',      'H',    8,          # scan code 33  H
+    'g',     'G',      'G',    7,          # scan code 34  G
+    'y',     'Y',      'Y',    26,         # scan code 35  Y
+    '6',     '^',      '6',    '6',        # scan code 36  6
+    0,       0,        0,      0,          # scan code 37
+    0,       0,        0,      0,          # scan code 38
+    0,       0,        0,      0,          # scan code 39
+    'm',     'M',      'M',    13,         # scan code 3A  M
+    'j',     'J',      'J',    10,         # scan code 3B  J
+    'u',     'U',      'U',    21,         # scan code 3C  U
+    '7',     '&',      '7',    '7',        # scan code 3D  7
+    '8',     '*',      '8',    '8',        # scan code 3E  8
+    0,       0,        0,      0,          # scan code 3F
+    0,       0,        0,      0,          # scan code 40
+    ',',     '<',      ',',    ',',        # scan code 41  ,
+    'k',     'K',      'K',    11,         # scan code 42  K
+    'i',     'I',      'I',    9,          # scan code 43  I
+    'o',     'O',      'O',    15,         # scan code 44  O
+    '0',     ')',      '0',    '0',        # scan code 45  0
+    '9',     '(',      '9',    '9',        # scan code 46  9
+    0,       0,        0,      0,          # scan code 47
+    0,       0,        0,      0,          # scan code 48
+    '.',     '>',      '.',    '.',        # scan code 49  .
+    '/',     '?',      '/',    '/',        # scan code 4A  /
+    'l',     'L',      'L',    12,         # scan code 4B  L
+    ';',     ':',      ';',    ';',        # scan code 4C  ;
+    'p',     'P',      'P',    16,         # scan code 4D  P
+    '-',     '_',      '-',    '-',        # scan code 4E  -
+    0,       0,        0,      0,          # scan code 4F
+    0,       0,        0,      0,          # scan code 50
+    0,       0,        0,      0,          # scan code 51
+    '\'',    '@',      '\'',   '\'',       # scan code 52  '
+    0,       0,        0,      0,          # scan code 53
+    '[',     '{',      '[',    '[',        # scan code 54  [
+    '=',     '+',      '=',    '=',        # scan code 55  =
+    0,       0,        0,      0,          # scan code 56
+    0,       0,        0,      0,          # scan code 57
+    0,       0,        0,      0,          # scan code 58  Caps Lock
+    0,       0,        0,      0,          # scan code 59  Shift (Right)
+    10,      10,       10,     10,         # scan code 5A  Enter
+    ']',     '}',      ']',    ']',        # scan code 5B  ]
+    0,       0,        0,      0,          # scan code 5C
+    '#',    '~',      '#',    '#',       # scan code 5D  \
+    0,       0,        0,      0,          # scan code 5E
+    0,       0,        0,      0,          # scan code 5F
+    0,       0,        0,      0,          # scan code 60
+    '\\',    '|',      '\\',   '\\',       # scan code 61
+    0,       0,        0,      0,          # scan code 62
+    0,       0,        0,      0,          # scan code 63
+    0,       0,        0,      0,          # scan code 64
+    0,       0,        0,      0,          # scan code 65
+    7,       7,        7,      7,          # scan code 66  Backspace
+    0,       0,        0,      0,          # scan code 67
+    0,       0,        0,      0,          # scan code 68
+    '1',     '1',      '1',    '1',        # scan code 69  KEYPAD 1
+    0,       0,        0,      0,          # scan code 6A
+    '4',     '4',      '4',    '4',        # scan code 6B  KEYPAD 4
+    '7',     '7',      '7',    '7',        # scan code 6C  KEYPAD 7
+    0,       0,        0,      0,          # scan code 6D
+    0,       0,        0,      0,          # scan code 6E
+    0,       0,        0,      0,          # scan code 6F
+    '0',     '0',      '0',    '0',        # scan code 70  KEYPAD 0
+    '.',     '.',      '.',    '.',        # scan code 71  .
+    '2',     '2',      '2',    '2',        # scan code 72  2
+    '5',     '5',      '5',    '5',        # scan code 73  5
+    '6',     '6',      '6',    '6',        # scan code 74  6
+    '8',     '8',      '8',    '8',        # scan code 75  8
+    27,      27,       27,     27,             # scan code 76  ESC
+    KEY_NUMLOCK,KEY_NUMLOCK,KEY_NUMLOCK,KEY_NUMLOCK, # scan code 77  Num Lock
+    KEY_F11,KEY_F11,KEY_F11,KEY_F11,       #  scan code 78  F11
+    '+',     '+',      '+',    '+',        #  scan code 79  +
+    '3',     '3',      '3',    '3',        #  scan code 7A  3
+    '-',     '-',      '-',    '-',        #  scan code 7B  -
+    '*',     '*',      '*',    '*',        #  scan code 7C  *
+    '9',     '9',      '9',    '9',        #  scan code 7D  9
+    KEY_SCROLLOCK,KEY_SCROLLOCK,KEY_SCROLLOCK,KEY_SCROLLOCK, #scan code 7E  Scroll Lock
+    0,       0,        0,       0,         # scan code 7F
+    0,       0,        0,       0,         # scan code 80
+    0,       0,        0,       0,         # scan code 81
+    0,       0,        0,       0,         # scan code 82
+    KEY_F7,KEY_F7,KEY_F7,KEY_F7,           # scan code 83
+    0,       0,        0,       0,         # scan code 84
+    0,       0,        0,       0,         # scan code 85
+    0,       0,        0,       0,         # scan code 86
+    0,       0,        0,       0,         # scan code 87
+    0,       0,        0,       0,         # scan code 88
+    0,       0,        0,       0,         # scan code 89
+    0,       0,        0,       0,         # scan code 8A
+    0,       0,        0,       0,         # scan code 8B
+    0,       0,        0,       0,         # scan code 8C
+    0,       0,        0,       0,         # scan code 8D
+    0,       0,        0,       0,         # scan code 8E
+    0,       0,        0,       0,         # scan code 8F
+    0,       0,        0,       0,         # scan code 90
+    0,       0,        0,       0,         # scan code 91  R_ALT
+    0,       0,        0,       0,         # scan code 92
+    0,       0,        0,       0,         # scan code 93
+    0,       0,        0,       0,         # scan code 94  R_CTRL
+    0,       0,        0,       0,         # scan code 95
+    0,       0,        0,       0,         # scan code 96
+    0,       0,        0,       0,         # scan code 97
+    0,       0,        0,       0,         # scan code 98
+    0,       0,        0,       0,         # scan code 99
+    0,       0,        0,       0,         # scan code 9A
+    0,       0,        0,       0,         # scan code 9B
+    0,       0,        0,       0,         # scan code 9C
+    0,       0,        0,       0,         # scan code 9D
+    0,       0,        0,       0,         # scan code 9E
+    0,       0,        0,       0,         # scan code 9F  L_WINDOWS
+    0,       0,        0,       0,         # scan code 0A0
+    0,       0,        0,       0,         # scan code 0A1
+    0,       0,        0,       0,         # scan code 0A2
+    0,       0,        0,       0,         # scan code 0A3
+    0,       0,        0,       0,         # scan code 0A4
+    0,       0,        0,       0,         # scan code 0A5
+    0,       0,        0,       0,         # scan code 0A6
+    0,       0,        0,       0,         # scan code 0A7  R_WINDOWS
+    0,       0,        0,       0,         # scan code 0A8
+    0,       0,        0,       0,         # scan code 0A9
+    0,       0,        0,       0,         # scan code 0AA
+    0,       0,        0,       0,         # scan code 0AB
+    0,       0,        0,       0,         # scan code 0AC
+    0,       0,        0,       0,         # scan code 0AD
+    0,       0,        0,       0,         # scan code 0AE
+    0,       0,        0,       0,         # scan code 0AF  MENU
+    0,       0,        0,       0,         # scan code 0B0
+    0,       0,        0,       0,         # scan code 0B1
+    0,       0,        0,       0,         # scan code 0B2
+    0,       0,        0,       0,         # scan code 0B3
+    0,       0,        0,       0,         # scan code 0B4
+    0,       0,        0,       0,         # scan code 0B5
+    0,       0,        0,       0,         # scan code 0B6
+    0,       0,        0,       0,         # scan code 0B7
+    0,       0,        0,       0,         # scan code 0B8
+    0,       0,        0,       0,         # scan code 0B9
+    0,       0,        0,       0,         # scan code 0BA
+    0,       0,        0,       0,         # scan code 0BB
+    0,       0,        0,       0,         # scan code 0BC
+    0,       0,        0,       0,         # scan code 0BD
+    0,       0,        0,       0,         # scan code 0BE
+    0,       0,        0,       0,         # scan code 0BF
+    0,       0,        0,       0,         # scan code 0C0
+    0,       0,        0,       0,         # scan code 0C1
+    0,       0,        0,       0,         # scan code 0C2
+    0,       0,        0,       0,         # scan code 0C3
+    0,       0,        0,       0,         # scan code 0C4
+    0,       0,        0,       0,         # scan code 0C5
+    0,       0,        0,       0,         # scan code 0C6
+    0,       0,        0,       0,         # scan code 0C7
+    0,       0,        0,       0,         # scan code 0C8
+    0,       0,        0,       0,         # scan code 0C9
+    1,       '/',      '/',     '/',       # scan code 0CA  Keypad /
+    0,       0,        0,       0,         # scan code 0CB
+    0,       0,        0,       0,         # scan code 0CC
+    0,       0,        0,       0,         # scan code 0CD
+    0,       0,        0,       0,         # scan code 0CE
+    0,       0,        0,       0,         # scan code 0CF
+    0,       0,        0,       0,         # scan code 0D0
+    0,       0,        0,       0,         # scan code 0D1
+    0,       0,        0,       0,         # scan code 0D2
+    0,       0,        0,       0,         # scan code 0D3
+    0,       0,        0,       0,         # scan code 0D4
+    0,       0,        0,       0,         # scan code 0D5
+    0,       0,        0,       0,         # scan code 0D6
+    0,       0,        0,       0,         # scan code 0D7
+    0,       0,        0,       0,         # scan code 0D8
+    0,       0,        0,       0,         # scan code 0D9
+    13,      13,       13,      13,        # scan code 0DA  Keypad Enter
+    0,       0,        0,       0,         # scan code 0DB
+    0,       0,        0,       0,         # scan code 0DC
+    0,       0,        0,       0,         # scan code 0DD
+    0,       0,        0,       0,         # scan code 0DE
+    0,       0,        0,       0,         # scan code 0DF
+    0,       0,        0,       0,         # scan code 0E0
+    0,       0,        0,       0,         # scan code 0E1
+    0,       0,        0,       0,         # scan code 0E2
+    0,       0,        0,       0,         # scan code 0E3
+    0,       0,        0,       0,         # scan code 0E4
+    0,       0,        0,       0,         # scan code 0E5
+    0,       0,        0,       0,         # scan code 0E6
+    0,       0,        0,       0,         # scan code 0E7
+    0,       0,        0,       0,         # scan code 0E8
+    KEY_END, KEY_END,  KEY_END, KEY_END,   # scan code 0E9  END
+    0,       0,        0,       0,         # scan code 0EA
+    KEY_LEFT,KEY_LEFT, KEY_LEFT,KEY_LEFT,  # scan code 0EB  LEFT
+    KEY_HOME,KEY_HOME, KEY_HOME,KEY_HOME,  # scan code 0EC   HOME
+    0,       0,        0,       0,         # scan code 0ED
+    0,       0,        0,       0,         # scan code 0EE
+    0,       0,        0,       0,         # scan code 0EF
+    KEY_INSERT,KEY_INSERT,KEY_INSERT,KEY_INSERT,# scan code 0F0  INSERT
+    KEY_DELETE,KEY_DELETE,KEY_DELETE,KEY_DELETE,# scan code 0F1  DELETE
+    KEY_DOWN,KEY_DOWN, KEY_DOWN,KEY_DOWN,       # scan code 0F2  DOWN
+    0,       0,        0,       0,              # scan code 0F3
+    KEY_RIGHT,KEY_RIGHT,KEY_RIGHT,KEY_RIGHT,    # scan code 0F4  RIGHT
+    KEY_UP,  KEY_UP,   KEY_UP,  KEY_UP,         # scan code 0F5  UP
+    0,       0,        0,       0,              # scan code 0F6
+    0,       0,        0,       0,              # scan code 0F7
+    0,       0,        0,       0,              # scan code 0F8
+    0,       0,        0,       0,              # scan code 0F9
+    KEY_PAGEDOWN,KEY_PAGEDOWN,KEY_PAGEDOWN,KEY_PAGEDOWN,# scan code 0FA  PAGE DOWN
+    0,       0,        0,       0,              # scan code 0FB
+    KEY_PRTSCREEN,KEY_PRTSCREEN,KEY_PRTSCREEN,KEY_PRTSCREEN, # scan code 0FC
+    KEY_PAGEUP,KEY_PAGEUP,KEY_PAGEUP,KEY_PAGEUP,    # scan code 0FD  PAGE UP
+    0,       0,        0,        0,              # scan code 0FE
+    0,       0,        0,        0}              # scan code 0FF
+
+class Keyboard
+    var seenE0 = false
+    var seenF0 = false
+    var lshift = false
+    var rshift = false
+    var lctrl  = false
+    var rctrl  = false
+    var lalt   = false
+    var ralt   = false
+    var caps   = false
+    var menu   = false
+    var windows = false
+    var count = 0
+
+    fun getKey() -> Char 
+        val hwregs = (0xe0000000:Hwregs)
+        var keycode = hwregs.keycode
+        # if no key pressed then return 0
+        if keycode = -1
+            return 0
+        hwregs.seven_seg = count
+        count = count + 1
+
+        # E0 and F0 act as modifiers to other codes
+        if keycode = 0xE0
+            seenE0 = true
+            return 0
+        elsif keycode = 0xF0
+            seenF0 = true
+            return 0
+        
+        # keycode E0 is an extended key. Model this here by adding 128 to the keycode
+        val key = if seenE0 then keycode + 128 else keycode
+        val pressed = not seenF0
+        seenE0 = false
+        seenF0 = false
+
+        hwregs.seven_seg = key
+
+        if key=0x12
+            lshift = pressed
+        elsif key=0x14
+            lctrl = pressed
+        elsif key= 0x11
+            lalt = pressed
+        elsif key = 0x59
+            rshift = pressed
+        elsif key = 0x94
+            rctrl = pressed
+        elsif key = 0x91
+            ralt = pressed
+        elsif key = 0x9f
+            windows = pressed
+        elsif key = 0xaf
+            menu = pressed
+        elsif key = 0x58 and pressed
+            caps = not caps
+        elsif pressed
+            if lshift or rshift
+                return keycode_table[key*4+1]
+            elsif lctrl or rctrl
+                return keycode_table[key*4+3]
+            elsif caps
+                return keycode_table[key*4+2]
+            else 
+                return keycode_table[key*4]
+        return 0

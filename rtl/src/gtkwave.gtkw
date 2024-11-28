@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Fri Nov 22 12:27:10 2024
+[*] Wed Nov 27 15:16:25 2024
 [*]
 [dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
-[dumpfile_mtime] "Fri Nov 22 12:18:03 2024"
-[dumpfile_size] 502124
+[dumpfile_mtime] "Wed Nov 27 15:14:22 2024"
+[dumpfile_size] 21226286
 [savefile] "C:\Users\simon\falcon\rtl\src\gtkwave.gtkw"
-[timestart] 860150
+[timestart] 0
 [size] 1920 1129
 [pos] -1 -1
-*-14.252831 955800 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.252831 1129000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] Falcon_tb.
 [treeopen] Falcon_tb.Falcon_inst.
 [treeopen] Falcon_tb.Falcon_inst.cpu_inst.
@@ -112,7 +112,11 @@ Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_valid[3:0]
 @200
 -
 -VGA
-@29
+@28
 Falcon_tb.Falcon_inst.cpu_inst.cpu_alu_inst.cpu_divider_inst.start
+@22
+Falcon_tb.Falcon_inst.seven_seg_data[23:0]
+@23
+Falcon_tb.Falcon_inst.hwregs_inst.seven_seg_data[23:0]
 [pattern_trace] 1
 [pattern_trace] 0

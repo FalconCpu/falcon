@@ -1,0 +1,12 @@
+# Initializing an Array<Char> where some elements are specified as small constant integers
+
+fun main(x:Int)
+    val a = new Array<Char>{'a', 'b', 99} 
+
+    for i = 0 to 2
+        print("element %d = %c\n",i,a[i])
+
+@---------------
+element 0 = a
+element 1 = b
+element 2 = c

@@ -18,18 +18,17 @@ class AstConst(
 
     public override void TypeCheck(AstBlock scope) {
         initializer.TypeCheckRvalue(scope);
-        Symbol? value = initializer.GetConstValue();
 
         Symbol newSym;
-        if (value==null) {
+        if (initializer.HasKnownIntValue())
+            newSym = new ConstantSymbol(identifier.name, initializer.type, initializer.GetKnownIntValue());
+        else if (initializer.HasKnownConstObjectValue())
+            newSym = new ConstObjectAliasSymbol(identifier.name, initializer.GetKnownConstObjectValue());
+        else {
             Log.Error(location, "Initializer is not a constant");
-            newSym = IntegerSymbol.AliasSymbol(identifier.name, ErrorType.Instance, 0);
-        } else if (value is IntegerSymbol isym)
-            newSym = IntegerSymbol.AliasSymbol(identifier.name, isym.type, isym.value);
-        else if (value is StringLitSymbol slsym)
-            throw new NotImplementedException("String literals as constants");
-        else
-            throw new NotImplementedException("Other constant types");
+            newSym = new ConstantSymbol(identifier.name, ErrorType.Instance, 0);
+        }
+
         scope.AddSymbol(location, newSym);
     }
 

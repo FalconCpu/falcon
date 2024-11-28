@@ -23,6 +23,8 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
 
         if (left.type is ArrayType la)
             SetType( la.elementType );
+        else if (left.type is StringType)
+            SetType(CharType.Instance);
         else
             SetError(location, $"Cannot index non-array type {left.type}");
     }
@@ -38,7 +40,7 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol addr = func.NewTemp(IntType.Instance);
         Symbol ret =  func.NewTemp(type);
         int size = type.GetSize();
-        func.Add(new InstrAlu(scaled_rhs, AluOp.MUL_I, rhs, IntegerSymbol.Make(size)) );
+        func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
         func.Add(new InstrLoadMem(size,ret, addr,0));
         return ret;
@@ -50,7 +52,7 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol scaled_rhs = func.NewTemp(IntType.Instance);
         Symbol addr = func.NewTemp(IntType.Instance);
         int size = type.GetSize();
-        func.Add(new InstrAlu(scaled_rhs, AluOp.MUL_I, rhs, IntegerSymbol.Make(size)) );
+        func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
         func.Add(new InstrStoreMem(size, value, addr, 0));
     }
