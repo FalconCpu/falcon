@@ -1,0 +1,63 @@
+# use strcmp and strequals
+
+fun main() 
+    # Test strcmp
+    print("strcmp Tests:\n")
+    
+    # Case 1: Identical strings
+    print("strcmp(\"hello\", \"hello\") = %d\n", strcmp("hello", "hello"))  # Expected: 0
+
+    # Case 2: One string is a prefix of the other
+    print("strcmp(\"abc\", \"abcdef\") = %d\n", strcmp("abc", "abcdef"))  # Expected: negative (abc < abcdef)
+
+    # Case 3: Strings of different lengths
+    print("strcmp(\"short\", \"longer\") = %d\n", strcmp("short", "longer"))  # Expected: positive (short > longer)
+
+    # Case 4: Lexicographically different strings
+    print("strcmp(\"apple\", \"banana\") = %d\n", strcmp("apple", "banana"))  # Expected: negative (apple < banana)
+
+    # Case 5: Strings with the same first characters but different
+    print("strcmp(\"abcd\", \"abce\") = %d\n", strcmp("abcd", "abce"))  # Expected: negative (abcd < abce)
+
+    # Test strequals
+    print("\nstrequals Tests:\n")
+
+    # Case 1: Identical strings
+    print("strequals(\"hello\", \"hello\") = %d\n", strequals("hello", "hello") )  # Expected: true
+
+    # Case 2: Strings of different lengths
+    print("strequals(\"hello\", \"hellooo\") = %d\n", strequals("hello", "hellooo") )  # Expected: false
+
+    # Case 3: Strings with a single character difference
+    print("strequals(\"hello\", \"hellp\") = %d\n", strequals("hello", "hellp") )  # Expected: false
+
+    # Case 4: Empty string vs non-empty string
+    print("strequals(\"\", \"hello\") = %d\n", strequals("", "hello") )  # Expected: false
+
+    # Case 5: Comparing empty strings
+    print("strequals(\"\", \"\") = %d\n", strequals("", "") )  # Expected: true
+
+    # Case 6: Very long strings that are equal
+    val longStr1 = new String{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}
+    val longStr2 = new String{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}
+    print("strequals(longStr1, longStr2) = %d\n", strequals(longStr1, longStr2) )  # Expected: true
+
+    # Case 7: Long string vs slightly different one
+    val longStr3 = new String{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "q"}
+    print("strequals(longStr2, longStr3) = %d\n", strequals(longStr2, longStr3) )  # Expected: false
+@--------------------
+strcmp Tests:
+strcmp("hello", "hello") = 0
+strcmp("abc", "abcdef") = -3
+strcmp("short", "longer") = 7
+strcmp("apple", "banana") = -1
+strcmp("abcd", "abce") = -1
+
+strequals Tests:
+strequals("hello", "hello") = 1
+strequals("hello", "hellooo") = 0
+strequals("hello", "hellp") = 0
+strequals("", "hello") = 0
+strequals("", "") = 1
+strequals(longStr1, longStr2) = 1
+strequals(longStr2, longStr3) = 0

@@ -1,0 +1,55 @@
+
+fun stringConcat(strings:Array<String>, num:Int) -> String
+    # Calculate the total length of all strings
+    var total_length = 0
+    for i=0 to < num
+        total_length = total_length + strings[i].length
+
+    # Allocate memory for the concatenated string
+    val result = new String(total_length)
+
+    # Copy strings into the result
+    var offset = 4    # Allow for the Length field
+    for i=0 to < num
+        memcpy((result:Pointer)+offset, (strings[i]:Pointer)+4, strings[i].length)
+        offset = offset + strings[i].length
+
+    return result
+
+# returns positve if s1 > s2, negative if s1 < s2, and zero if s1=s2
+fun strcmp(s1:String, s2:String) -> Int
+    # Compare characters one by one
+    val min = if s1.length<s2.length then s1.length else s2.length
+    for i = 0 to < min
+        if s1[i] != s2[i]
+            return s1[i] - s2[i]
+    
+    # If all characters are the same, the shorter string is lexicographically smaller
+    return s1.length - s2.length
+
+# Optimized version of strcmp to handle equality only
+fun strequals(s1:String, s2:String) -> Bool
+    # if the pointers are the same the strings must be equal
+    if (s1:Pointer)=(s2:Pointer)
+        return true
+
+    # if the lengths are different the strings must be different
+    if s1.length!=s2.length
+        return false
+
+    # compare the characters one by one. No need to find min length as both equal
+    for i = 0 to < s1.length
+        if s1[i] != s2[i]
+            return false
+    return true
+    
+fun substring(s: String, start: Int, length: Int) -> String
+    # Ensure start and length are within bounds
+    if start < 0 or start >= s.length or length < 0 or (start + length) > s.length
+        abort(ERR_OUT_OF_BOUNDS)
+        return (0:String)
+
+    val result = new String(length)
+    memcpy( (result:Pointer)+4, (s:Pointer)+4+start, length) # +4 to account for length field
+    return result
+

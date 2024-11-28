@@ -1,0 +1,97 @@
+# use strcmp and strequals
+
+fun main() 
+    val str1 = "apple"
+    val str2 = "banana"
+    val str3 = "apple"
+    val str4 = "apples"
+    val str5 = ""
+
+    # Test value context comparisons
+    print("Value Context Comparisons:\n")
+    print("str1 == str2: %d\n", (str1 = str2)) # false
+    print("str1 == str3: %d\n", (str1 = str3)) # true
+    print("str1 != str2: %d\n", (str1 != str2)) # true
+    print("str1 != str3: %d\n", (str1 != str3)) # false
+    print("str1 < str2: %d\n", (str1 < str2))   # true
+    print("str2 > str1: %d\n", (str2 > str1))   # true
+    print("str1 <= str3: %d\n", (str1 <= str3)) # true
+    print("str1 <= str2: %d\n", (str1 <= str2)) # true
+    print("str4 > str1: %d\n", (str4 > str1))   # true
+    print("str1 >= str3: %d\n", (str1 >= str3)) # true
+    print("str5 < str1: %d\n", (str5 < str1))   # true
+    print("str1 > str5: %d\n", (str1 > str5))   # true
+
+    # Test branch context comparisons
+    print("\nBranch Context Comparisons:\n")
+    if (str1 = str3) 
+        print("str1 == str3 passed\n") # true
+    if (str1 != str2) 
+        print("str1 != str2 passed\n") # true
+    if (str1 < str2) 
+        print("str1 < str2 passed\n")   # true
+    if (str2 > str1) 
+        print("str2 > str1 passed\n")   # true
+    if (str1 <= str3) 
+        print("str1 <= str3 passed\n") # true
+    if (str1 >= str3) 
+        print("str1 >= str3 passed\n") # true
+    if (str1 > str5) 
+        print("str1 > str5 passed\n")   # true
+    if (str5 < str1) 
+        print("str5 < str1 passed\n")   # true
+
+    # Test logical expressions
+    print("\nLogical Expressions:\n")
+    if (str1 = "apple" and str2 > "ant") 
+        print("Logical AND passed\n") # true
+    if (str1 != str2 or str4 > str1)
+        print("Logical OR passed\n")      # true
+    if (not (str3 < str1))
+        print("Logical NOT passed\n")                  # true
+
+    # Edge case: both strings empty
+    val empty1 = ""
+    val empty2 = ""
+    print("\nEdge Cases:\n")
+    print("empty1 == empty2: %d\n", (empty1 = empty2)) # true
+    print("empty1 != str1: %d\n", (empty1 != str1))     # true
+    if (empty1 = empty2)
+        print("Empty strings equality passed\n")     # true
+    if (empty1 < str1)
+        print("Empty string < non-empty string passed\n") # true
+@--------------------
+Value Context Comparisons:
+str1 == str2: 0
+str1 == str3: 1
+str1 != str2: 1
+str1 != str3: 0
+str1 < str2: 1
+str2 > str1: 1
+str1 <= str3: 1
+str1 <= str2: 1
+str4 > str1: 1
+str1 >= str3: 1
+str5 < str1: 1
+str1 > str5: 1
+
+Branch Context Comparisons:
+str1 == str3 passed
+str1 != str2 passed
+str1 < str2 passed
+str2 > str1 passed
+str1 <= str3 passed
+str1 >= str3 passed
+str1 > str5 passed
+str5 < str1 passed
+
+Logical Expressions:
+Logical AND passed
+Logical OR passed
+Logical NOT passed
+
+Edge Cases:
+empty1 == empty2: 1
+empty1 != str1: 1
+Empty strings equality passed
+Empty string < non-empty string passed

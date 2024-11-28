@@ -1,0 +1,8 @@
+# Size must be specified when creating strings
+
+fun main()
+    var s = new String()
+    print("%d",s.length)
+@--------------------
+testcase_outputs/string5.fpl:4:26: new String() requires exactly one argument
+Failed with 1 errors

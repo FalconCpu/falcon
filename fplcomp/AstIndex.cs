@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 
 class AstIndex(Location location, AstExpression left, AstExpression index) : AstExpression(location) {
     public AstExpression index = index;
@@ -40,9 +39,10 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol addr = func.NewTemp(IntType.Instance);
         Symbol ret =  func.NewTemp(type);
         int size = type.GetSize();
+        int offset = (lhs.type is StringType)? 4  : 0;  // Account for the length at the start of a string  
         func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
-        func.Add(new InstrLoadMem(size,ret, addr,0));
+        func.Add(new InstrLoadMem(size,ret, addr,offset));
         return ret;
     }
 
@@ -52,24 +52,9 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol scaled_rhs = func.NewTemp(IntType.Instance);
         Symbol addr = func.NewTemp(IntType.Instance);
         int size = type.GetSize();
+        int offset = (lhs.type is StringType)? 4  : 0;  // Account for the length at the start of a string
         func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
-        func.Add(new InstrStoreMem(size, value, addr, 0));
-    }
-}
-
-
-class IndexSymbol : Symbol {
-    public readonly Tuple<Symbol,Symbol> value;
-
-    private IndexSymbol(Type type, Tuple<Symbol,Symbol> value) : base(UniqueName(), type) {
-        this.value = value;
-    }
-
-    private static readonly ConcurrentDictionary<Tuple<Symbol,Symbol>, IndexSymbol> cache = [];
-
-    public static IndexSymbol Make(Type type, Symbol left, Symbol index) {
-        var value = Tuple.Create(left, index);
-        return cache.GetOrAdd(value, _ => new IndexSymbol(type, value));
+        func.Add(new InstrStoreMem(size, value, addr, offset));
     }
 }

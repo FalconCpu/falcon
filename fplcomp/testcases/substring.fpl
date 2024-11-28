@@ -1,0 +1,13 @@
+
+fun main()
+    val s = "Hello, World!"
+    val sub1 = substring(s, 7, 5)   # "World"
+    val sub2 = substring(s, 0, 5)   # "Hello"
+    val sub3 = substring(s, 12, 1)  # "!"
+    print("%s\n", sub1)
+    print("%s\n", sub2)
+    print("%s\n", sub3)
+@------------------------
+World
+Hello
+!

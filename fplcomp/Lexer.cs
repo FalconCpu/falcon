@@ -44,7 +44,6 @@ class Lexer (string fileName) {
         {"?" , TokenKind.Qmark},
         {"!" , TokenKind.Emark},
         {"to" , TokenKind.To},
-        {"downto" , TokenKind.Downto},
         {"(" , TokenKind.OpenB},
         {"[" , TokenKind.OpenSq},
         {"{" , TokenKind.OpenCl},

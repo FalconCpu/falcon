@@ -43,7 +43,6 @@ enum TokenKind {
     Then,
     New,
     To,
-    Downto,
     Lsl,
     Lsr,
     Asr,

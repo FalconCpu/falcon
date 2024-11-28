@@ -54,6 +54,17 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
                 Log.Error(location, $"Expected argument {i+1} to be type {parameters[i].type}, got {astArgs[i].type}");
     }
 
+    private void TypeCheckStringNoInitializerList() {
+        if (astArgs.Count != 1)
+            Log.Error(location, $"new String() requires exactly one argument");
+        else
+            IntType.Instance.CheckAssignableFrom(astArgs[0]);
+    }
+
+    private void TypeCheckStringWithInitializerList() {
+        foreach(AstExpression astArg in astArgs)
+            StringType.Instance.CheckAssignableFrom(astArg);
+    }
 
     public override void TypeCheckRvalue(AstBlock scope) {
         type = astType.ResolveAsType(scope);
@@ -67,8 +78,15 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
                 TypeCheckArrayWithInitializerList(arrayType);
             else
                 TypeCheckArrayNoInitializerList(arrayType);
+
         else if (type is ClassType classType)
             TypeCheckClass(classType);
+
+        else if (type is StringType)
+            if (hasInitializerList)
+                TypeCheckStringWithInitializerList();
+            else
+                TypeCheckStringNoInitializerList();
         else
             Log.Error(location, $"new {type} is not supported");
 
@@ -130,7 +148,37 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         func.Add(new InstrCall(classType.constructor, argSyms.Count+1, type));
 
         return ret;
+    }
 
+    private Symbol CodeGenStringNoInitializeList(AstFunction func) {
+        Symbol length = astArgs[0].CodeGenRvalue(func);
+        Symbol ret = func.NewTemp(type);
+        func.Add(new InstrAlui(RegisterSymbol.registers[1], AluOp.ADD_I, length, 4)); // Allow for the length field
+        func.Add(new InstrLea(RegisterSymbol.registers[2], AstStringLit.genSym(type.name)));
+        func.Add(new InstrCall(StdLib.malloc, 2, PointerType.Instance));
+        func.Add(new InstrMov(ret, RegisterSymbol.registers[8]));
+        func.Add(new InstrStoreField(4, length, ret, StdLib.lengthField));
+        return ret;
+    }
+
+    private Symbol CodeGenStringWithInitializeList(AstFunction func) {
+        // Create some space on the stack for the array, and populate it with the arguments
+        func.Add(new InstrAlui(RegisterSymbol.registers[31], AluOp.SUB_I, RegisterSymbol.registers[31], 4*astArgs.Count)); 
+        for(int i=0; i<astArgs.Count; i++) {
+            Symbol arg = astArgs[i].CodeGenRvalue(func);
+            func.Add(new InstrStoreMem(4, arg, RegisterSymbol.registers[31], i*4));
+        }
+
+        // Call the stdlib constructor
+        Symbol ret = func.NewTemp(type);
+        func.Add(new InstrMov(RegisterSymbol.registers[1], RegisterSymbol.registers[31]));
+        func.Add(new InstrLdi(RegisterSymbol.registers[2], astArgs.Count));
+        func.Add(new InstrCall(StdLib.stringConcat, 2, PointerType.Instance));
+        func.Add(new InstrMov(ret, RegisterSymbol.registers[8]));
+
+        // Restore the stack pointer
+        func.Add(new InstrAlui(RegisterSymbol.registers[31], AluOp.ADD_I, RegisterSymbol.registers[31], 4*astArgs.Count));
+        return ret;
     }
 
     public override Symbol CodeGenRvalue(AstFunction func) {
@@ -141,6 +189,11 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
                 return CodeGenArrayNoInitializerList(func, arrayType);
         } else if (type is ClassType classType) {
             return CodeGenClassInstance(func, classType);
+        } else if (type is StringType) {
+            if (hasInitializerList)
+                return CodeGenStringWithInitializeList(func);
+            else
+                return CodeGenStringNoInitializeList(func);
         } else
             throw new NotImplementedException();
     }

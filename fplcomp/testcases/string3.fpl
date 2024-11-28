@@ -1,0 +1,8 @@
+# The length of a string is not mutable
+
+fun main()
+    var s = "hello"
+    s.length = 4
+@--------------------
+testcase_outputs/string3.fpl:5:5: Field length is not mutable
+Failed with 1 errors

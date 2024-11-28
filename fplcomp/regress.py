@@ -17,7 +17,7 @@ def run_test(test_name: str):
     outname = f"testcase_outputs/{basename}.out"
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
-    stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuffer.fpl stdlib/Memory.fpl"
+    stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuffer.fpl stdlib/Memory.fpl stdlib/String.fpl"
 
     # Split the source file into the executable and expected sections
     expected_output = []

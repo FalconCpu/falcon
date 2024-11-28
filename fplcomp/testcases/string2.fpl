@@ -1,0 +1,7 @@
+# Extract the length from a string
+
+fun main()
+    var s = "hello"
+    print("%d\n", s.length)
+@--------------------
+5

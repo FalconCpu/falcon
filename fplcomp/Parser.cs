@@ -464,10 +464,15 @@ class Parser(Lexer lexer)
         AstIdentifier name = ParseIdentifier();
         Expect(TokenKind.Eq);
         AstExpression start = ParseExpression();
-        Token direction = Expect(TokenKind.To, TokenKind.Downto);
+        Expect(TokenKind.To);
+        TokenKind op;
+        if (lookahead.kind==TokenKind.Gt || lookahead.kind==TokenKind.Lt || lookahead.kind==TokenKind.Gte || lookahead.kind==TokenKind.Lte)
+            op = NextToken().kind;
+        else
+            op = TokenKind.Lte;
         AstExpression end = ParseExpression();
         ExpectEol();
-        AstFor ret = new(loc.location, name, start, end, direction.kind, block);
+        AstFor ret = new(loc.location, name, start, end, op, block);
         block.Add(ret);
         ParseIndentedBlock(ret);
         CheckEnd(TokenKind.For);

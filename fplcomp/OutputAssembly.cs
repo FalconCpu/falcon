@@ -50,6 +50,11 @@ class OutputAssembly(StreamWriter filehandle) {
                                       WriteLine($"xor {alu.dest.name}, {alu.dest.name}, 1");
                                       break;
                     case AluOp.LT_I:  WriteLine($"clt {alu.dest.name}, {alu.lhs.name}, {alu.rhs.name}"); break;
+                    case AluOp.GT_I:  WriteLine($"clt {alu.dest.name}, {alu.rhs.name}, {alu.lhs.name}"); break;
+                    case AluOp.LE_I:  WriteLine($"clt {alu.dest.name}, {alu.rhs.name}, {alu.lhs.name}");
+                                      WriteLine($"xor {alu.dest.name}, {alu.dest.name}, 1"); break;
+                    case AluOp.GE_I:  WriteLine($"clt {alu.dest.name}, {alu.lhs.name}, {alu.rhs.name}");
+                                      WriteLine($"xor {alu.dest.name}, {alu.dest.name}, 1"); break;
                     default: throw new NotImplementedException($"AluOp {alu.op}");
                 }
                 break;

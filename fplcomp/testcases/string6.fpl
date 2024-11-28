@@ -1,0 +1,12 @@
+# String length must be an integer
+
+fun main()
+    val str = new Array<String>(4)
+    str[0] = "hello "
+    str[1] = "brave "
+    str[2] = "new "
+    str[3] = "world"
+    val s = stringConcat(str,4)
+    print("%s",s)
+@--------------------
+hello brave new world

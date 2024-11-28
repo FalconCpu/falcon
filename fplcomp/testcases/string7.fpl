@@ -1,0 +1,11 @@
+# Use the new String{} syntax to concatenate strings
+
+fun functionReturningString()->String
+    return "brave "
+
+fun main()
+    val s1 = "world"
+    val s = new String{"hello ", functionReturningString(), "", "new ", s1}
+    print("%s",s)
+@--------------------
+hello brave new world

@@ -1,0 +1,7 @@
+# Creating a new instance of a string
+
+fun main()
+    var s = new String(5)
+    print("%d",s.length)
+@--------------------
+5

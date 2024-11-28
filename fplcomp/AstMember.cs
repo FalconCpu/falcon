@@ -28,6 +28,9 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         if (leftType is ClassType classType) {
             field = classType.GetField(identifier.name) ?? UndefinedField();
             SetType(field.type);
+        } else if (leftType is StringType && identifier.name=="length") {
+            field = StdLib.lengthField;
+            SetType(IntType.Instance);
         } else {
             SetError(location, $"Left side of member access must be a class, not {left.type}");
         }

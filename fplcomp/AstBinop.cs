@@ -40,7 +40,17 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
         new(TokenKind.Gt,        IntType.Instance,  IntType.Instance,  AluOp.GT_I,   BoolType.Instance),
         new(TokenKind.Gte,       IntType.Instance,  IntType.Instance,  AluOp.GE_I,   BoolType.Instance),
         new(TokenKind.And,       BoolType.Instance, BoolType.Instance, AluOp.AND_B,  BoolType.Instance),
-        new(TokenKind.Or,        BoolType.Instance, BoolType.Instance, AluOp.OR_B,   BoolType.Instance)
+        new(TokenKind.Or,        BoolType.Instance, BoolType.Instance, AluOp.OR_B,   BoolType.Instance),
+        new(TokenKind.Eq,        StringType.Instance,StringType.Instance,AluOp.EQ_S, BoolType.Instance),
+        new(TokenKind.Neq,       StringType.Instance,StringType.Instance,AluOp.NE_S, BoolType.Instance),
+        new(TokenKind.Lt,        StringType.Instance,StringType.Instance,AluOp.LT_S, BoolType.Instance),
+        new(TokenKind.Lte,       StringType.Instance,StringType.Instance,AluOp.LE_S, BoolType.Instance),
+        new(TokenKind.Gt,        StringType.Instance,StringType.Instance,AluOp.GT_S, BoolType.Instance),
+        new(TokenKind.Gte,       StringType.Instance,StringType.Instance,AluOp.GE_S, BoolType.Instance),
+        new(TokenKind.Plus,      PointerType.Instance, IntType.Instance, AluOp.ADD_I,   PointerType.Instance),
+        new(TokenKind.Minus,     PointerType.Instance, IntType.Instance, AluOp.SUB_I,   PointerType.Instance),
+        new(TokenKind.Minus,     PointerType.Instance, PointerType.Instance, AluOp.SUB_I,   IntType.Instance)
+
     ];
 
     public override void TypeCheckRvalue(AstBlock scope) {
@@ -86,15 +96,69 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
         SetError( location, $"Invalid operation {kind} on types {left.type} and {right.type}");
     }
 
-    public override Symbol CodeGenRvalue(AstFunction func) {
-        if (aluOp==AluOp.AND_B || aluOp==AluOp.OR_B) 
-            throw new NotImplementedException("Short circuiting not yet implemented for rvalues");
+    private Symbol GenCall(AstFunction func, AstFunction call, Symbol arg1, Symbol arg2) {
+        Symbol ret = func.NewTemp(type);
+        func.Add( new InstrMov(RegisterSymbol.registers[1], arg1) );
+        func.Add( new InstrMov(RegisterSymbol.registers[2], arg2) );
+        func.Add( new InstrCall(call,2, IntType.Instance) );
+        func.Add( new InstrMov(ret, RegisterSymbol.registers[8]) );
+        return ret;
+    }
 
+    public override Symbol CodeGenRvalue(AstFunction func) {
         Symbol left = this.left.CodeGenRvalue(func);
         Symbol right = this.right.CodeGenRvalue(func);
         Symbol ret =  func.NewTemp(type);
-        func.Add( new InstrAlu(ret, aluOp, left, right) );
-        return ret;
+        Symbol tmp;
+
+        switch(aluOp) {
+            case AluOp.ADD_I:
+            case AluOp.SUB_I:
+            case AluOp.MUL_I:
+            case AluOp.DIV_I:
+            case AluOp.MOD_I:
+            case AluOp.AND_I:
+            case AluOp.OR_I:
+            case AluOp.XOR_I:
+            case AluOp.LSL_I:
+            case AluOp.LSR_I:
+            case AluOp.ASR_I:
+            case AluOp.EQ_I:
+            case AluOp.NE_I:
+            case AluOp.LT_I:
+            case AluOp.LE_I:
+            case AluOp.GT_I:
+            case AluOp.GE_I:
+                func.Add( new InstrAlu(ret, aluOp, left, right) );
+                return ret;
+
+            case AluOp.EQ_S:
+                ret = GenCall(func, StdLib.strequals, left, right);
+                return ret;
+
+            case AluOp.NE_S:
+                tmp = GenCall(func, StdLib.strequals, left, right);
+                func.Add( new InstrAlui(ret, AluOp.XOR_I, tmp, 1) );
+                return ret;
+
+            case AluOp.LT_S:
+            case AluOp.LE_S:
+            case AluOp.GT_S:
+            case AluOp.GE_S:
+                tmp = GenCall(func, StdLib.strcmp, left, right);
+                AluOp opx = aluOp switch {
+                    AluOp.LT_S => AluOp.LT_I,
+                    AluOp.LE_S => AluOp.LE_I,
+                    AluOp.GT_S => AluOp.GT_I,
+                    AluOp.GE_S => AluOp.GE_I,
+                    _ => throw new Exception($"Invalid AluOp {aluOp}")
+                };
+                func.Add( new InstrAlu(ret, opx, tmp, RegisterSymbol.zero) );
+                return ret;
+
+            default:
+                throw new Exception($"Invalid aluOp {aluOp}");
+        }
     }
 
     public override void CodeGenBool(AstFunction func, Label labTrue, Label labFalse) {
@@ -104,12 +168,47 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
             case AluOp.LT_I:
             case AluOp.LE_I:
             case AluOp.GT_I:
-            case AluOp.GE_I:
+            case AluOp.GE_I: {
                 Symbol lhs = left.CodeGenRvalue(func);
                 Symbol rhs = right.CodeGenRvalue(func);
                 func.Add( new InstrBra(aluOp, lhs, rhs, labTrue) );
                 func.Add( new InstrJmp(labFalse) );
                 break;
+            }
+
+            case AluOp.EQ_S:
+            case AluOp.NE_S: {
+                Symbol lhs = left.CodeGenRvalue(func);
+                Symbol rhs = right.CodeGenRvalue(func);
+                Symbol ret = GenCall(func, StdLib.strequals, lhs, rhs);
+                AluOp opx = aluOp == AluOp.EQ_S ? AluOp.NE_I : AluOp.EQ_I;
+                func.Add( new InstrBra(opx, ret, RegisterSymbol.zero, labTrue) );
+                func.Add( new InstrJmp(labFalse) );
+                break;
+            }
+
+            case AluOp.GT_S:
+            case AluOp.GE_S:
+            case AluOp.LT_S:
+            case AluOp.LE_S: {
+                Symbol lhs = left.CodeGenRvalue(func);
+                Symbol rhs = right.CodeGenRvalue(func);
+                Symbol ret = GenCall(func, StdLib.strcmp, lhs, rhs);
+                AluOp opx = aluOp switch {
+                    AluOp.GT_S => AluOp.GT_I,
+                    AluOp.GE_S => AluOp.GE_I,
+                    AluOp.LT_S => AluOp.LT_I,
+                    AluOp.LE_S => AluOp.LE_I,
+                    _ => throw new Exception($"Invalid aluOp {aluOp}")
+                };
+                func.Add( new InstrBra(opx, ret, RegisterSymbol.zero, labTrue) );
+                func.Add( new InstrJmp(labFalse) );
+                break;
+
+            }
+
+
+
 
             case AluOp.AND_B:
                 Label labAnd = func.NewLabel();

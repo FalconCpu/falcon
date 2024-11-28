@@ -1,12 +1,12 @@
-class AstFor(Location location, AstIdentifier astId, AstExpression astStart, AstExpression astEnd, TokenKind direction, AstBlock? parent)
+class AstFor(Location location, AstIdentifier astId, AstExpression astStart, AstExpression astEnd, TokenKind op, AstBlock? parent)
 : AstBlock(location, parent) {
     public AstIdentifier astId = astId;
     public AstExpression astStart = astStart;
     public AstExpression astEnd = astEnd;
-    public bool downto = direction == TokenKind.Downto;
+    public TokenKind     op = op;
 
     public override void Print(int indent) {
-        Console.WriteLine(new string(' ', indent * 2) + "FOR EXPR");
+        Console.WriteLine(new string(' ', indent * 2) + $"FOR EXPR {op}");
         astId.Print(indent + 1);
         astStart.Print(indent + 1);
         astEnd.Print(indent + 1);
@@ -36,15 +36,19 @@ class AstFor(Location location, AstIdentifier astId, AstExpression astStart, Ast
         func.Add(new InstrLabel(labStart));
         foreach (AstStatement stmt in statements)
             stmt.CodeGen(func);
-        if (downto)
+        if (op==TokenKind.Gt || op==TokenKind.Gte)
             func.Add(new InstrAlui(iterSym, AluOp.SUB_I, iterSym, 1));
         else
             func.Add(new InstrAlui(iterSym, AluOp.ADD_I, iterSym, 1));
         func.Add(new InstrLabel(labCond));
-        if (downto)
-            func.Add(new InstrBra(AluOp.GE_I, iterSym, end, labStart));
-        else
-            func.Add(new InstrBra(AluOp.LE_I, iterSym, end, labStart));
+        AluOp aluOp = op switch {
+            TokenKind.Lt => AluOp.LT_I,
+            TokenKind.Lte => AluOp.LE_I,
+            TokenKind.Gt => AluOp.GT_I,
+            TokenKind.Gte => AluOp.GE_I,
+            _ => throw new Exception("Invalid operator")
+        };
+        func.Add(new InstrBra(aluOp, iterSym, end, labStart));
     }
 }
 

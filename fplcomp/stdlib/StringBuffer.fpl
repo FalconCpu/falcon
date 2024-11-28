@@ -25,7 +25,7 @@ class StringBuffer
         if len + 1 >= alloc
             resize(alloc*2)
         var at = if index >= len then len else index
-        for i=len downto at+1
+        for i=len to > at
             buffer[i]=buffer[i-1]
         buffer[at] = c
         len = len + 1

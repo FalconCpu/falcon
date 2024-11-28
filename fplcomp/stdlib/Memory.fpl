@@ -35,6 +35,7 @@ const MAGIC_ALLOCATED = 0x23CAD9B8
 const ERR_OUT_OF_MEMORY = 0x1000
 const ERR_MEMORY_LIST_CORRUPTED = 0x1001
 const ERR_DOUBLE_FREE = 0x1002
+const ERR_OUT_OF_BOUNDS = 0x1003
 
 # ######################################################
 #                     System variables
