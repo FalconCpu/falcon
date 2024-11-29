@@ -2,3 +2,4 @@
 For loops  => find a more generic structure
 static functions
 += -= etc
+new List<T>{item,item,item}

@@ -19,9 +19,9 @@ class RegisterAllocator{
         // Look to for MOV instructions where one of the operands is already in a register
         // and the other is not, then see if the other can be assigned to the same register
         foreach(InstrMov ins in movInstructions) {
-            if (ins.dest.reg==-1 && ins.src.reg!=-1 && ! graph[ins.src.reg].Contains(ins.dest))
+            if (ins.dest.reg==-1 && ins.src.reg!=-1 && ins.src.reg!=0 && ! graph[ins.src.reg].Contains(ins.dest))
                 AssignReg(ins.dest, ins.src.reg);
-            if (ins.dest.reg!=-1 && ins.src.reg==-1 && ! graph[ins.dest.reg].Contains(ins.src))
+            if (ins.dest.reg!=-1 && ins.src.reg==-1 && ins.dest.reg!=0 && ! graph[ins.dest.reg].Contains(ins.src))
                 AssignReg(ins.src, ins.dest.reg);
         }
     }

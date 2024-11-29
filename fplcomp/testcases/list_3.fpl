@@ -1,0 +1,16 @@
+# Iterating over something not a list is an error
+
+fun main() 
+    val list = new Array<String>(4)
+    list[0]=("Fred")
+    list[1]=("Jim")
+    list[2]=("Bob")
+    list[3]=("Sue")
+    list[4]=("Alice")
+
+    for item in list
+        print("%s\n", item)
+
+@--------------------
+testcase_outputs/list_3.fpl:11:17: Array<String> is not a class
+Failed with 1 errors

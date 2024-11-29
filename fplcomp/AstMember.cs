@@ -57,10 +57,20 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
             throw new NotImplementedException("AstMember.CodeGenRvalue for non-field");
     }
 
-    public override void CodeGenLvalue(AstFunction func, Symbol value) {
+    public override void CodeGenLvalue(AstFunction func, AluOp op, Symbol value) {
         if (field is FieldSymbol ff) {
             Symbol addr = left.CodeGenRvalue(func);
-            func.code.Add(new InstrStoreField(type.GetSize(), value, addr, ff));
+            if (op == AluOp.UNDEFINED)
+                func.code.Add(new InstrStoreField(type.GetSize(), value, addr, ff));
+            else {
+                Symbol temp1 = func.NewTemp(type);
+                Symbol temp2 = func.NewTemp(type);
+                func.code.Add(new InstrLoadField(type.GetSize(), temp1, addr, ff));
+                func.code.Add(new InstrAlu(temp2, op, temp1, value));
+                func.code.Add(new InstrStoreField(type.GetSize(), temp2, addr, ff));
+
+
+            }
         } else 
             throw new NotImplementedException("AstMember.CodeGenRvalue for non-field");
     }

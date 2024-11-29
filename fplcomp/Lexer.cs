@@ -44,6 +44,11 @@ class Lexer (string fileName) {
         {"?" , TokenKind.Qmark},
         {"!" , TokenKind.Emark},
         {"to" , TokenKind.To},
+        {"in" , TokenKind.In},
+        {"+=" , TokenKind.PlusEq},
+        {"-=" , TokenKind.MinusEq},
+        {"*=" , TokenKind.StarEq},
+        {"/=" , TokenKind.SlashEq},
         {"(" , TokenKind.OpenB},
         {"[" , TokenKind.OpenSq},
         {"{" , TokenKind.OpenCl},
@@ -111,7 +116,11 @@ class Lexer (string fileName) {
         if ( (c=='!' && lookahead=='=') ||
              (c=='<' && lookahead=='=') ||
              (c=='>' && lookahead=='=') ||
-             (c=='-' && lookahead=='>') )
+             (c=='-' && lookahead=='>') ||
+             (c=='+' && lookahead=='=') ||
+             (c=='-' && lookahead=='=') ||
+             (c=='*' && lookahead=='=') ||
+             (c=='/' && lookahead=='=') )
              return "" + c + NextChar();
         return "" + c;
     }

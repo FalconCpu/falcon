@@ -489,17 +489,26 @@ class Parser(Lexer lexer)
     private void ParseFor(AstBlock block) {
         Token loc = Expect(TokenKind.For);
         AstIdentifier name = ParseIdentifier();
-        Expect(TokenKind.Eq);
-        AstExpression start = ParseExpression();
-        Expect(TokenKind.To);
-        TokenKind op;
-        if (lookahead.kind==TokenKind.Gt || lookahead.kind==TokenKind.Lt || lookahead.kind==TokenKind.Gte || lookahead.kind==TokenKind.Lte)
-            op = NextToken().kind;
-        else
-            op = TokenKind.Lte;
-        AstExpression end = ParseExpression();
-        ExpectEol();
-        AstFor ret = new(loc.location, name, start, end, op, block);
+        AstBlock ret;
+        if (CanTake(TokenKind.Eq)) {
+            AstExpression start = ParseExpression();
+            Expect(TokenKind.To);
+            TokenKind op;
+            if (lookahead.kind==TokenKind.Gt || lookahead.kind==TokenKind.Lt || lookahead.kind==TokenKind.Gte || lookahead.kind==TokenKind.Lte)
+                op = NextToken().kind;
+            else
+                op = TokenKind.Lte;
+            AstExpression end = ParseExpression();
+            ExpectEol();
+            ret = new AstFor(loc.location, name, start, end, op, block);
+        } else if (CanTake(TokenKind.In)) {
+            AstExpression list = ParseExpression();
+            ExpectEol();
+            ret = new AstForIn(loc.location, name, list, block);
+        } else {
+            Log.Error(lookahead.location, "Expected 'for' or 'for in'");
+            return;
+        }
         block.Add(ret);
         ParseIndentedBlock(ret);
         CheckEnd(TokenKind.For);
@@ -507,11 +516,11 @@ class Parser(Lexer lexer)
     
     private void parseAssign(AstBlock block) {
         AstExpression lhs = ParsePostfix();
-        if (lookahead.kind == TokenKind.Eq) {
+        if (lookahead.kind == TokenKind.Eq || lookahead.kind == TokenKind.PlusEq || lookahead.kind == TokenKind.MinusEq || lookahead.kind == TokenKind.StarEq || lookahead.kind == TokenKind.SlashEq) {
             Token op = NextToken();
             AstExpression rhs = ParseExpression();
             ExpectEol();
-            block.Add(new AstAssign(op.location, lhs, rhs));
+            block.Add(new AstAssign(op.location, op.kind, lhs, rhs));
         } else if (lhs is AstFuncCall) {
             ExpectEol();
             block.Add(new AstFuncCallStatement(lhs.location, lhs));

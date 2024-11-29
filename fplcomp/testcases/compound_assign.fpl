@@ -1,0 +1,19 @@
+# test of compound assignment operators 
+
+fun main()
+    var a = 10
+    print("%d\n", a)
+    a += 1
+    print("%d\n", a)
+    a -= 1
+    print("%d\n", a)
+    a *= 2
+    print("%d\n", a)
+    a /= 2
+    print("%d\n", a)
+@-------------------
+10
+11
+10
+20
+10

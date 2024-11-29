@@ -1,0 +1,8 @@
+# test of compound assignment operators - not supported for strings
+
+fun main()
+    var a = "hello "
+    a += "world"
+@-------------------
+testcase_outputs/compound_assign_2.fpl:5:7: PlusEq only supported for integer operands
+Failed with 1 errors

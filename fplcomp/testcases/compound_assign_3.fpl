@@ -1,0 +1,8 @@
+# test of compound assignment operators - check for immutable args
+
+fun main()
+    val a = 10
+    a += 1
+@-------------------
+testcase_outputs/compound_assign_3.fpl:5:5: Symbol 'a' is immutable
+Failed with 1 errors

@@ -1,0 +1,27 @@
+# Iterating over something not a list is an error
+
+class almostList
+    var length = 0
+    var count = 0
+    var array = new Array<String>(10)
+
+    fun add(item: String)
+        array[length] = item
+        length = length + 1
+
+
+
+fun main() 
+    val list = new almostList()
+    list.add("Fred")
+    list.add("Jim")
+    list.add("Bob")
+    list.add("Sue")
+    list.add("Alice")
+
+    for item in list
+        print("%s\n", item)
+
+@--------------------
+testcase_outputs/list_4.fpl:22:5: Class almostList does not have get defined
+Failed with 1 errors

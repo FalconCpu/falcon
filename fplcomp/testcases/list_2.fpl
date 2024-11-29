@@ -1,0 +1,19 @@
+# test of list iterators
+
+fun main() 
+    val list = new List<String>()
+    list.add("Fred")
+    list.add("Jim")
+    list.add("Bob")
+    list.add("Sue")
+    list.add("Alice")
+
+    for item in list
+        print("%s\n", item)
+
+@--------------------
+Fred
+Jim
+Bob
+Sue
+Alice

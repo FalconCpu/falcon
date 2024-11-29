@@ -14,3 +14,6 @@ fun main()
     b.name = "test2"
     b.data = "fred"
     print("%s %s\n", b.name, b.data)
+@-------------------
+test 10
+test2 fred

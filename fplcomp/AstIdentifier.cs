@@ -101,18 +101,32 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     }
 
 
-    public override void CodeGenLvalue(AstFunction func, Symbol value) {
+    public override void CodeGenLvalue(AstFunction func, AluOp op,Symbol value) {
         switch (symbol) {
             case VariableSymbol variableSymbol:
                 if (variableSymbol.isGlobal)
                     throw new NotImplementedException();
-                func.Add(new InstrMov(variableSymbol, value));
+                if (op==AluOp.UNDEFINED)
+                    func.Add(new InstrMov(variableSymbol, value));
+                else {
+                    Symbol temp = func.NewTemp(type);
+                    func.Add(new InstrAlu(temp, op, variableSymbol, value));
+                    func.Add(new InstrMov(variableSymbol, temp));
+                }
                 break;
 
             case FieldSymbol fieldSymbol:
                 if (func.thisSymbol==null) throw new ArgumentException("Cannot find 'this' symbol");
                 CheckThisHas(func.thisSymbol, fieldSymbol);
-                func.Add(new InstrStoreField(type.GetSize(), value, func.thisSymbol, fieldSymbol));
+                if (op==AluOp.UNDEFINED)
+                    func.Add(new InstrStoreField(type.GetSize(), value, func.thisSymbol, fieldSymbol));
+                else {
+                    Symbol temp1 = func.NewTemp(type);
+                    Symbol temp2 = func.NewTemp(type);
+                    func.Add(new InstrLoadField(type.GetSize(), temp1, func.thisSymbol, fieldSymbol));
+                    func.Add(new InstrAlu(temp2, op, temp1, value));
+                    func.Add(new InstrStoreField(type.GetSize(), temp2, func.thisSymbol, fieldSymbol));
+                }
             break;
 
             default:

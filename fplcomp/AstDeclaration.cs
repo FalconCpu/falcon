@@ -46,6 +46,6 @@ class AstDeclaration(
         if (initializer==null)
             return;
         Symbol rhs = initializer.CodeGenRvalue(func);
-        identifier.CodeGenLvalue(func, rhs);
+        identifier.CodeGenLvalue(func, AluOp.UNDEFINED, rhs);
     }
 }
