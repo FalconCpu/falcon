@@ -1,0 +1,16 @@
+# test of building a generic class
+
+class Test<T>
+    var name: String
+    var data: T
+
+fun main()
+    val a = new Test<Int>()
+    a.name = "test"
+    a.data = 10
+    print("%s %d\n", a.name, a.data)
+
+    val b = new Test<String>()
+    b.name = "test2"
+    b.data = "fred"
+    print("%s %s\n", b.name, b.data)

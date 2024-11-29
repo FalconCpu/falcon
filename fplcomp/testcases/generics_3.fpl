@@ -1,0 +1,17 @@
+# Generic with two parameters
+# Generics with object as arguments
+
+class Person(val name:String, val age:Int)
+
+class Pair<A,B>(val first:A, val second:B)
+
+fun main()
+    val a = new Pair<Int,String>(10,"test")   
+    val b = new Pair<String,Person>("fred", new Person("fred",20))
+    
+    print("%d %s\n", a.first, a.second)
+    print("%s %d\n", b.second.name, b.second.age)
+
+@-------------------------
+10 test
+fred 20

@@ -41,8 +41,10 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
     private void CodeGenMetodCall(AstFunction func, FunctionSymbol funcSym, Symbol? thisSym, List<Symbol> argSyms) {
         // Do some sanity check that what we are calling is indeed a method of this
         if (thisSym == null) throw new ArgumentException("No 'this' symbol");
-        if (thisSym.type is not ClassType) throw new ArgumentException("thisSym must be a class type");
+        if (thisSym.type is not GenericClassType && thisSym.type is not ClassType ) throw new ArgumentException("thisSym must be a class type");
         if (thisSym.type is ClassType classType && !classType.methods.Contains(funcSym)) 
+            throw new ArgumentException($"{funcSym} is not a method of this");
+        if (thisSym.type is GenericClassType gClassType && !gClassType.methods.Contains(funcSym)) 
             throw new ArgumentException($"{funcSym} is not a method of this");
 
         // Generate code for the call

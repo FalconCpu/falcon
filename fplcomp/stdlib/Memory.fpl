@@ -151,7 +151,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     chunkA.size = roundedSize
     chunkA.descriptor = desc
     chunkA.refcount = 1
-    # print("Malloc %x %s\n",(chunk:Int)+16, desc)
+    # print("Malloc %x %d %s\n",(chunk:Int)+16, roundedSize-16, desc)
     return ((chunk:Int)+16:Pointer)
 
 # ######################################################

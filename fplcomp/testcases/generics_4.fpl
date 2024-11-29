@@ -1,0 +1,11 @@
+# Same class with different generic arguments are type incompatible
+
+class Pair<A,B>(val first:A, val second:B)
+
+fun main()
+    var a = new Pair<Int,String>(10,"test")   
+    a = new Pair<Int,Int>(20,30)
+
+@-------------------------
+testcase_outputs/generics_4.fpl:7:34: Type Pair<Int, Int> is not assignable to Pair<Int, String>
+Failed with 1 errors

@@ -1,0 +1,42 @@
+# basic test of List class in stdlib
+
+fun main()
+    val list = new List<Int>()
+    for i=0 to 20
+        list.add(1+3*i)
+    
+    for i=0 to 20
+        print("item %d = %d\n", i, list.get(i))
+
+    delete list
+    print("\nMemory dump:\n")
+    dumpMemorySystem()
+@------------------------
+item 0 = 1
+item 1 = 4
+item 2 = 7
+item 3 = 10
+item 4 = 13
+item 5 = 16
+item 6 = 19
+item 7 = 22
+item 8 = 25
+item 9 = 28
+item 10 = 31
+item 11 = 34
+item 12 = 37
+item 13 = 40
+item 14 = 43
+item 15 = 46
+item 16 = 49
+item 17 = 52
+item 18 = 55
+item 19 = 58
+item 20 = 61
+
+Memory dump:
+00001000 00000020 FREE
+00001020 00000030 FREE
+00001050 00000050 FREE
+000010A0 00000090 FREE
+00001130 03F6EED0 FREE

@@ -3,7 +3,7 @@ class AstFunction(Location location, string name, List<AstParameter> parameters,
     public readonly string name = name;
     public readonly List<AstParameter> astParameters = parameters;
     public readonly AstType? astReturnType = astReturnType;
-    public readonly ClassType? methodOf = (parent is AstClass classAst) ? classAst.classType : null;
+    public readonly GenericClassType? methodOf = (parent is AstClass classAst) ? classAst.classType : null;
     public readonly string qualifiedName = (parent==null || parent is AstTop) ? $"/{name}" : $"{((AstFunction)parent).qualifiedName}/{name}";
     public static readonly List<AstFunction> allFunctions = [];
 

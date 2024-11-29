@@ -88,7 +88,6 @@ class PointerType : Type {
     private PointerType() : base("Pointer") {}
 }
 
-
 class ErrorType : Type {
     public static readonly ErrorType Instance = new();
     private ErrorType() : base("<Error>") {}
@@ -133,7 +132,7 @@ class FunctionType : Type {
 
     public static FunctionType MakeFunctionType(List<Type> parameterTypes, Type returnType) {
         foreach (FunctionType t in cache)
-            if (t.returnType == returnType && t.parameterTypes == parameterTypes)
+            if (t.returnType == returnType && t.parameterTypes.SequenceEqual(parameterTypes))
                 return t;
         return new FunctionType(returnType, parameterTypes);
     }
@@ -159,16 +158,23 @@ class NullableType : Type {
     }
 }
 
-class ClassType: Type {
+// Used to represent type parameters (e.g. T in List<T>)
+class TypeParameterType(string name) : Type(name) {
+}
+
+class GenericClassType: Type {
     public readonly AstClass constructor;
     public readonly List<FieldSymbol> fields = [];
     public readonly List<FunctionSymbol> methods = [];
+    public readonly List<TypeParameterType> typeParameters;
+
     public int size;
     
-    private readonly static List<ClassType> allClasses = [];
+    private readonly static List<GenericClassType> allClasses = [];
 
-    public ClassType(string name, AstClass constructor) : base(name) {
+    public GenericClassType(string name, AstClass constructor, List<TypeParameterType> typeParameters) : base(name) {
         this.constructor = constructor;
+        this.typeParameters = typeParameters;
         allClasses.Add(this);
     }
 
@@ -186,15 +192,99 @@ class ClassType: Type {
     public void AddMethod(FunctionSymbol func) {
         methods.Add(func);
     }
+}
+
+class ClassType : Type {
+    public  readonly GenericClassType generic;
+    private readonly List<Type> typeArguments;
+    public  readonly Dictionary<TypeParameterType,Type> typeMap = [];
+
+    public readonly List<FieldSymbol> fields = [];
+    public readonly List<FunctionSymbol> methods = [];
+
+    private readonly static List<ClassType> cache = [];
+    private ClassType(GenericClassType generic, List<Type> typeArguments) 
+    : base(typeArguments.Count==0 ? generic.name : $"{generic.name}<{string.Join(", ", typeArguments)}>") 
+    {
+        this.generic = generic;
+        this.typeArguments = typeArguments;
+        cache.Add(this);
+
+        // Build the map to map the generic class types into concrete types
+        if (typeArguments.Count != generic.typeParameters.Count)
+            throw new Exception($"Invalid number of type arguments for class {generic.name}");  
+        for(int i=0; i<typeArguments.Count; i++)
+            typeMap[generic.typeParameters[i]] = typeArguments[i];
+    }
+
+    public static Type MakeClassType(GenericClassType generic, List<Type> typeArguments) {
+        foreach (ClassType t in cache)
+            if (t.generic == generic && t.typeArguments.SequenceEqual(typeArguments))
+                return t;
+        return new ClassType(generic, typeArguments);
+    }
+
+    public Type MapType(Type type) {
+        if (type is TypeParameterType tpt)
+            return typeMap[tpt];
+        else if (type is NullableType nt)
+            return NullableType.MakeNullableType(MapType(nt.elementType));
+        else if (type is ArrayType at)  
+            return ArrayType.MakeArrayType(MapType(at.elementType));
+        else if (type is FunctionType ft) {
+            List<Type> mappedParameters = ft.parameterTypes.Select(it => MapType(it)).ToList();
+            return FunctionType.MakeFunctionType(mappedParameters, MapType(ft.returnType));
+        } else if (type is ClassType cit)
+            return MakeClassType(cit.generic, cit.typeArguments.Select(it => MapType(it)).ToList());
+        else
+        return type;
+    }
+
+    public List<Type> GetConstrutorParameters() {
+        List<Type> ret = [];
+        foreach(Symbol param in generic.constructor.parameters)
+            ret.Add(MapType(param.type));
+        return ret;
+    }
+
+    public int GetInstanceSize() {
+        return generic.size;
+    }
+
+    private void UpdateFieldsAndMethods() {
+        // It is possible that some fields or methods have been added to the generic class
+        // since the class type was created. So we need to update the fields and methods
+        if (generic.fields.Count == fields.Count && generic.methods.Count == methods.Count) 
+            return;
+
+        // Add fields
+        for(int index=fields.Count; index<generic.fields.Count; index++) {
+            FieldSymbol genericField = generic.fields[index];
+            FieldSymbol mappedField = new FieldSymbol(genericField.name, MapType(genericField.type), genericField.isMutable);
+            mappedField.offset = genericField.offset;
+            fields.Add(mappedField);
+        }
+
+        // Add methods
+        for(int index=methods.Count; index<generic.methods.Count; index++) {
+            FunctionSymbol genericMethod = generic.methods[index];
+            FunctionSymbol mappedMethod = new FunctionSymbol(genericMethod.name, MapType(genericMethod.type), genericMethod.function);
+            methods.Add(mappedMethod);
+        }
+
+    }
 
     public Symbol? GetField(string name) {
+        UpdateFieldsAndMethods();
+
         foreach (FieldSymbol field in fields)
             if (field.name == name)
                 return field;
+    
         foreach (FunctionSymbol method in methods)
             if (method.name == name)
                 return method;
+    
         return null;
     }
-
 }

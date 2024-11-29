@@ -59,8 +59,11 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
         if (thisSymbol.type is ClassType classType) {
             if (! classType.fields.Contains(field))
                 throw new ArgumentException($"Field '{field}' is not a member of class '{classType}'");
+        } else if (thisSymbol.type is GenericClassType gClassType) {
+            if (! gClassType.fields.Contains(field))
+                throw new ArgumentException($"Field '{field}' is not a member of class '{gClassType}'");
         } else
-            throw new ArgumentException($"Symbol '{thisSymbol}' is not a class type");
+            throw new ArgumentException($"Symbol '{thisSymbol}' is not a class type  {thisSymbol.type}");
     }
 
     public override bool HasKnownIntValue() => symbol is ConstantSymbol;

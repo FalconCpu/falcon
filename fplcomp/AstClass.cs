@@ -1,9 +1,20 @@
-class AstClass : AstFunction {
-    public ClassType classType;
 
-    public AstClass(Location location, string name, List<AstParameter> astParams, AstBlock parent)
+class AstClass : AstFunction {
+    public GenericClassType classType;
+
+    public AstClass(Location location, string name, List<AstIdentifier> astTypeParameters, List<AstParameter> astParams, AstBlock parent)
     : base(location, name, astParams, null, parent) {
-        classType = new ClassType(name, this);
+
+        // Build the type parameters
+        List<TypeParameterType> typeParameters = [];
+        foreach(AstIdentifier id in astTypeParameters) {
+            TypeParameterType typeParameter = new TypeParameterType(id.name);
+            TypeSymbol ts = new(id.name, typeParameter);
+            AddSymbol(id.location, ts);  // This implicitly checks for duplicates
+            typeParameters.Add(typeParameter);
+        }
+
+        classType = new GenericClassType(name, this, typeParameters);
         TypeSymbol symbol = new TypeSymbol(name, classType);
         parent.AddSymbol(location, symbol);
         thisSymbol = new VariableSymbol("this", classType, false, false);
@@ -15,7 +26,7 @@ class AstClass : AstFunction {
 
         // Generate the parameter symbols
         foreach(AstParameter param in astParameters) {
-            Symbol sym = param.GenerateFieldSymbol(scope);
+            Symbol sym = param.GenerateFieldSymbol(this);
             parameters.Add(sym);
             AddSymbol(param.location, sym);
             if (sym is FieldSymbol field)

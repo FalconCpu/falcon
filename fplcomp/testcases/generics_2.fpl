@@ -1,0 +1,13 @@
+# test of building a generic class with constructors
+class Test<T>(val name:String, val data:T)
+
+fun main()
+    val a = new Test<Int>("test", 10)   
+    print("%s %d\n", a.name, a.data)
+
+    val b = new Test<String>("test2", "fred")
+    print("%s %s\n", b.name, b.data)
+
+@----------------
+test 10
+test2 fred

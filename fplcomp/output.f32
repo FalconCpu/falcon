@@ -984,45 +984,290 @@ ldw $30, $sp[16]
 add $sp, 20
 ret
 
-/main:
+/ListIterator:
+stw $2, $1[0]
+stw $3, $1[4]
+ld $2, 0
+stw $2, $1[8]
+ret
+
+/ListIterator/hasNext:
+ldw $2, $1[8]
+ldw $1, $1[4]
+clt $8, $2, $1
+ret
+
+/ListIterator/next:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $9, $1
+ld $1, $9
+jsr /ListIterator/hasNext
+xor $1, $8, 1
+beq $1, 0, @1
+ld $1, 4099
+jsr /abort
+@1:
+ldw $1, $9[0]
+ldw $2, $9[8]
+lsl $2, $2, 2
+add $1, $1, $2
+ldw $8, $1[0]
+ldw $1, $9[8]
+add $1, $1, 1
+stw $1, $9[8]
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+
+/List:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $9, $1
+ld $1, 8
+stw $1, $9[0]
+ld $1, 0
+stw $1, $9[4]
+ldw $1, $9[0]
+lsl $1, $1, 2
+ld $2, _object11
+jsr /malloc
+stw $8, $9[8]
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+
+/List/add:
 sub $sp, 16
 stw $9, $sp[0]
 stw $10, $sp[4]
 stw $11, $sp[8]
 stw $30, $sp[12]
-ld $11, _object5
-ld $1, _object6
-ld $2, $11
-jsr /print
+ld $9, $1
+ld $10, $2
+ldw $1, $9[4]
+ldw $2, $9[0]
+bne $1, $2, @1
+ldw $11, $9[8]
+ldw $1, $9[0]
+lsl $1, $1, 1
+lsl $1, $1, 2
+ld $2, _object11
+jsr /malloc
+stw $8, $9[8]
+ld $1, 0
+ldw $2, $9[0]
+jmp @6
+@5:
+lsl $3, $1, 2
+add $3, $11, $3
+ldw $3, $3[0]
+ldw $4, $9[8]
+lsl $5, $1, 2
+add $4, $4, $5
+stw $3, $4[0]
+add $1, $1, 1
+@6:
+blt $1, $2, @5
+ldw $1, $11[-4]
+sub $1, $1, 1
+stw $1, $11[-4]
+bne $1, 0, @7
 ld $1, $11
-ld $2, 7
-ld $3, 7
-jsr /substring
-ld $9, $8
-ld $1, $11
-ld $2, 0
-ld $3, 5
-jsr /substring
-ld $10, $8
-ld $1, $11
-ld $2, 12
-ld $3, 1
-jsr /substring
-ld $11, $8
-ld $1, _object6
-ld $2, $9
-jsr /print
-ld $1, _object6
-ld $2, $10
-jsr /print
-ld $1, _object6
-ld $2, $11
-jsr /print
+jsr /free
+@7:
+ldw $1, $9[0]
+lsl $1, $1, 1
+stw $1, $9[0]
+@1:
+ldw $1, $9[8]
+ldw $2, $9[4]
+lsl $2, $2, 2
+add $1, $1, $2
+stw $10, $1[0]
+ldw $1, $9[4]
+add $1, $1, 1
+stw $1, $9[4]
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $11, $sp[8]
 ldw $30, $sp[12]
 add $sp, 16
+ret
+
+/List/get:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $10, $1
+ld $9, $2
+blt $9, 0, @3
+ldw $1, $10[4]
+blt $9, $1, @1
+@3:
+ld $1, 4099
+jsr /abort
+@1:
+ldw $1, $10[8]
+lsl $2, $9, 2
+add $1, $1, $2
+ldw $8, $1[0]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/size:
+ldw $8, $1[4]
+ret
+
+/List/remove:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $10, $2
+blt $10, 0, @3
+ldw $1, $9[4]
+blt $10, $1, @1
+@3:
+ld $1, 4099
+jsr /abort
+@1:
+ldw $1, $9[8]
+lsl $2, $10, 2
+add $1, $1, $2
+ldw $8, $1[0]
+ldw $1, $9[4]
+sub $1, $1, 1
+stw $1, $9[4]
+ldw $1, $9[4]
+jmp @7
+@6:
+ldw $2, $9[8]
+add $3, $10, 1
+lsl $3, $3, 2
+add $2, $2, $3
+ldw $2, $2[0]
+ldw $3, $9[8]
+lsl $4, $10, 2
+add $3, $3, $4
+stw $2, $3[0]
+add $10, $10, 1
+@7:
+blt $10, $1, @6
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/clear:
+ld $2, 0
+stw $2, $1[4]
+ret
+
+/List/iterator:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $10, $1
+ld $1, 12
+ld $2, _object12
+jsr /malloc
+ld $9, $8
+ldw $2, $10[8]
+ldw $3, $10[4]
+ld $1, $9
+jsr /ListIterator
+ld $8, $9
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/delete:
+sub $sp, 4
+stw $30, $sp[0]
+ldw $1, $1[8]
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @1
+jsr /free
+@1:
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/main:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $1, 12
+ld $2, _object13
+jsr /malloc
+ld $9, $8
+ld $1, $9
+jsr /List
+ld $10, 0
+ld $11, 20
+jmp @2
+@1:
+ld $1, 1
+ld $2, 3
+mul $2, $2, $10
+add $2, $1, $2
+ld $1, $9
+jsr /List/add
+add $10, $10, 1
+@2:
+bge $11, $10, @1
+ld $10, 0
+ld $11, 20
+jmp @4
+@3:
+ld $12, _object5
+ld $1, $9
+ld $2, $10
+jsr /List/get
+ld $1, $12
+ld $2, $10
+ld $3, $8
+jsr /print
+add $10, $10, 1
+@4:
+bge $11, $10, @3
+ldw $1, $9[-4]
+sub $1, $1, 1
+stw $1, $9[-4]
+bne $1, 0, @5
+ld $1, $9
+jsr /List/delete
+ld $1, $9
+jsr /free
+@5:
+ld $1, _object6
+jsr /print
+jsr /dumpMemorySystem
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
 ret
 _object0:
 dcw 0x0000000B
@@ -1053,13 +1298,16 @@ dcw 0x25206369
 dcw 0x00000A78
 _object5:
 dcw 0x0000000D
-dcw 0x6C6C6548
-dcw 0x57202C6F
-dcw 0x646C726F
-dcw 0x00000021
+dcw 0x6D657469
+dcw 0x20642520
+dcw 0x6425203D
+dcw 0x0000000A
 _object6:
-dcw 0x00000003
-dcw 0x000A7325
+dcw 0x0000000E
+dcw 0x6D654D0A
+dcw 0x2079726F
+dcw 0x706D7564
+dcw 0x00000A3A
 _object7:
 dcb 0,0,0,0
 dcb 0,0,0,0
@@ -1612,3 +1860,19 @@ _object10:
 dcw 0x00000006
 dcw 0x69727453
 dcw 0x0000676E
+_object11:
+dcw 0x00000008
+dcw 0x61727241
+dcw 0x3E543C79
+dcw 0x00000000
+_object12:
+dcw 0x0000000F
+dcw 0x7473694C
+dcw 0x72657449
+dcw 0x726F7461
+dcw 0x003E543C
+_object13:
+dcw 0x00000009
+dcw 0x7473694C
+dcw 0x746E493C
+dcw 0x0000003E

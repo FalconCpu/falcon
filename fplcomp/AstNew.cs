@@ -41,17 +41,18 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         if (hasInitializerList)
             SetError(location, "new class with initializer list not supported");
 
-        // Type check the arguments
-        List<Symbol> parameters = classType.constructor.parameters;
+        // Get the types of the arguments
 
-        if (astArgs.Count != parameters.Count) {
-            SetError(location, $"Expected {parameters.Count} arguments, got {astArgs.Count}");
+        List<Type> parameterTypes = classType.GetConstrutorParameters();
+
+        if (astArgs.Count != parameterTypes.Count) {
+            SetError(location, $"Expected {parameterTypes.Count} arguments, got {astArgs.Count}");
             return;
         }
 
         for (int i = 0; i < astArgs.Count; i++)
-            if (!parameters[i].type.IsAssignableFrom(astArgs[i].type))
-                Log.Error(location, $"Expected argument {i+1} to be type {parameters[i].type}, got {astArgs[i].type}");
+            if (!parameterTypes[i].IsAssignableFrom(astArgs[i].type))
+                Log.Error(location, $"Expected argument {i+1} to be type {parameterTypes[i]}, got {astArgs[i].type}");
     }
 
     private void TypeCheckStringNoInitializerList() {
@@ -134,7 +135,7 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
 
     private Symbol CodeGenClassInstance(AstFunction func, ClassType classType) {
         // Allocate memory for the object
-        func.Add( new InstrLdi(RegisterSymbol.registers[1], classType.size));
+        func.Add( new InstrLdi(RegisterSymbol.registers[1], classType.GetInstanceSize()));
         func.Add( new InstrLea(RegisterSymbol.registers[2], AstStringLit.genSym(type.name)));
         func.Add( new InstrCall(StdLib.malloc, 2, IntType.Instance));
         Symbol ret = func.NewTemp(type);
@@ -145,7 +146,7 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         func.Add(new InstrMov(RegisterSymbol.registers[1], ret));
         for(int i=0; i<argSyms.Count; i++)
             func.Add(new InstrMov(RegisterSymbol.registers[i+2], argSyms[i]));
-        func.Add(new InstrCall(classType.constructor, argSyms.Count+1, type));
+        func.Add(new InstrCall(classType.generic.constructor, argSyms.Count+1, type));
 
         return ret;
     }

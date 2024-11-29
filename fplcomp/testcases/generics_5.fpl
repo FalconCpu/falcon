@@ -1,0 +1,55 @@
+# Generic with generic argument
+
+class Group<T>
+    val array = new Array<T>(10)
+
+fun main()
+    val b = new Group<Group<Int>>()
+
+    for i=0 to 9
+        b.array[i] = new Group<Int>()
+
+    for i=0 to 9
+        for j = 0 to 9
+            b.array[i].array[j] = 2*i+j
+
+    for i=0 to 9
+        for j = 0 to 9
+            print("%d ",b.array[i].array[j])
+        print("\n")
+
+    dumpMemorySystem()
+@-------------------------
+0 1 2 3 4 5 6 7 8 9
+2 3 4 5 6 7 8 9 10 11
+4 5 6 7 8 9 10 11 12 13
+6 7 8 9 10 11 12 13 14 15
+8 9 10 11 12 13 14 15 16 17
+10 11 12 13 14 15 16 17 18 19
+12 13 14 15 16 17 18 19 20 21
+14 15 16 17 18 19 20 21 22 23
+16 17 18 19 20 21 22 23 24 25
+18 19 20 21 22 23 24 25 26 27
+00001000 00000020 Group<Group<Int>>
+00001020 00000040 Array<T>
+00001060 00000020 Group<Int>
+00001080 00000040 Array<T>
+000010C0 00000020 Group<Int>
+000010E0 00000040 Array<T>
+00001120 00000020 Group<Int>
+00001140 00000040 Array<T>
+00001180 00000020 Group<Int>
+000011A0 00000040 Array<T>
+000011E0 00000020 Group<Int>
+00001200 00000040 Array<T>
+00001240 00000020 Group<Int>
+00001260 00000040 Array<T>
+000012A0 00000020 Group<Int>
+000012C0 00000040 Array<T>
+00001300 00000020 Group<Int>
+00001320 00000040 Array<T>
+00001360 00000020 Group<Int>
+00001380 00000040 Array<T>
+000013C0 00000020 Group<Int>
+000013E0 00000040 Array<T>
+00001420 03F6EBE0 FREE

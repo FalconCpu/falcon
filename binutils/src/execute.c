@@ -155,8 +155,12 @@ static void write_memory(unsigned int addr, int value, int mask) {
     if (addr < 0x4000000) {
         int a = addr >> 2;
         data_mem[a] = (data_mem[a] & ~mask) | (value & mask);
+        if (trace_file)
+            fprintf(trace_file, "[%08x] = %08x", addr, data_mem[a]);
     } else if (addr>=0xE0000000 && addr<0xE0001000) {
         write_hwregs(addr, value);
+        if (trace_file)
+            fprintf(trace_file, "[%08x] = %08x", addr, value);
     } else if (addr>=0xffff0000) {
         int a = (addr & 0xffff) >> 2;
         prog_mem[a] = (prog_mem[a] & ~mask) | (value & mask);
@@ -262,8 +266,16 @@ static void execute_instruction(int instr) {
                         break;
         case KIND_LD:   set_reg(d, read_memory_size(reg[a] + n13, i)); break;
         case KIND_ST:   write_memory_size(reg[a] + n13s, reg[b], i); break;
-        case KIND_JMP:  set_reg(d,pc); pc += n21*4; break;
-        case KIND_JMPR: set_reg(d,pc); pc = reg[a] + 4*n13; break;
+        case KIND_JMP:  set_reg(d,pc); 
+                        pc += n21*4; 
+                        if (trace_file)
+                            fprintf(trace_file, "-> %s", find_label(pc));
+                        break;
+        case KIND_JMPR: set_reg(d,pc);
+                        pc = reg[a] + 4*n13; 
+                        if (trace_file)
+                            fprintf(trace_file, "-> %s", find_label(pc));                        
+                        break;
         case KIND_LDU:  set_reg(d, n21<<11); break;
         case KIND_LDPC: set_reg(d, pc + n21*4); break;
         case KIND_MUL:  set_reg(d, mul_op(i, reg[a],  reg[b])); break;
@@ -285,7 +297,7 @@ void execute() {
     while (timeout>0 && pc!=0) {
         int instr = read_memory(pc);
         if (trace_file) 
-            fprintf(trace_file, "%08x: %-30s", pc, disassemble_line(instr,pc+4));
+            fprintf(trace_file, "%08x: %-40s", pc, disassemble_line(instr,pc+4));
         pc += 4;
         execute_instruction(instr);
         if (trace_file) 

@@ -1,0 +1,60 @@
+
+class ListIterator<T>(var array: Array<T>, var length: Int)
+    var index = 0
+
+    fun hasNext() -> Bool
+        return index < length
+
+    fun next() -> T
+        if not hasNext()
+            abort(ERR_OUT_OF_BOUNDS)
+        val value = array[index]
+        index = index + 1
+        return value
+
+
+class List<T>
+    var capacity = 8    # Initial capacity
+    var length = 0      # Number of elements in the list
+    var array = new Array<T>(capacity)  
+
+    fun add(item: T)
+        if length = capacity
+            # Double the array size if full
+            # print("Resizing array to %d\n",capacity*2)
+            val oldArray = array
+            array = new Array<T>(capacity*2)
+            for i = 0 to < capacity
+                array[i] = oldArray[i]
+            delete oldArray
+            capacity = capacity * 2
+        array[length] = item
+        length = length + 1
+
+    fun get(index: Int) -> T
+        if index < 0 or index >= length
+            abort(ERR_OUT_OF_BOUNDS)
+        return array[index]
+
+    fun size() -> Int
+        return length
+
+    fun remove(index: Int) -> T
+        if index < 0 or index >= length
+            abort(ERR_OUT_OF_BOUNDS)
+        val removed = array[index]
+        # Shift elements left to fill the gap
+        length = length - 1
+        for i = index to < length
+            array[i] = array[i + 1]
+        return removed
+
+    fun clear()
+        length = 0
+
+    fun iterator() -> ListIterator<T>
+        return new ListIterator<T>(array, length)
+
+    fun delete()
+        delete array
+

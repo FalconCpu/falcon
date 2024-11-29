@@ -175,8 +175,20 @@ char *disassemble_line(int op, int pc) {
         case 0x12: sprintf(line, "%s %s, %s[%d]", load_names[i], reg_name[d], reg_name[a], n13); break;
         case 0x13: sprintf(line, "%s %s, %s[%d]", store_names[i], reg_name[b], reg_name[a], n13s); break;
         case 0x14: sprintf(line, "%s %s, %s, %s", bra_names[i], reg_name[a], reg_name[b], find_label(pc+4*n13s)); break;
-        case 0x15: sprintf(line, "jmp %s, %s", reg_name[d], find_label(pc+4*n21)); break;
-        case 0x16: sprintf(line, "jmp %s, %s[%d]", reg_name[d], reg_name[a], n13); break;
+        case 0x15: 
+            if (d==0)
+                sprintf(line, "jmp %s", find_label(pc+4*n21));
+            else if (d==30)
+                sprintf(line, "jsr %s", find_label(pc+4*n21));
+            else
+                sprintf(line, "jmp %s, %s", reg_name[d], find_label(pc+4*n21)); break;
+            break;
+        case 0x16: 
+            if (a==30 && n13==0)
+                sprintf(line, "ret");
+            else
+            sprintf(line, "jmp %s, %s[%d]", reg_name[d], reg_name[a], n13); 
+            break;
         case 0x17: sprintf(line, "ld %s, 0x%x", reg_name[d], n21<<11); break;
         case 0x18: sprintf(line, "ldpc %s, %s", reg_name[d], find_label(pc+4*n21)); break;
         case 0x19: sprintf(line, "%s %s, %s, %s", mul_names[i], reg_name[d], reg_name[a], reg_name[b]); break;

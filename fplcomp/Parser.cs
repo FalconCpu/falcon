@@ -270,9 +270,26 @@ class Parser(Lexer lexer)
             return null;
     }
 
+    private List<AstType> ParseTypeArgs() {
+        List<AstType> ret = [];
+        if (lookahead.kind!=TokenKind.Lt)   
+            return ret;
+        Expect(TokenKind.Lt);
+
+        if (lookahead.kind!=TokenKind.Gt)
+            do {
+                ret.Add(ParseType());
+            } while (CanTake(TokenKind.Comma));
+    
+        Expect(TokenKind.Gt);
+    
+        return ret;
+    }
+
     private AstTypeIdentifier ParseTypeIdentifier() {
         Token loc = Expect(TokenKind.Identifier);
-        return new AstTypeIdentifier(loc.location, loc.text);
+        List<AstType> typeArgs = ParseTypeArgs();
+        return new AstTypeIdentifier(loc.location, loc.text, typeArgs);
     }
 
     private AstTypeArray ParseTypeArray() {
@@ -352,7 +369,16 @@ class Parser(Lexer lexer)
         return parameters;
     }
 
-
+    private List<AstIdentifier> ParseTypeParameterList() {
+        List<AstIdentifier> parameters = [];
+        Expect(TokenKind.Lt);
+        if (lookahead.kind != TokenKind.Gt)
+            do {
+                parameters.Add(ParseIdentifier());
+             } while (CanTake(TokenKind.Comma));
+        Expect(TokenKind.Gt);
+        return parameters;
+    }
 
     private void ParseFunction(AstBlock block) {
         Token loc = Expect(TokenKind.Fun);
@@ -369,9 +395,10 @@ class Parser(Lexer lexer)
     private void ParseClass(AstBlock block) {
         Token loc = Expect(TokenKind.Class);
         AstIdentifier name = ParseIdentifier();
+        List<AstIdentifier> typeParameters = lookahead.kind==TokenKind.Lt ? ParseTypeParameterList() : [];
         List<AstParameter> parameters = lookahead.kind==TokenKind.OpenB ? ParseClassParameterList() : [];
         ExpectEol();
-        AstClass ret = new(loc.location, name.name, parameters, block);
+        AstClass ret = new(loc.location, name.name, typeParameters, parameters, block);
         block.Add(ret);
         if (lookahead.kind == TokenKind.Indent)
             ParseIndentedBlock(ret);
