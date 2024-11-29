@@ -33,7 +33,6 @@ class Lexer (string fileName) {
         {"not" , TokenKind.Not},
         {"then" , TokenKind.Then},
         {"new" , TokenKind.New},
-        {"->" , TokenKind.Arrow},
         {"lsl" , TokenKind.Lsl},
         {"lsr" , TokenKind.Lsr},
         {"asr" , TokenKind.Asr},
@@ -55,6 +54,7 @@ class Lexer (string fileName) {
         {")" , TokenKind.CloseB},
         {"]" , TokenKind.CloseSq},
         {"}" , TokenKind.CloseCl},
+        {"->" , TokenKind.Arrow},
         {"val" , TokenKind.Val},
         {"var" , TokenKind.Var},
         {"const" , TokenKind.Const},
@@ -72,6 +72,7 @@ class Lexer (string fileName) {
         {"class" , TokenKind.Class},
         {"print" , TokenKind.Print},
         {"rc",     TokenKind.Rc},
+        {"when" , TokenKind.When},
         {"delete", TokenKind.Delete}
     };
 

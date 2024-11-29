@@ -583,6 +583,40 @@ class Parser(Lexer lexer)
         block.Add(new AstIf(loc, clauses));
     }
 
+    private AstWhenClause ParseWhenClause(AstBlock block) {
+        List<AstExpression> cond = [];
+        if (lookahead.kind == TokenKind.Else) {
+            NextToken();
+        } else {
+            do {
+                cond.Add(ParseExpression());
+            } while(CanTake(TokenKind.Comma));
+        }
+        Token loc = Expect(TokenKind.Arrow);
+        AstWhenClause ret = new(loc.location, cond, block);
+        if (lookahead.kind == TokenKind.EndOfLine) {
+            ExpectEol();
+            ParseIndentedBlock(ret);
+        } else {
+            ParseStatement(ret);
+        }
+        return ret;
+    }
+
+    private void ParseWhen(AstBlock block) {
+        Token loc = Expect(TokenKind.When);
+        AstExpression expr = ParseExpression();
+        ExpectEol();
+        Expect(TokenKind.Indent);
+        List<AstWhenClause> clauses = [];
+        while(lookahead.kind!=TokenKind.Dedent && lookahead.kind!=TokenKind.EndOfFile)
+            clauses.Add( ParseWhenClause(block) );
+        Expect(TokenKind.Dedent);
+        CheckEnd(TokenKind.When);
+        block.Add(new AstWhen(loc.location, expr, clauses));
+    }
+
+
     private void ParseReturn(AstBlock block) {
         Token loc = Expect(TokenKind.Return);
         if (lookahead.kind == TokenKind.EndOfLine) {
@@ -611,6 +645,7 @@ class Parser(Lexer lexer)
                 case TokenKind.Class: ParseClass(block); break;
                 case TokenKind.Const: ParseConst(block); break;
                 case TokenKind.Delete: ParseDelete(block); break;
+                case TokenKind.When: ParseWhen(block); break;
                 case TokenKind.Identifier:
                 case TokenKind.OpenB: parseAssign(block); break;
                 default: throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting a statement");

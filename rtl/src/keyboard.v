@@ -23,7 +23,7 @@ always @(*) begin
     next_shift_reg = this_shift_reg;
     next_keyboard_code = keyboard_code;
     next_keyboard_strobe = 1'b0;
-    next_timeout = this_timeout;
+    next_timeout = this_timeout - 1'b1;
     next_count   = this_count;
 
     if (reset || this_timeout==0) begin
@@ -41,8 +41,6 @@ always @(*) begin
         end else if (this_count==10) begin
             next_count = 0;
         end
-
-        next_timeout = this_timeout-1'b1;
     end
 end
 

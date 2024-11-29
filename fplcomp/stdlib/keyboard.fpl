@@ -1,5 +1,6 @@
 
 # Assign codes >127 for Non-ascii keys
+const KEY_BACKSPACE = 7
 const KEY_UP = -1
 const KEY_DOWN = -2
 const KEY_LEFT = -3
@@ -311,8 +312,8 @@ class Keyboard
         # if no key pressed then return 0
         if keycode = -1
             return 0
+        count = (count*256) | keycode
         hwregs.seven_seg = count
-        count = count + 1
 
         # E0 and F0 act as modifiers to other codes
         if keycode = 0xE0
@@ -327,34 +328,36 @@ class Keyboard
         val pressed = not seenF0
         seenE0 = false
         seenF0 = false
-
-        hwregs.seven_seg = key
-
-        if key=0x12
-            lshift = pressed
-        elsif key=0x14
-            lctrl = pressed
-        elsif key= 0x11
-            lalt = pressed
-        elsif key = 0x59
-            rshift = pressed
-        elsif key = 0x94
-            rctrl = pressed
-        elsif key = 0x91
-            ralt = pressed
-        elsif key = 0x9f
-            windows = pressed
-        elsif key = 0xaf
-            menu = pressed
-        elsif key = 0x58 and pressed
-            caps = not caps
-        elsif pressed
-            if lshift or rshift
-                return keycode_table[key*4+1]
-            elsif lctrl or rctrl
-                return keycode_table[key*4+3]
-            elsif caps
-                return keycode_table[key*4+2]
-            else 
-                return keycode_table[key*4]
+        
+        when key
+            0x12 -> lshift = pressed
+            0x14 -> lctrl = pressed
+            0x11 -> lalt = pressed
+            0x59 -> rshift = pressed
+            0x94 -> rctrl = pressed
+            0x91 -> ralt = pressed
+            0x9f -> windows = pressed
+            0xaf -> menu = pressed
+            0x58 -> 
+                if pressed
+                    caps = not caps
+            else -> 
+                if pressed
+                    if lshift or rshift
+                        return keycode_table[key*4+1]
+                    elsif lctrl or rctrl
+                        return keycode_table[key*4+3]
+                    elsif caps
+                        return keycode_table[key*4+2]
+                    else 
+                        return keycode_table[key*4]
         return 0
+    end fun
+
+    fun waitKey()->Char
+        var key : Char
+        repeat
+            key = getKey()
+        until key!=0
+        return key
+

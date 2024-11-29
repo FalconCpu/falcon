@@ -1,6 +1,6 @@
 class StringBuffer
     var alloc = 128
-    var len = 0
+    var length = 0
     var buffer = new Array<Char>(alloc)
 
     fun resize(newAlloc:Int)
@@ -12,31 +12,38 @@ class StringBuffer
             free(old)
 
     fun append(c:Char)
-        if len+1 >= alloc
+        if length+1 >= alloc
             resize(alloc*2)
-        buffer[len] = c
-        len = len + 1
-        buffer[len] = 0
+        buffer[length] = c
+        length = length + 1
+        buffer[length] = 0
 
-    fun getString() -> String
-        return (buffer:String)
+    fun toString() -> String
+        val ret = new String(length)
+        memcpy( (ret:Pointer)+4, buffer, length)
+        return ret
 
     fun insert(index:Int, c:Char)
-        if len + 1 >= alloc
+        if length + 1 >= alloc
             resize(alloc*2)
-        var at = if index >= len then len else index
-        for i=len to > at
+        var at = if index >= length then length else index
+        for i=length to > at
             buffer[i]=buffer[i-1]
         buffer[at] = c
-        len = len + 1
-        buffer[len] = 0
+        length = length + 1
+        buffer[length] = 0
 
     fun remove(index:Int)
-        if index >= len
+        if index >= length
             return
-        for i=index to len-1
+        for i=index to length-1
             buffer[i] = buffer[i+1]
-        buffer[len] = 0
-        len = len - 1
+        buffer[length] = 0
+        length = length - 1
 
-  
+    fun clear()
+        length = 0
+
+    fun get(at:Int) -> Char
+        return buffer[at]
+

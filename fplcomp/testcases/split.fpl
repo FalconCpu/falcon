@@ -1,0 +1,13 @@
+# test the split function in the standard library
+
+fun main()
+    val s = "Hello,World,How,Are,You"
+    val result = splitString(s, ',')
+    for word in result
+        print("\"%s\"\n", word)
+@-------------------
+"Hello"
+"World"
+"How"
+"Are"
+"You"

@@ -53,3 +53,20 @@ fun substring(s: String, start: Int, length: Int) -> String
     memcpy( (result:Pointer)+4, (s:Pointer)+4+start, length) # +4 to account for length field
     return result
 
+# Splits the string into a list of words based on the delimiter
+fun splitString(s:String, delimiter: Char) -> List<String>
+    val result = new List<String>()
+    var startOfWord = 0
+    var inWord = false
+
+    for i = 0 to < s.length
+        if s[i] = delimiter and inWord
+            result.add(substring(s, startOfWord, i - startOfWord))
+            inWord = false
+        elsif s[i] != delimiter and not inWord
+            startOfWord = i
+            inWord = true   
+    if inWord
+        result.add(substring(s, startOfWord, s.length - startOfWord))   
+    return result
+

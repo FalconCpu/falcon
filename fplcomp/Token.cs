@@ -39,7 +39,6 @@ enum TokenKind {
     Comma,
     Colon,
     Tilde,
-    Arrow,
     Then,
     New,
     To,
@@ -59,6 +58,7 @@ enum TokenKind {
     CloseSq,
     CloseCl,
     Gt,         // Cannot allow > to be a line continuation as its use in generics
+    Arrow,      // How to handle this? Wants to be a line continuation in function definitions, but not in when
     Qmark,
     Emark,
     Array,
@@ -78,5 +78,6 @@ enum TokenKind {
     Class,
     Print,
     Delete,
+    When,
     Error
 }

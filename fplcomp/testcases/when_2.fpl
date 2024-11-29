@@ -1,0 +1,16 @@
+# when with duplicate cases flags an error
+fun main()
+    for i = 0 to 10
+        print("%d = ",i)
+        when i
+            0 -> print("zero\n")
+            1 -> print("one\n")
+            2 -> print("two\n")
+            3 -> print("three\n")
+            2 -> print("another two\n")   # should be an error
+            7,5 -> print("prime\n")
+            else -> print("other\n")
+
+@----------------------------
+testcase_outputs/when_2.fpl:10:15: Duplicate when clause 2
+Failed with 1 errors

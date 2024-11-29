@@ -1,0 +1,24 @@
+# simple tesst of a when instruction
+fun main()
+    for i = 0 to 10
+        print("%d = ",i)
+        when i
+            0 -> print("zero\n")
+            1 -> print("one\n")
+            2 -> print("two\n")
+            3 -> print("three\n")
+            7,5 -> print("prime\n")
+            else -> print("other\n")
+
+@----------------------------
+0 = zero
+1 = one
+2 = two
+3 = three
+4 = other
+5 = prime
+6 = other
+7 = prime
+8 = other
+9 = other
+10 = other
