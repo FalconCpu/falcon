@@ -13,9 +13,14 @@ class AstWhen(Location location, AstExpression astExpr, List<AstWhenClause> clau
     public override void TypeCheck(AstBlock scope) {
         HashSet<int> seen = [];
         astExpr.TypeCheckRvalue(scope);
+        if (astExpr.type!=IntType.Instance && astExpr.type!=CharType.Instance && astExpr.type!=StringType.Instance &&
+            astExpr.type!=ErrorType.Instance)
+            Log.Error(location,$"Invalid type for when statement {astExpr.type}");
+
         foreach(AstWhenClause clause in clauses) {
             clause.TypeCheck(scope);
             foreach(AstExpression c in clause.cond) {
+                astExpr.type.CheckAssignableFrom(c);
                 if (c.HasKnownIntValue()) {
                     int value = c.GetKnownIntValue();
                     if (seen.Contains(value))
@@ -37,7 +42,14 @@ class AstWhen(Location location, AstExpression astExpr, List<AstWhenClause> clau
             if (clause.cond.Count > 0) {
                 foreach(AstExpression c in clause.cond) {
                     Symbol s = c.CodeGenRvalue(func);
-                    func.Add( new InstrBra(AluOp.EQ_I, s, expr, branchLabel));
+                    if (s.type==StringType.Instance) {
+                        func.Add(new InstrMov(RegisterSymbol.registers[1], s));
+                        func.Add(new InstrMov(RegisterSymbol.registers[2], expr));
+                        func.Add(new InstrCall(StdLib.strequals,2, IntType.Instance));
+                        func.Add(new InstrBra(AluOp.NE_I, RegisterSymbol.registers[8], RegisterSymbol.zero, branchLabel));
+                    }
+                    else
+                        func.Add( new InstrBra(AluOp.EQ_I, s, expr, branchLabel));
                 }
             } else {
                 func.Add(new InstrJmp(branchLabel));

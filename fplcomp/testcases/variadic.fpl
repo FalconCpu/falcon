@@ -1,0 +1,18 @@
+# Simple testcase of variadic function
+
+fun doSomething(a:String, b:Int...)
+    print("%s\n",a)
+    for i = 0 to b.length
+        print("%d\n",i)
+
+fun main()
+    doSomething("hello",1,2,3,4,5)
+
+@--------------------------
+hello
+0
+1
+2
+3
+4
+5

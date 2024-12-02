@@ -167,6 +167,16 @@ always @(*) begin
             p2_is_latent  = 1;
         end
 
+        `INST_CFG: begin
+            p2_op         = {6'h1b, p2_k[2:0]};
+            p2_a_is_reg   = 1;
+            p2_b_is_reg   = 0;
+            p2_b_is_const = 1;
+            p2_reg_d      = p2_d;
+            p2_const      = {{19{p2_c[7]}}, p2_c, p2_b};
+            p2_is_latent  = 0;
+        end
+
         default: begin
             p2_op         = 9'b0;
             p2_a_is_reg   = 0;

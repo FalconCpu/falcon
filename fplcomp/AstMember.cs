@@ -28,7 +28,7 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         if (leftType is ClassType classType) {
             field = classType.GetField(identifier.name) ?? UndefinedField();
             SetType(field.type);
-        } else if (leftType is StringType && identifier.name=="length") {
+        } else if ((leftType is StringType || leftType is ArrayType) && identifier.name=="length") {
             field = StdLib.lengthField;
             SetType(IntType.Instance);
         } else {
@@ -68,8 +68,6 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
                 func.code.Add(new InstrLoadField(type.GetSize(), temp1, addr, ff));
                 func.code.Add(new InstrAlu(temp2, op, temp1, value));
                 func.code.Add(new InstrStoreField(type.GetSize(), temp2, addr, ff));
-
-
             }
         } else 
             throw new NotImplementedException("AstMember.CodeGenRvalue for non-field");

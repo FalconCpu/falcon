@@ -113,6 +113,16 @@ string mul_names[] = {
     "mods",
 };
 
+string cfg_name[] = {
+    "!version",
+    "!epc",   
+    "!ecause",
+    "!edata", 
+    "!estatus",
+    "!escratch",
+    "!status"
+};
+
 
 // ================================================
 //                 alu_names
@@ -193,6 +203,14 @@ char *disassemble_line(int op, int pc) {
         case 0x18: sprintf(line, "ldpc %s, %s", reg_name[d], find_label(pc+4*n21)); break;
         case 0x19: sprintf(line, "%s %s, %s, %s", mul_names[i], reg_name[d], reg_name[a], reg_name[b]); break;
         case 0x1a: sprintf(line, "%s %s, %s, 0x%x", mul_names[i], reg_name[d], reg_name[a], n13); break;
+        case 0x1b:
+            if (i==0)
+                sprintf(line, "cfg %s,%s", reg_name[d], cfg_name[b]);
+            else if (i==1)
+                sprintf(line, "cfg %s, %s, %s", reg_name[d], cfg_name[b], reg_name[a]);
+            else
+                sprintf(line, "undefined cfg");
+                break;
         default: sprintf(line, "undefined"); break;
     }
     return line;

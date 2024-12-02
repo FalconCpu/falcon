@@ -1,3 +1,14 @@
+# Overall goal
+
+In this direcotory I am working on a compiler for a language called fpl. 
+
+My goal here is to have a language in which I can write an operating system for my computer - something that can work close to the metal whilst still giving as modern and safe a feel as possible.
+
+There is always that tension in there - On one hand when the computer boots I want just a small amount of assembly code to setup the stack pointer etc - then jump into fpl code. So fpl needs to be able to handle setting up the memory system, working with peripherals etc. Viewing the computer as a big array of bytes and a set of instructions that can manipulate those bytes.
+
+Yet on the other hand I want to make it as ergonomic and safe as possible - given those constraints. 
+
+
 
 
 # Symbols

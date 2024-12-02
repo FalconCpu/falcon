@@ -1,0 +1,9 @@
+# test reading and writing of configuration registers
+
+ld $1, 0x1234567
+cfg !edata, $1
+ld $1, 0xabcdef01
+cfg !epc, $1
+
+cfg $10, !edata
+cfg $11, !epc

@@ -334,17 +334,18 @@ class Parser(Lexer lexer)
         AstIdentifier name = ParseIdentifier();
         Expect(TokenKind.Colon);
         AstType type = ParseType();
-        return new AstParameter(name.location, TokenKind.Val, name, type);
+        bool isVariadic = CanTake(TokenKind.DotDotDot);
+        return new AstParameter(name.location, TokenKind.Val, name, type, isVariadic);
     }
 
     private List<AstParameter> ParseParameterList() {
-        Expect(TokenKind.OpenB);
         List<AstParameter> parameters = [];
+        Expect(TokenKind.OpenB);
         if (lookahead.kind != TokenKind.CloseB)
             do {
                 parameters.Add(ParseParameter());
              } while (CanTake(TokenKind.Comma));
-        Expect(TokenKind.CloseB);
+        Expect(TokenKind.CloseB);   
         return parameters;
     }
 
@@ -355,7 +356,7 @@ class Parser(Lexer lexer)
         AstIdentifier name = ParseIdentifier();
         Expect(TokenKind.Colon);
         AstType type = ParseType();
-        return new AstParameter(name.location, kind, name, type);
+        return new AstParameter(name.location, kind, name, type, false);
     }
 
     private List<AstParameter> ParseClassParameterList() {

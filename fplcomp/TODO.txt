@@ -1,5 +1,18 @@
-
-For loops  => find a more generic structure
-static functions
-+= -= etc
+Recently added:
 new List<T>{item,item,item}
++= -= etc
+when statement
+
+TODO:-
+... varargs
+global (+class static) variables
+static member functions
+class inheritance
+virtual functions
+public/private
+For loops  => find a more generic structure
+
+
+
+Exception handling
+Interupts

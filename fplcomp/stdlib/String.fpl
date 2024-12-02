@@ -9,9 +9,9 @@ fun stringConcat(strings:Array<String>, num:Int) -> String
     val result = new String(total_length)
 
     # Copy strings into the result
-    var offset = 4    # Allow for the Length field
+    var offset = 0
     for i=0 to < num
-        memcpy((result:Pointer)+offset, (strings[i]:Pointer)+4, strings[i].length)
+        memcpy((result:Pointer)+offset, (strings[i]:Pointer), strings[i].length)
         offset = offset + strings[i].length
 
     return result
@@ -50,7 +50,7 @@ fun substring(s: String, start: Int, length: Int) -> String
         return (0:String)
 
     val result = new String(length)
-    memcpy( (result:Pointer)+4, (s:Pointer)+4+start, length) # +4 to account for length field
+    memcpy( (result:Pointer), (s:Pointer)+start, length)
     return result
 
 # Splits the string into a list of words based on the delimiter

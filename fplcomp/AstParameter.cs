@@ -1,14 +1,20 @@
-class AstParameter(Location location, TokenKind kind, AstIdentifier name, AstType astType) : Ast(location) {
+class AstParameter(Location location, TokenKind kind, AstIdentifier name, AstType astType, bool isVariadic) : Ast(location) {
     public AstIdentifier name = name;
     public AstType astType = astType;
     public TokenKind kind = kind;
+    public bool isVariadic = isVariadic;
 
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + "PARAM " + kind + " " + name.name);
     }
 
+    // Generate a symbol for the parameter. If this field is the last parameter in a variadic function,
+    // then make its type be Array<T> where T is the type of the variadic parameter.
     public Symbol GenerateSymbol(AstBlock scope) {
-        Symbol sym = new VariableSymbol(name.name, astType.ResolveAsType(scope), false, false);
+        Type type = astType.ResolveAsType(scope);
+        if (isVariadic)
+            type = ArrayType.MakeArrayType(type);
+        Symbol sym = new VariableSymbol(name.name, type, false, false);
         return sym;
     }
 

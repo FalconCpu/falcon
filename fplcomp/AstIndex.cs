@@ -4,7 +4,7 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
     public AstExpression left = left;
 
     public override void Print(int indent) {
-        Console.WriteLine(new String(' ', indent * 2) + "INDEX");
+        Console.WriteLine(new string(' ', indent * 2) + "INDEX");
         left.Print(indent + 1);
         index.Print(indent + 1);
     }
@@ -39,10 +39,9 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol addr = func.NewTemp(IntType.Instance);
         Symbol ret =  func.NewTemp(type);
         int size = type.GetSize();
-        int offset = (lhs.type is StringType)? 4  : 0;  // Account for the length at the start of a string  
         func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
-        func.Add(new InstrLoadMem(size,ret, addr,offset));
+        func.Add(new InstrLoadMem(size,ret, addr,0));
         return ret;
     }
 
@@ -52,17 +51,16 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         Symbol scaled_rhs = func.NewTemp(IntType.Instance);
         Symbol addr = func.NewTemp(IntType.Instance);
         int size = type.GetSize();
-        int offset = (lhs.type is StringType)? 4  : 0;  // Account for the length at the start of a string
         func.Add(new InstrAlui(scaled_rhs, AluOp.MUL_I, rhs, size) );
         func.Add(new InstrAlu(addr, AluOp.ADD_I, lhs, scaled_rhs));
         if (op==AluOp.UNDEFINED)
-            func.Add(new InstrStoreMem(size, value, addr, offset));
+            func.Add(new InstrStoreMem(size, value, addr, 0));
         else {
             Symbol temp1 = func.NewTemp(type);
             Symbol temp2 = func.NewTemp(type);
-            func.Add(new InstrLoadMem(size, temp1, addr, offset));
+            func.Add(new InstrLoadMem(size, temp1, addr, 0));
             func.Add(new InstrAlu(temp2, op, temp1, value));
-            func.Add(new InstrStoreMem(size, temp2, addr, offset));
+            func.Add(new InstrStoreMem(size, temp2, addr, 0));
         }
     }
 }

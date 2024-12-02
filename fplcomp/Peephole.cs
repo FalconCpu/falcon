@@ -65,7 +65,7 @@ class Peephole {
         }
 
         // If the destination of an instruction is unused, we can remove the instruction.
-        if (instr.GetDest() is Symbol sym && sym.useCount==0 && !(instr is InstrCall) && !(instr is InstrCallr)) {
+        if (instr.GetDest() is Symbol sym && sym.useCount==0 && !(instr is InstrCall) && !(instr is InstrCallr) && sym.index!=31) {
             ChangeToNop(instr);
             return;
         }

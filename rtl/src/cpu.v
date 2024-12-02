@@ -21,6 +21,7 @@ module cpu(
 // Signals from pc 
 wire [31:0] p1_pc;
 wire [31:0] p2_pc;
+wire [31:0] p3_pc;
 
 // Signals from icache
 wire [31:0] p2_instr;
@@ -64,7 +65,8 @@ cpu_pc  cpu_pc_inst (
     .p3_jump(p3_jump),
     .p3_jump_target(p3_jump_target),
     .p1_pc(p1_pc),
-    .p2_pc(p2_pc)
+    .p2_pc(p2_pc),
+    .p3_pc(p3_pc)
   );
 
 cpu_decoder  cpu_decoder_inst (
@@ -111,6 +113,7 @@ cpu_alu  cpu_alu_inst (
     .reset(reset),
     .stall(stall),
     .p2_pc(p2_pc),
+    .p3_pc(p3_pc),
     .p3_op(p3_op),
     .p4_op(p4_op),
     .p3_data_a(p3_data_a),

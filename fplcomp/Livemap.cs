@@ -81,7 +81,7 @@ class Livemap {
             Instr ins = func.code[index];
             if (ins is InstrCall || ins is InstrCallr)  continue; // Don't touch calls as they may have side effects
             Symbol? dest = ins.GetDest();
-            if (dest!=null && livemap[index+1][dest.index] == false)
+            if (dest!=null && livemap[index+1][dest.index] == false && dest.index!=31)
                 ChangeToNop(ins);
         }
     }

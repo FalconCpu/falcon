@@ -48,6 +48,7 @@ class Lexer (string fileName) {
         {"-=" , TokenKind.MinusEq},
         {"*=" , TokenKind.StarEq},
         {"/=" , TokenKind.SlashEq},
+        {"...", TokenKind.DotDotDot},
         {"(" , TokenKind.OpenB},
         {"[" , TokenKind.OpenSq},
         {"{" , TokenKind.OpenCl},
@@ -114,6 +115,16 @@ class Lexer (string fileName) {
 
     private string ReadPunctuation() {
         char c = NextChar();
+
+        if (c=='.' && lookahead=='.') {
+            NextChar();
+            if (lookahead=='.') {
+                NextChar();
+                return "...";
+            }
+            return "..";
+        }
+
         if ( (c=='!' && lookahead=='=') ||
              (c=='<' && lookahead=='=') ||
              (c=='>' && lookahead=='=') ||

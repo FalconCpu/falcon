@@ -6,7 +6,7 @@
 
 int line_number;
 int* prog_mem;
-int* data_mem;
+unsigned int* data_mem;
 
 FILE* trace_file  = NULL;
 
@@ -18,7 +18,7 @@ static void load_program(string filename) {
     char line[100];
     int program_size = 0;
     while (fgets(line, sizeof(line), file) != NULL)
-        prog_mem[program_size++] = strtol(line,0,16);
+        prog_mem[program_size++] = strtoul(line,0,16);
     fclose(file);
 }
 

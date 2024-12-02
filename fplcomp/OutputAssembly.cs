@@ -170,15 +170,18 @@ class OutputAssembly(StreamWriter filehandle) {
     }
 
     public void Output(ConstObjectSymbol cos) {
+        // Write the length field
+        WriteLine($"dcw {cos.value[0]}");
         WriteLine($"{cos.name}:");
+
         if (cos.type is ArrayType arry && arry.elementType is CharType) {
             // Special case for arrays of chars = use dcb instead of dcw
-            foreach(int[] d in cos.value.Chunk(4))
+            foreach(int[] d in cos.value[1..].Chunk(4))
                 WriteLine($"dcb {string.Join(',', d)}");
             return;
         }
 
-        foreach(int d in cos.value)
+        foreach(int d in cos.value[1..])
             WriteLine($"dcw 0x{d:X8}");
     }
 

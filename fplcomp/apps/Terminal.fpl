@@ -23,7 +23,6 @@ class Terminal (val keyboard:Keyboard)
         posY = 0
 
     fun clearToEndOfLine()
-        # print("clearing %d %d\n", posX*fontWidth, posY*fontHeight)   
         fillRect(posX*fontWidth, posY*fontHeight, screenWidth*fontWidth, (posY+1)*fontHeight-1, 0)
 
     fun printChar(c:Char)
@@ -74,59 +73,115 @@ class Terminal (val keyboard:Keyboard)
         stringBuffer.clear()
 
         while true
-            # Print the current string
             printStringBufferWithCursor()
-
-            # wait for a key
             val key = keyboard.waitKey()
+            when key
+                '\n' ->
+                    # redraw the string without the cursor
+                    cursor = -1
+                    printStringBufferWithCursor()
+                    printChar('\n')
+                    return stringBuffer.toString()
 
-            # process the key
-            if key = '\n'
-                # redraw the string without the cursor
-                cursor = -1
-                printStringBufferWithCursor()
-                return stringBuffer.toString()
+                KEY_LEFT ->
+                    if cursor!=0
+                        cursor = cursor - 1
+                    if keyboard.lctrl or keyboard.rctrl
+                        while cursor!=0 and stringBuffer.get(cursor)!=' '
+                            cursor = cursor - 1
 
-            elsif key=KEY_LEFT
-                if cursor!=0
-                    cursor = cursor - 1
+                KEY_RIGHT ->
+                    if cursor!=stringBuffer.length
+                        cursor = cursor + 1
+                    if keyboard.lctrl or keyboard.rctrl
+                        while cursor!=stringBuffer.length and stringBuffer.get(cursor)!=' '
+                            cursor = cursor + 1
 
-            elsif key=KEY_RIGHT
-                if cursor!=stringBuffer.length
-                    cursor = cursor + 1
+                KEY_BACKSPACE ->
+                    if cursor!=0
+                        stringBuffer.remove(cursor-1)
+                        cursor = cursor - 1
 
-            elsif key=KEY_BACKSPACE
-                if cursor!=0
-                    stringBuffer.remove(cursor-1)
-                    cursor = cursor - 1
+                KEY_HOME ->
+                    cursor = 0
 
-            elsif key=KEY_HOME
-                cursor = 0
+                KEY_END ->
+                    cursor = stringBuffer.length
 
-            elsif key=KEY_END
-                cursor = stringBuffer.length
+                KEY_DELETE ->
+                    if cursor!=stringBuffer.length
+                        stringBuffer.remove(cursor)
 
-            elsif key=KEY_DELETE
-                if cursor!=stringBuffer.length
-                    stringBuffer.remove(cursor)
-
-            elsif key>=' ' and key<='~'
-                stringBuffer.insert(cursor,key)
-                cursor = cursor + 1
+                else -> 
+                    if key>=' ' and key<='~'
+                        stringBuffer.insert(cursor,key)
+                        cursor = cursor + 1
         end while
     end fun            
 
-fun main()
-    val keyboard = new Keyboard()
+
+class CommandLine(keyboard:Keyboard)
     val terminal = new Terminal(keyboard)
 
-    while true
+    fun cmdClear(words:List<String>)
+        if words.length=1
+            terminal.clearScreen()
+        else
+            terminal.printString("Usage: clear\n")
+
+    fun cmdVersion(words:List<String>)
+        if words.length=1
+            terminal.printString("Version 0.1\n")
+        else
+            terminal.printString("Usage: version\n")
+
+    fun cmdEcho(words:List<String>)
+        for i=1 to <words.length
+            terminal.printString(words.get(i))
+            terminal.printString(" ")
+        terminal.printString("\n")
+
+    fun cmdHelp(words:List<String>)
+        if words.length=1
+            terminal.printString("Available commands:\n")
+            terminal.printString("  clear\n")
+            terminal.printString("  version\n")
+            terminal.printString("  echo <text>\n")
+            terminal.printString("  help\n")
+            terminal.printString("  ls\n")
+
+    fun cmdLs(words:List<String>)
+        terminal.printString("Need to implement a file system :-)  \n")
+
+    fun processCommand(command: String)
+        val words = splitString(command,' ')
+        if words.length=0
+            return
+        when words.get(0)
+            "clear" -> cmdClear(words)
+            "version" -> cmdVersion(words)
+            "echo" -> cmdEcho(words)
+            "help" -> cmdHelp(words)
+            "ls" -> cmdLs(words)
+            "dumpmem" -> dumpMemorySystem()
+            else -> 
+                terminal.printString("Unknown command: ")
+                terminal.printString(words.get(0))
+                terminal.printString("\n")
+        for word in words
+            delete word
+        delete words
+
+    fun run()
         terminal.printString("> ")
         val line = terminal.readLine()
-        val words = splitString(line,' ')
-        terminal.printString("\nYou typed ")
-        for word in words
-            terminal.printString("<")
-            terminal.printString(word)
-            terminal.printString("> ")
-        terminal.printChar('\n')
+        processCommand(line)
+        delete line
+
+fun main()
+    val keyboard = new Keyboard()
+    val cmd = new CommandLine(keyboard)
+    while true
+        cmd.run()
+
+

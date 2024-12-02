@@ -107,6 +107,7 @@ class RegisterSymbol(string name) : Symbol(name, UndefinedType.Instance)
     ];
 
     public static RegisterSymbol zero = registers[0];
+    public static RegisterSymbol sp = registers[31];
 }
 
 

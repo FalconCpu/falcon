@@ -1,7 +1,9 @@
-class AstFunction(Location location, string name, List<AstParameter> parameters, AstType? astReturnType, AstBlock? parent) 
+using System.Runtime.CompilerServices;
+
+class AstFunction(Location location, string name, List<AstParameter> astParameters, AstType? astReturnType, AstBlock? parent) 
 : AstBlock(location,parent) {
     public readonly string name = name;
-    public readonly List<AstParameter> astParameters = parameters;
+    public readonly List<AstParameter> astParameters = astParameters;
     public readonly AstType? astReturnType = astReturnType;
     public readonly GenericClassType? methodOf = (parent is AstClass classAst) ? classAst.classType : null;
     public readonly string qualifiedName = (parent==null || parent is AstTop) ? $"/{name}" : $"{((AstFunction)parent).qualifiedName}/{name}";
@@ -40,11 +42,19 @@ class AstFunction(Location location, string name, List<AstParameter> parameters,
         // Add this function to the list of all functions
         allFunctions.Add(this);
 
-        // Generate the parameter symbols
-        foreach(AstParameter param in astParameters) {
-            Symbol sym = param.GenerateSymbol(scope);
+        // Generate the parameter symbols.
+        // For a variadic types - we use the variadic type for the function type, but convert to an array 
+        // for the symbol inside the function
+        List<Type> paramTypes = [];
+        for(int i = 0; i < astParameters.Count; i++) {
+            Symbol sym = astParameters[i].GenerateSymbol(scope);
+            if (sym.type is ArrayType ary && astParameters[i].isVariadic)
+                paramTypes.Add( VariadicType.MakeVariadicType(ary.elementType));
+            else
+                paramTypes.Add(sym.type);
+
             parameters.Add(sym);
-            AddSymbol(param.location, sym);
+            AddSymbol(astParameters[i].location, sym);
         }
 
         if (methodOf!=null) {
@@ -56,7 +66,7 @@ class AstFunction(Location location, string name, List<AstParameter> parameters,
         returnType = astReturnType?.ResolveAsType(scope) ?? UnitType.Instance;
 
         // Create the function symbol
-        functionType = FunctionType.MakeFunctionType(parameters.Select(it => it.type).ToList(), returnType);
+        functionType = FunctionType.MakeFunctionType(paramTypes, returnType);
         FunctionSymbol funcSym = new(name, functionType, this);
         scope.AddSymbol(location, funcSym);
         methodOf?.AddMethod(funcSym);

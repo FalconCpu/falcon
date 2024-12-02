@@ -206,7 +206,7 @@ static int build_word;
 static int build_count;
 
 static void out_byte(int c) {
-    build_word |= c<<(8*build_count);
+    build_word |= (c&0xff)<<(8*build_count);
     build_count++;
     if (build_count==4) {
         add_instr(build_word);
@@ -288,6 +288,11 @@ static void generate_dcw(Token* line) {
                 add_instr(line[i]->value);
                 break;
 
+            case 'l':
+                add_reference(line[i]);
+                add_instr(0);
+                break;
+
             default:
                 error("Invalid word");
         }
@@ -359,6 +364,9 @@ static void assemble_line(Token* line) {
     CASE("M$,r,r")          { add_instr(fmt_r(KIND_MUL, V0, V1, V3, V5)); }
     CASE("M$,i")            { add_instr(fmt_i(KIND_MULI, V0, V1, V1, V3)); }
     CASE("M$,r,i")          { add_instr(fmt_i(KIND_MULI, V0, V1, V3, V5)); }
+    CASE("C$,!")            { add_instr(fmt_i(KIND_CFG, 0, V1, 0, V3)); }
+    CASE("C!,$")            { add_instr(fmt_i(KIND_CFG, 1, 0, V3, V1)); }
+    CASE("C$,!,$")          { add_instr(fmt_i(KIND_CFG, 1, V1, V5, V3)); }
     else                    { error("Unrecognized instruction"); for(int k=0; line[k]; k++) printf("%c", line[k]->kind); printf("\n"); }
 }
 
@@ -385,6 +393,7 @@ static void resolve_reference(Reference* reference) {
 
     int offset = (label->value - org - reference->address - 4)/4;
     switch(instr_kind) {
+        case 0:        prog[addr] = label->value; break;
         case KIND_JMP: prog[addr] = fmt_j(instr_kind, instr_d, offset); break;
         case KIND_BRA: prog[addr] = fmt_s(instr_kind, instr_i, instr_a, instr_b, offset); break;
         case KIND_LDPC: prog[addr] = fmt_j(instr_kind, instr_d, offset); break;

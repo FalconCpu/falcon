@@ -1,7 +1,7 @@
 
 class AstStringLit(Location location, string value) : AstExpression(location) {
     public string value = value;
-    private ConstObjectSymbol symbol = genSym(value);
+    private ConstObjectSymbol symbol = GenSym(value);
 
 
     public override void Print(int indent) {
@@ -18,7 +18,7 @@ class AstStringLit(Location location, string value) : AstExpression(location) {
         return ret;
     }
 
-    public static ConstObjectSymbol genSym(string value) {
+    public static ConstObjectSymbol GenSym(string value) {
         List<int> data = [value.Length];
         foreach(char[] s in (value+"\0").Chunk(4)) {
             int v = 0;

@@ -1,0 +1,22 @@
+# when conditions can be strings
+
+fun printNumber(a:String)
+    when a
+        "one" -> print("%d\n",1)
+        "two" -> print("%d\n",2)
+        "three" -> print("%d\n",3)
+        else -> print("unknown\n")
+
+fun main()
+    printNumber("one")
+    printNumber("two")
+    printNumber("three")
+    printNumber("four")
+    printNumber("five")
+
+@----------------------------
+1
+2
+3
+unknown
+unknown

@@ -104,6 +104,15 @@ static struct Token predefined_tokens[] = {
     { 'S', 0, "sth", 1 , 0},
     { 'S', 0, "stw", 2 , 0},
 
+    { 'C', 0, "cfg",      0, 0},
+    { '!', 0, "!version", 0, 0},
+    { '!', 0, "!epc",     1, 0},
+    { '!', 0, "!ecause",  2, 0},
+    { '!', 0, "!edata",   3, 0},
+    { '!', 0, "!estatus", 4, 0},
+    { '!', 0, "!escratch",5, 0},
+    { '!', 0, "!status",  6, 0},
+
     { 'd', 0, "dcb",  0 , 0},
     { 'd', 0, "dch",  1 , 0},
     { 'd', 0, "dcw",  2 , 0},
@@ -411,7 +420,7 @@ static Token read_token() {
     if (lookahead==0)
         return 0;
 
-    else if (lookahead=='$') {
+    else if (lookahead=='$' || lookahead=='!') {
         string text = read_word();
         ret = hash_find(text);
         if (ret==0) {

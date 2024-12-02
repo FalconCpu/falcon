@@ -38,6 +38,6 @@ static class StdLib {
         scope.AddSymbol(Location.unknown, new FunctionSymbol("strequals", str_str_to_bool, strequals));
 
         rcField.offset = -4;
-        lengthField.offset = 0;
+        lengthField.offset = -4;
     }
 }

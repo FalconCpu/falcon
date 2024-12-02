@@ -6,6 +6,7 @@ module cpu_alu(
     input               reset,
     output              stall,
     input [31:0]        p2_pc,
+    input [31:0]        p3_pc,
 
     // connections from the decoder
     input [8:0]         p3_op,
@@ -43,6 +44,16 @@ reg [1:0] p3_addr_lsb, p4_addr_lsb;
 reg p3_is_mem, p4_is_mem;
 reg [31:0] p4_in;
 
+reg [31:0] this_epc ,     next_epc;
+reg [3:0]  this_ecause ,  next_ecause;
+reg [31:0] this_edata ,   next_edata;
+reg [3:0]  this_estatus , next_estatus;
+reg [31:0] this_escratch, next_escratch;
+reg [3:0]  this_status,   next_status;
+reg [31:0] cfg_read;
+
+reg raise_misaligned_store;
+reg raise_misaligned_load;
 
 reg  [31:0] p3_numerator, p4_numerator;
 reg  [31:0] p3_denominator, p4_denominator;
@@ -73,6 +84,37 @@ always @(*) begin
     p3_divide_sign = 1'bx;
     p3_numerator = 32'bx;
     p3_denominator = 32'bx;
+    next_epc = this_epc;
+    next_ecause = this_ecause;
+    next_edata = this_edata;
+    next_estatus = this_estatus;
+    next_escratch = this_escratch;
+    next_status = this_status;
+    raise_misaligned_load = 1'b0;
+    raise_misaligned_store = 1'b0;
+
+    // config registers
+    case(p3_data_b[12:0])
+        13'd0: cfg_read = 32'h00000001;
+        13'd1: cfg_read = this_epc;
+        13'd2: cfg_read = this_ecause;
+        13'd3: cfg_read = this_edata;
+        13'd4: cfg_read = this_estatus;
+        13'd5: cfg_read = this_escratch;
+        13'd6: cfg_read = this_status;
+        default: cfg_read = 32'bx;
+    endcase
+
+    if (p3_op == `INST_CFGW) begin
+        case(p3_data_b[12:0]) 
+            13'd1: next_epc = p3_data_a;
+            13'd2: next_ecause = p3_data_a;
+            13'd3: next_edata = p3_data_a;
+            13'd4: next_estatus = p3_data_a;
+            13'd5: next_escratch = p3_data_a;
+            13'd6: next_status = p3_data_a;
+        endcase
+    end 
 
     // Stage 3 of the pipeline
     casex (p3_op)
@@ -142,13 +184,15 @@ always @(*) begin
         end  
 
         `INST_LDH: begin 
-            p3_is_mem = 1'b1;
+            raise_misaligned_load = mem_addr[0];
+            p3_is_mem = ! raise_misaligned_load;
             cpu_address = mem_addr;
             cpu_write = 1'b0; 
         end // TODO: Check align
 
         `INST_LDW: begin 
-            p3_is_mem = 1'b1; 
+            raise_misaligned_load = mem_addr[1:0] != 2'b00;
+            p3_is_mem = ! raise_misaligned_load;
             cpu_address = mem_addr;
             cpu_write = 1'b0; 
         end // TODO: Check align
@@ -173,7 +217,8 @@ always @(*) begin
             end
         
         `INST_STH: begin
-            p3_is_mem = 1'b1;
+            raise_misaligned_store = mem_addr[0];
+            p3_is_mem = ! raise_misaligned_store;
             cpu_address = mem_addr;
             cpu_write = 1'b1;
             if (mem_addr[1:0] == 2'b00) begin
@@ -189,7 +234,8 @@ always @(*) begin
         end
 
         `INST_STW: begin
-            p3_is_mem = 1'b1;
+            raise_misaligned_store = mem_addr[1:0] != 2'b00;
+            p3_is_mem = ! raise_misaligned_store;
             cpu_address = mem_addr;
             if (mem_addr[1:0] == 2'b00) begin
                 cpu_write = 1'b1;
@@ -248,6 +294,10 @@ always @(*) begin
             p3_divide_start = 1'b1;
         end
 
+        `INST_CFGR,
+        `INST_CFGW:
+            p3_out = cfg_read;
+
         default: 
             p3_out = 32'bx;
 
@@ -285,6 +335,23 @@ always @(*) begin
         default:
             p4_out = p4_in;
     endcase
+
+    // Exception handling
+    if (raise_misaligned_load) begin
+        next_epc = p3_pc;
+        next_edata = cpu_address;
+        next_estatus = this_status;
+        next_ecause = `CAUSE_MISALIGNED_LOAD;
+        p3_jump = 1'b1;
+        p3_jump_target = 32'hFFFF0004;
+    end else if (raise_misaligned_store) begin
+        next_epc = p3_pc;
+        next_edata = cpu_address;
+        next_estatus = this_status;
+        next_ecause = `CAUSE_MISALIGNED_STORE;
+        p3_jump = 1'b1;
+        p3_jump_target = 32'hFFFF0004;
+    end
 end
 
 always @(posedge clock) begin
@@ -297,6 +364,12 @@ always @(posedge clock) begin
         p4_denominator <= p3_denominator;
         p4_divide_sign <= p3_divide_sign;
         p4_divide_start <= p3_divide_start;
+        this_epc <= next_epc;
+        this_ecause <= next_ecause;
+        this_edata <= next_edata;
+        this_estatus <= next_estatus;
+        this_escratch <= next_escratch;
+        this_status <= next_status;
     end
 end
 

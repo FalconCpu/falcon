@@ -36,6 +36,8 @@ enum TokenKind {
     Or,
     Not,
     Dot,
+    DotDot,
+    DotDotDot,
     Comma,
     Colon,
     Tilde,

@@ -12,7 +12,8 @@ module cpu_pc(
 
     // Connection to instruction bus
     output reg [31:0]   p1_pc,
-    output reg [31:0]   p2_pc
+    output reg [31:0]   p2_pc,
+    output reg [31:0]   p3_pc
 );
 
 always @(*) begin
@@ -32,6 +33,7 @@ end
 always @(posedge clock) begin
     if (!stall) begin
         p2_pc <= p1_pc;
+        p3_pc <= p2_pc;
     end
 end
 

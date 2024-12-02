@@ -14,10 +14,53 @@ static FILE* uart_log;
 extern FILE* trace_file;    
 
 // ================================================
+//                  exception registers
+// ================================================
+
+static int epc;
+static int ecause;
+static int edata;
+static int estatus;
+static int escratch;
+static int status;
+static int exception;
+
+#define CFG_REG_EPC 1
+#define CFG_REG_ECAUSE 2
+#define CFG_REG_EDATA 3
+#define CFG_REG_ESTATUS 4
+#define CFG_REG_ESCRATCH 5
+#define CFG_REG_STATUS 6
+
+#define CAUSE_INSTRUCTION_ACCESS_FAULT 1
+#define CAUSE_ILLEGAAL_INSTRUCTION 2
+#define CAUSE_BREAKPOINT 3
+#define CAUSE_LOAD_ADDRESS_MISALIGNED 4
+#define CAUSE_LOAD_ACCESS_FAULT 5
+#define CAUSE_STORE_ADDRESS_MISALIGNED 6
+#define CAUSE_STORE_ACCESS_FAULT 7
+#define CAUSE_ENVIRONMENT_CALL 8
+
+#define STATUS_SUPERVISOR 0x00000001
+
+void raise_exception(int cause, int value) {
+    estatus = 0x10000000;
+    ecause = cause;
+    edata = value;
+    epc = pc-4;
+    pc = 0xffff0004;
+    if (trace_file)
+        fprintf(trace_file, "EXCEPTION: %d %x\n", cause, value);
+}
+
+
+// ================================================
 //                  set_reg
 // ================================================
 
 static void set_reg(int reg_num, int value) {
+    if (exception)
+        return;
     if (reg_num==0)
         return;
     reg[reg_num] = value;
@@ -152,6 +195,8 @@ static int read_memory(unsigned int addr) {
 // ================================================
 
 static void write_memory(unsigned int addr, int value, int mask) {
+    if (exception)
+        return;
     if (addr < 0x4000000) {
         int a = addr >> 2;
         data_mem[a] = (data_mem[a] & ~mask) | (value & mask);
@@ -183,7 +228,7 @@ static void write_memory_size(unsigned int addr, int value, int size) {
         case 1: 
             // Halfword
             if (addr & 2)
-                fatal("write_memory_size: halfword misaligned");
+                raise_exception(CAUSE_STORE_ADDRESS_MISALIGNED, addr);
             mask = 0xffff << shift;
             value = (value & 0xffff) << shift;
             break;
@@ -191,13 +236,14 @@ static void write_memory_size(unsigned int addr, int value, int size) {
         case 2: 
             // Word
             if (addr & 3)
-                fatal("write_memory_size: word misaligned");
+                raise_exception(CAUSE_STORE_ADDRESS_MISALIGNED, addr);
             mask = 0xffffffff; 
             break;
 
         default:
             fatal("write_memory_size: invalid size %d", size);
     }
+
     write_memory(addr, value, mask);
 }
 
@@ -218,7 +264,7 @@ static int read_memory_size(unsigned int addr, int size) {
         case 1:
             // Halfword
             if (addr & 2)
-                fatal("read_memory_size: halfword misaligned");
+                raise_exception(CAUSE_LOAD_ADDRESS_MISALIGNED, addr);
             value = (value >> shift) & 0xffff;
             if (value & 0x8000)
                 value = value | 0xffff0000;
@@ -227,7 +273,7 @@ static int read_memory_size(unsigned int addr, int size) {
         case 2:
             // Word
             if (addr & 3)
-                fatal("read_memory_size: word misaligned");
+                raise_exception(CAUSE_LOAD_ADDRESS_MISALIGNED, addr);
             break;
 
         default:
@@ -236,6 +282,37 @@ static int read_memory_size(unsigned int addr, int size) {
     return value;
 }
 
+// ================================================
+//                  read_cfg
+// ================================================
+
+static int read_cfg(int cfg_reg) {
+    int ret;
+    switch(cfg_reg) {
+        case CFG_REG_EPC:      ret = epc; break;
+        case CFG_REG_ECAUSE:   ret = ecause; break;
+        case CFG_REG_EDATA:    ret = edata; break;
+        case CFG_REG_ESTATUS:  ret = estatus; break;
+        case CFG_REG_ESCRATCH: ret = escratch; break;
+        case CFG_REG_STATUS:   ret = status; break;
+    }
+    return ret;
+}
+
+// ================================================
+//                  write_cfg
+// ================================================
+
+static void write_cfg(int cfg_reg, int value) {
+    switch(cfg_reg) {
+        case CFG_REG_EPC:      epc      = value;            break;
+        case CFG_REG_ECAUSE:   ecause   = value & 0x15;     break;
+        case CFG_REG_EDATA:    edata    = value;            break;
+        case CFG_REG_ESTATUS:  estatus  = value & 0x15;     break;
+        case CFG_REG_ESCRATCH: escratch = value;            break;
+        case CFG_REG_STATUS:   status   = value & 0x15;     break;
+    }
+}
 
 // ================================================
 //                  execute_instruction
@@ -280,6 +357,12 @@ static void execute_instruction(int instr) {
         case KIND_LDPC: set_reg(d, pc + n21*4); break;
         case KIND_MUL:  set_reg(d, mul_op(i, reg[a],  reg[b])); break;
         case KIND_MULI: set_reg(d, mul_op(i, reg[a],  n13)); break;
+        case KIND_CFG:  int tmp = read_cfg(n13);
+                        if (i==1)
+                            write_cfg(n13, reg[a]);
+                        if (i==0 || i==1)
+                            set_reg(d,tmp);
+                        break;
         default: break;
     }
 }
@@ -295,6 +378,7 @@ void execute() {
     uart_log = fopen("sim_uart.log", "wb");
 
     while (timeout>0 && pc!=0) {
+        exception = 0;
         int instr = read_memory(pc);
         if (trace_file) 
             fprintf(trace_file, "%08x: %-40s", pc, disassemble_line(instr,pc+4));

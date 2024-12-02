@@ -13,6 +13,7 @@ typedef struct Reference Reference;
 #define KIND_LDPC  0x18
 #define KIND_MUL   0x19
 #define KIND_MULI  0x1A
+#define KIND_CFG   0x1B
 
 #define FLAG_DEFINED   0x01
 

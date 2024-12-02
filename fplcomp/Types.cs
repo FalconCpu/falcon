@@ -118,12 +118,36 @@ class ArrayType : Type {
     }
 }
 
+class VariadicType : Type {
+    public Type elementType;
+    private readonly static List<VariadicType> cache = [];
+    
+    private VariadicType(Type elementType) : base($"{elementType}...") {
+        this.elementType = elementType;
+    }
+
+    public static Type MakeVariadicType(Type elementType) {
+        if (elementType == ErrorType.Instance)
+            return ErrorType.Instance;
+        foreach (VariadicType t in cache)
+            if (t.elementType == elementType)
+                return t;
+        VariadicType r = new(elementType);
+        cache.Add(r);
+        return r;
+    }
+}
+
+
+
 class FunctionType : Type {
     public Type returnType;
     public List<Type> parameterTypes;
 
     static readonly List<FunctionType> cache = [];
 
+
+    // FIXME - the code for generating names of variadic functions is not quite right -> is needs to be element of for the last element
     private FunctionType(Type returnType, List<Type> parameterTypes) 
     : base($"({string.Join(", ",parameterTypes)}) -> {returnType}>") {
         this.returnType = returnType;
@@ -132,7 +156,7 @@ class FunctionType : Type {
 
     public static FunctionType MakeFunctionType(List<Type> parameterTypes, Type returnType) {
         foreach (FunctionType t in cache)
-            if (t.returnType == returnType && t.parameterTypes.SequenceEqual(parameterTypes))
+            if (t.returnType == returnType  && t.parameterTypes.SequenceEqual(parameterTypes))
                 return t;
         return new FunctionType(returnType, parameterTypes);
     }
@@ -231,11 +255,13 @@ class ClassType : Type {
             return NullableType.MakeNullableType(MapType(nt.elementType));
         else if (type is ArrayType at)  
             return ArrayType.MakeArrayType(MapType(at.elementType));
+        else if (type is VariadicType vt)  
+            return VariadicType.MakeVariadicType(MapType(vt.elementType));
         else if (type is FunctionType ft) {
-            List<Type> mappedParameters = ft.parameterTypes.Select(it => MapType(it)).ToList();
+            List<Type> mappedParameters = ft.parameterTypes.Select(MapType).ToList();
             return FunctionType.MakeFunctionType(mappedParameters, MapType(ft.returnType));
         } else if (type is ClassType cit)
-            return MakeClassType(cit.generic, cit.typeArguments.Select(it => MapType(it)).ToList());
+            return MakeClassType(cit.generic, cit.typeArguments.Select(MapType).ToList());
         else
         return type;
     }
