@@ -16,16 +16,22 @@ class AstDelete(Location location, AstExpression astExpr) : AstStatement(locatio
 
     public override void CodeGen(AstFunction func)
     {
-        Symbol ret = astExpr.CodeGenRvalue(func);
+        Symbol arg = astExpr.CodeGenRvalue(func);
         Symbol tmp1 = func.NewTemp(IntType.Instance);
         Symbol tmp2 = func.NewTemp(IntType.Instance);
         Label label = func.NewLabel();
 
         if (astExpr.type is PointerType || astExpr.type is NullableType) {
             // Need to guard the increment with a null check
-            func.Add( new InstrBra(AluOp.EQ_I, ret, RegisterSymbol.zero, label) );
+            func.Add( new InstrBra(AluOp.EQ_I, arg, RegisterSymbol.zero, label) );
         }
+
         Type type = astExpr.type is NullableType nt? nt.elementType : astExpr.type;
+
+        // Arrays and strings have a length field which we need to account for
+        int offset = (type is ArrayType || type is StringType) ? 4 : 0; 
+        Symbol ret = func.NewTemp(type);
+        func.Add( new InstrAlui(ret, AluOp.SUB_I, arg, offset) );
 
         // Decrement the refcount    
         func.Add( new InstrLoadField(4, tmp1, ret, StdLib.rcField) );
@@ -42,6 +48,7 @@ class AstDelete(Location location, AstExpression astExpr) : AstStatement(locatio
             }
         }
         
+
         // Free the object
         func.Add( new InstrMov(RegisterSymbol.registers[1], ret) );
         func.Add( new InstrCall(StdLib.free, 1, UnitType.Instance) );

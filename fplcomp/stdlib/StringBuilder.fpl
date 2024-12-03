@@ -1,0 +1,179 @@
+class StringBuilder
+    var alloc = 128
+    var length = 0
+    var buffer = new String(alloc)
+
+    fun resize(newAlloc:Int)
+        if newAlloc > alloc
+            alloc = newAlloc
+            val old = buffer
+            buffer = new String(newAlloc)
+            memcpy(buffer, old, alloc)
+            buffer.length = length
+            free(old)
+
+    fun append(c:Char)
+        if length+1 >= alloc
+            resize(alloc*2)
+        buffer[length] = c
+        length = length + 1
+        buffer.length = length
+        buffer[length] = 0
+
+    fun appendString(s:String)
+        for i=0 to <s.length    
+            append(s[i])
+
+    fun intToHex(number:Int, leadingZero:Bool)->String
+        val sb = new StringBuilder()
+        var n = number
+        var started = leadingZero
+        for i=0 to 7
+            var c = n lsr 28      # get the first hex digit
+            if (c>=10)            # adjust code if its a letter
+                c += 7
+            if started or c!=0
+                sb.append((c+'0':Char))
+                started = true
+            n = n lsl 4
+        val ret = sb.buffer
+        free(sb)
+        return ret        
+
+    fun intToString(number:Int)->String
+        val sb = new StringBuilder()
+        var n = number
+
+        # allow for negative number
+        if n<0
+            sb.append('-')
+            n = -n
+
+        # extract the digits in reverse order
+        val s = new Array<Char>(16)
+        var si = 0
+        repeat
+            val digit = n % 10
+            s[si] = (digit+'0':Char)
+            si += 1
+            n = n / 10
+        until n = 0
+
+        # and append the digits to the string buffer
+        while si>0
+            si -= 1
+            sb.append(s[si])
+        delete s
+        val ret = sb.buffer
+        free(sb)
+        return ret
+
+    fun appendWithPad(s:String, width:Int, padLeft:Bool)
+        val paddingSize = width - s.length
+        if paddingSize>0 and padLeft
+            for i = 0 to <paddingSize
+                append(' ')
+        appendString(s)
+        if paddingSize>0 and padLeft=false
+            for i = 0 to <paddingSize
+                append(' ')
+
+    fun toString() -> String
+        return buffer
+
+    fun insert(index:Int, c:Char)
+        if length + 1 >= alloc
+            resize(alloc*2)
+        var at = if index >= length then length else index
+        for i=length to > at
+            buffer[i]=buffer[i-1]
+        buffer[at] = c
+        length = length + 1
+        buffer.length = length
+        buffer[length] = 0
+
+    fun remove(index:Int)
+        if index >= length
+            return
+        for i=index to length-1
+            buffer[i] = buffer[i+1]
+        buffer[length] = 0
+        length = length - 1
+        buffer.length = length
+
+    fun clear()
+        length = 0
+        buffer.length = 0
+
+    fun get(at:Int) -> Char
+        return buffer[at]
+
+    fun vsprintf(format:String, args:Array<Any>)
+        var argIndex = 0
+        var inPercent = false
+        var width = 0
+        var padLeft = true
+        var leadingZero = false
+        for i=0 to <format.length
+            val c = format[i]
+            if inPercent
+                when c
+                    '-' ->
+                        padLeft = false
+
+                    '0' ->
+                        if width=0
+                            leadingZero = true
+                        else
+                            width = width*10
+
+                    '1','2','3','4','5','6','7','8','9' ->
+                        width = width*10 + c - '0'
+
+                    's' ->
+                        val string = (args[argIndex]:String)
+                        appendWithPad(string, width, padLeft)
+                        argIndex += 1
+                        inPercent = false
+
+                    'x' ->
+                        val s = intToHex((args[argIndex]:Int), leadingZero)
+                        appendWithPad(s, width, padLeft)
+                        argIndex += 1
+                        inPercent = false
+                        delete s
+
+                    'd' ->
+                        val s = intToString((args[argIndex]:Int))
+                        appendWithPad(s, width, padLeft)
+                        argIndex += 1
+                        inPercent = false
+                        delete s
+                    '%' ->
+                        append('%')
+                        inPercent = false
+                    else ->
+                        # unknown format specifier - so ignore
+                        append('%')  
+                        append(c)
+                        inPercent = false
+                    
+                if inPercent=false
+                    # reset width specifiers
+                    width = 0
+                    padLeft = true
+                    leadingZero = false
+            else
+                if c='%'
+                    inPercent = true
+                else
+                    append(c)
+
+    fun sprintf(format:String, args:Any...)
+        vsprintf(format,args)
+
+    fun delete()
+        delete buffer
+
+
+

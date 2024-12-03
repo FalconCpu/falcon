@@ -2,9 +2,14 @@ Recently added:
 new List<T>{item,item,item}
 += -= etc
 when statement
+... varargs
+
+
 
 TODO:-
-... varargs
+Report when a function which should return a value has a path that doesn't
+smart casts for null
+forward declarations for functions
 global (+class static) variables
 static member functions
 class inheritance

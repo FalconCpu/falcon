@@ -10,6 +10,11 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
         allFunctions.Add(this);
 
         foreach (AstStatement statement in statements)
+            if (statement is AstBlock blk)
+                blk.IdentifyFunctions(this);
+
+
+        foreach (AstStatement statement in statements)
             statement.TypeCheck(this);
     }
 
@@ -24,6 +29,7 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
         AddSymbol(Location.unknown, new ConstantSymbol("true", BoolType.Instance, 1));
         AddSymbol(Location.unknown, new ConstantSymbol("false", BoolType.Instance, 0));
         AddSymbol(Location.unknown, new ConstantSymbol("null", NullType.Instance, 0));
+        AddSymbol(Location.unknown, new TypeSymbol("Any", AnyType.Instance));
         StdLib.AddSymbols(this);
 
         // Bit of a hack - but this seems the cleanest place to put it. 

@@ -38,7 +38,7 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
         }
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override void IdentifyFunctions(AstBlock scope) {
         // Add this function to the list of all functions
         allFunctions.Add(this);
 
@@ -70,7 +70,9 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
         FunctionSymbol funcSym = new(name, functionType, this);
         scope.AddSymbol(location, funcSym);
         methodOf?.AddMethod(funcSym);
+    }
 
+    public override void TypeCheck(AstBlock scope) {
         // Type check the body
         foreach(AstStatement stmt in statements) {
             stmt.TypeCheck(this);

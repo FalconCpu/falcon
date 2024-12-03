@@ -37,4 +37,6 @@ abstract class AstBlock(Location location, AstBlock? parent) : AstStatement(loca
         }
         return null;
     }
+
+    public virtual void IdentifyFunctions(AstBlock scope) {}
 }

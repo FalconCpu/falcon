@@ -12,6 +12,7 @@ abstract class Type (string name) {
         return this == other || this == ErrorType.Instance || other == ErrorType.Instance ||
         (this==PointerType.Instance && (other is ArrayType || other is ClassType || other is NullableType || other is NullType || other is StringType)) ||
         (this is NullableType && other is NullType) ||
+        (this is AnyType) || 
         (this is NullableType nt && nt.elementType.IsAssignableFrom(other))
         ;
     }
@@ -46,7 +47,6 @@ class UndefinedType : Type {
     public static readonly UndefinedType Instance = new();
     private UndefinedType() : base("Undefined") {}
 }
-
 
 class IntType : Type {
     public static readonly IntType Instance = new();
@@ -87,6 +87,12 @@ class PointerType : Type {
     public static readonly PointerType Instance = new();
     private PointerType() : base("Pointer") {}
 }
+
+class AnyType : Type {
+    public static readonly AnyType Instance = new();
+    private AnyType() : base("Any") {}
+}
+
 
 class ErrorType : Type {
     public static readonly ErrorType Instance = new();

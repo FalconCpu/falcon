@@ -1,0 +1,6 @@
+
+fun main()
+    print("%d", double(4))
+
+fun double(a:Int)->Int
+    return a*2

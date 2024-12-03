@@ -41,6 +41,8 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
         new(TokenKind.Gte,       IntType.Instance,  IntType.Instance,  AluOp.GE_I,   BoolType.Instance),
         new(TokenKind.And,       BoolType.Instance, BoolType.Instance, AluOp.AND_B,  BoolType.Instance),
         new(TokenKind.Or,        BoolType.Instance, BoolType.Instance, AluOp.OR_B,   BoolType.Instance),
+        new(TokenKind.Eq,        BoolType.Instance, BoolType.Instance, AluOp.EQ_I,   BoolType.Instance),
+        new(TokenKind.Neq,       BoolType.Instance, BoolType.Instance, AluOp.NE_I,   BoolType.Instance),
         new(TokenKind.Eq,        StringType.Instance,StringType.Instance,AluOp.EQ_S, BoolType.Instance),
         new(TokenKind.Neq,       StringType.Instance,StringType.Instance,AluOp.NE_S, BoolType.Instance),
         new(TokenKind.Lt,        StringType.Instance,StringType.Instance,AluOp.LT_S, BoolType.Instance),

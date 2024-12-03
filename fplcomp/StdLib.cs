@@ -10,7 +10,7 @@ static class StdLib {
     public static AstFunction strequals= new(Location.unknown, "strequals", [], null , null);
 
     public static readonly FieldSymbol rcField = new("refcount", IntType.Instance, true);
-    public static readonly FieldSymbol lengthField = new("length", IntType.Instance, false);
+    public static readonly FieldSymbol lengthField = new("length", IntType.Instance, true);
 
     public static void AddSymbols(AstBlock scope) {
         // Print is currently handled as a special case in the type checker. So we don't need to add it to the symbol table.

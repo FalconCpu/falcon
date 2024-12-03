@@ -1,0 +1,9 @@
+
+fun main()
+    print("%d\n",double(4))
+
+fun double(a:Int)->Int
+    return a*2
+
+@----------------------
+8

@@ -87,6 +87,25 @@ fun dumpMemorySystem()
         chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
 
 # ######################################################
+#                     dummpMemoryAllocations
+# ######################################################
+# Dump the memory system for debugging
+fun dummpMemoryAllocations()
+    val sysvars = (0x00000100:SystemVariables)
+    var chunk = (startOfHeap:FreeMemChunk)
+    while (chunk:Int) < (endOfHeap:Int)
+        if chunk.magic = MAGIC_ALLOCATED
+            val chunkA = (chunk:AllocatedMemChunk)
+            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
+            if chunkA.refcount > 1
+                print(" (*%d)", chunkA.refcount)
+            print("\n")
+        elsif chunk.magic != MAGIC_FREE
+            print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
+        chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
+
+
+# ######################################################
 #                 addChunkToFreeList
 # ######################################################
 # insert a chunk into the free list
@@ -151,7 +170,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     chunkA.size = roundedSize
     chunkA.descriptor = desc
     chunkA.refcount = 1
-    # print("Malloc %x %d %s\n",(chunk:Int)+16, roundedSize-16, desc)
+    # print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
     return ((chunk:Int)+16:Pointer)
 
 # ######################################################

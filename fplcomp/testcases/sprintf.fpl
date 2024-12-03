@@ -1,0 +1,49 @@
+
+fun main()
+    val sb = new StringBuilder()
+
+    # test left and right align
+    print("Integers\n")
+    sb.sprintf(">%d<\n",12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    sb.clear()
+    sb.sprintf(">%8d<\n",12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    sb.clear()
+    sb.sprintf(">%-8d<\n",12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    # test print hex
+    print("\nHex\n")
+    sb.clear()
+    sb.sprintf(">%x<\n",0x12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    sb.clear()
+    sb.sprintf(">%8x<\n",0x12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    sb.clear()
+    sb.sprintf(">%-8x<\n",0x12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    sb.clear()
+    sb.sprintf(">%-08x<\n",0x12345)
+    print("%s", sb.toString())  # Expected: "12345"
+
+    delete sb
+    dummpMemoryAllocations()
+
+@--------------------------
+Integers
+>12345<
+>   12345<
+>12345   <
+
+Hex
+>12345<
+>   12345<
+>12345   <
+>00012345<

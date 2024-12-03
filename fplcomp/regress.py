@@ -17,7 +17,7 @@ def run_test(test_name: str):
     outname = f"testcase_outputs/{basename}.out"
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
-    stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuffer.fpl stdlib/Memory.fpl stdlib/List.fpl stdlib/String.fpl "
+    stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuilder.fpl stdlib/Memory.fpl stdlib/List.fpl stdlib/String.fpl "
 
     # Split the source file into the executable and expected sections
     expected_output = []
@@ -73,9 +73,8 @@ else:
     test_names.sort()
 
     for test_name in test_names:
-        if test_name.endswith(".out"):
-            continue
-        num_tests += 1
-        num_pass += run_test(test_name)
+        if test_name.endswith(".fpl"):
+            num_tests += 1
+            num_pass += run_test(test_name)
 
     print("%d/%d tests pass" % (num_pass, num_tests))

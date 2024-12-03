@@ -21,7 +21,7 @@ class AstClass : AstFunction {
         AddSymbol(location, thisSymbol);
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override void IdentifyFunctions(AstBlock scope) {
         allFunctions.Add(this);
 
         // Generate the parameter symbols
@@ -32,7 +32,13 @@ class AstClass : AstFunction {
             if (sym is FieldSymbol field)
                 classType.AddField(field);
         }
+        
+        foreach(AstStatement stmt in statements)
+            if (stmt is AstFunction func)
+                func.IdentifyFunctions(this);
+    }
 
+    public override void TypeCheck(AstBlock scope) {
         // Type check the body
         foreach(AstStatement stmt in statements) {
             stmt.TypeCheck(this);

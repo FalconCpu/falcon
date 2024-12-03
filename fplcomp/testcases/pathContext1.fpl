@@ -1,0 +1,8 @@
+# a function that has a non-void return type must return a value
+
+fun main()->Int
+    val a = 4
+    # error here as the function returns nothing
+
+@-------------------
+error

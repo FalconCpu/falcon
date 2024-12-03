@@ -130,12 +130,15 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         List<Symbol> args = astArgs.Select(it => it.CodeGenRvalue(func)).ToList();
         int elementSize = arrayType.elementType.GetSize();
         Symbol arraySize = func.NewTemp(IntType.Instance);
-        func.Add( new InstrAlui(arraySize, AluOp.MUL_I, args[0], elementSize));
+        Symbol tmp1 = func.NewTemp(IntType.Instance);
+        func.Add( new InstrAlui(tmp1, AluOp.MUL_I, args[0], elementSize));
+        func.Add( new InstrAlui(arraySize, AluOp.ADD_I, tmp1, 4)); // Allow space for length field
         func.Add( new InstrMov(RegisterSymbol.registers[1], arraySize));
         func.Add( new InstrLea(RegisterSymbol.registers[2], AstStringLit.GenSym(type.name)));
         func.Add( new InstrCall(StdLib.malloc, 2, IntType.Instance));
         Symbol ret = func.NewTemp(type);
-        func.Add( new InstrMov(ret, RegisterSymbol.registers[8]));
+        func.Add( new InstrAlui(ret, AluOp.ADD_I, RegisterSymbol.registers[8], 4));
+        func.Add( new InstrStoreField(4, args[0], ret, StdLib.lengthField));
         return ret;
     }
 

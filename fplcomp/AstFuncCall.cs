@@ -42,7 +42,7 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
             for (int i = 0; i < args.Count; i++) {
                 Type paramType = i<paramTypes.Count-1 ? paramTypes[i] : vt.elementType;
                 if (! paramType.IsAssignableFrom(args[i].type))
-                    Log.Error(location, $"Expected argument {i+1} to be type {paramTypes[i]}, got {args[i].type}");
+                    Log.Error(location, $"Expected argument {i+1} to be type {paramType}, got {args[i].type}");
             }
 
         } else {
