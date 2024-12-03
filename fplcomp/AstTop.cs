@@ -6,7 +6,7 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
             statement.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
         allFunctions.Add(this);
 
         foreach (AstStatement statement in statements)
@@ -15,7 +15,8 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
 
 
         foreach (AstStatement statement in statements)
-            statement.TypeCheck(this);
+            statement.TypeCheck(this, pathContext);
+        return pathContext;
     }
 
     public AstTop AddPredefinedSymbols() {

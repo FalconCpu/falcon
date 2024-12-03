@@ -7,8 +7,9 @@ class AstFuncCallStatement(Location location, AstExpression expr) : AstStatement
         expr.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        expr.TypeCheckRvalue(scope);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        expr.TypeCheckRvalue(scope, pathContext);
+        return pathContext;
     }
     
     public override void CodeGen(AstFunction func) {

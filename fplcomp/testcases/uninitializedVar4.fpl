@@ -1,0 +1,12 @@
+# Values that are initialized along some paths may not be read
+
+fun main(a:Int)
+    val b : Int
+    if a=2
+        b = 1
+    
+    print("%d\n",b)
+
+@-------------------
+testcase_outputs/uninitializedVar4.fpl:8:18: Symbol 'b' may be uninitialized
+Failed with 1 errors

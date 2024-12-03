@@ -15,8 +15,8 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         return new FieldSymbol(identifier.name, ErrorType.Instance, true);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
-        left.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
+        left.TypeCheckRvalue(scope, pathContext);
         if (left.type.IsErrorType()) {
             SetError();
             return;
@@ -36,8 +36,8 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         }
     }
 
-    public override void TypeCheckLvalue(AstBlock scope) {
-        TypeCheckRvalue(scope);
+    public override void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
+        TypeCheckRvalue(scope, pathContext);
         if (type.IsErrorType()) return;
         if (field is FieldSymbol ff) {
             if (!ff.isMutable)

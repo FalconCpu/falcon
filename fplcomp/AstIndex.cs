@@ -9,9 +9,9 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
         index.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
-        left.TypeCheckRvalue(scope);
-        index.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
+        left.TypeCheckRvalue(scope,pathContext);
+        index.TypeCheckRvalue(scope, pathContext);
 
         if (left.type.IsErrorType() || index.type.IsErrorType()) {
             SetError();
@@ -28,8 +28,8 @@ class AstIndex(Location location, AstExpression left, AstExpression index) : Ast
             SetError(location, $"Cannot index non-array type {left.type}");
     }
 
-    public override void TypeCheckLvalue(AstBlock scope) {
-        TypeCheckRvalue(scope);
+    public override void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
+        TypeCheckRvalue(scope, pathContext);
     }
 
     public override Symbol CodeGenRvalue(AstFunction func) {

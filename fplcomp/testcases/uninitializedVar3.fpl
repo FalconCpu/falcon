@@ -1,0 +1,9 @@
+# Values that are initialized along some paths may not be assigned to 
+
+fun main(a:Int)
+    val b : Int
+    if a=2
+        b = 1
+    b = 2       # error as may already be initialized
+
+@-------------------

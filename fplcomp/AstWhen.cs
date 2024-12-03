@@ -10,15 +10,16 @@ class AstWhen(Location location, AstExpression astExpr, List<AstWhenClause> clau
         }
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
         HashSet<int> seen = [];
-        astExpr.TypeCheckRvalue(scope);
+        astExpr.TypeCheckRvalue(scope, pathContext);
         if (astExpr.type!=IntType.Instance && astExpr.type!=CharType.Instance && astExpr.type!=StringType.Instance &&
             astExpr.type!=ErrorType.Instance)
             Log.Error(location,$"Invalid type for when statement {astExpr.type}");
 
+        List<PathContext> pathContexts = [];
         foreach(AstWhenClause clause in clauses) {
-            clause.TypeCheck(scope);
+            pathContexts.Add( clause.TypeCheck(scope, pathContext) );
             foreach(AstExpression c in clause.cond) {
                 astExpr.type.CheckAssignableFrom(c);
                 if (c.HasKnownIntValue()) {
@@ -29,6 +30,7 @@ class AstWhen(Location location, AstExpression astExpr, List<AstWhenClause> clau
                 }
             }
         }
+        return PathContext.Merge(pathContexts);
     }
 
     public override void CodeGen(AstFunction func)    {

@@ -8,13 +8,16 @@ class AstPrint(Location location, List<AstExpression> args) : AstStatement(locat
     }
 
 
-    public override void TypeCheck(AstBlock scope)    {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext)    {
+        if (pathContext.unreachable)
+            Log.Error(location, "Statement is unreachable");
+
         foreach(AstExpression arg in args)
-            arg.TypeCheckRvalue(scope);
+            arg.TypeCheckRvalue(scope,pathContext);
 
         if (args.Count == 0) {
             Log.Error(location, "No format string given to print");
-            return;
+            return pathContext;
         }
 
         // Check the first argument is a the format string
@@ -22,6 +25,7 @@ class AstPrint(Location location, List<AstExpression> args) : AstStatement(locat
 
         if (args.Count > 4)
             Log.Error(location, "Currently print only supports a max of 3 arguments");
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func)

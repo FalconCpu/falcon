@@ -5,13 +5,14 @@ class AstDelete(Location location, AstExpression astExpr) : AstStatement(locatio
         astExpr.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope)
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext)
     {
-        astExpr.TypeCheckRvalue(scope);
+        astExpr.TypeCheckRvalue(scope, pathContext);
         if (astExpr.type is ClassType || astExpr.type is ArrayType || astExpr.type is NullableType || 
             astExpr.type is PointerType || astExpr.type is StringType)
-            return;
+            return pathContext;
         Log.Error(location, $"invalid type to delete '{astExpr.type}'");
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func)

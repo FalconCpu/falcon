@@ -12,9 +12,13 @@ class AstFor(Location location, AstIdentifier astId, AstExpression astStart, Ast
         astEnd.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        astStart.TypeCheckRvalue(scope);
-        astEnd.TypeCheckRvalue(scope);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        astStart.TypeCheckRvalue(scope, pathContext);
+        astEnd.TypeCheckRvalue(scope, pathContext);
+
+        // Save a copy of the initial path context in case the loop iterates zero times
+        PathContext pathContextInitial = pathContext.Clone();
+
         IntType.Instance.CheckAssignableFrom(astStart);
         astStart.type.CheckAssignableFrom(astEnd);
         Symbol sym = new VariableSymbol(astId.name, astStart.type, false, false);
@@ -22,7 +26,8 @@ class AstFor(Location location, AstIdentifier astId, AstExpression astStart, Ast
         astId.SetSymbol(sym);
 
         foreach(AstStatement stmt in statements)
-            stmt.TypeCheck(this);
+            pathContext = stmt.TypeCheck(this, pathContext);
+        return PathContext.Merge([pathContextInitial, pathContext]);
     }
 
     public override void CodeGen(AstFunction func) {

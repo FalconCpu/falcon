@@ -7,7 +7,7 @@ class AstRealLit(Location location, double value) : AstExpression(location) {
         Console.WriteLine(new String(' ', indent * 2) + "REAL " + value + " (" + type + ")");
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         SetType( RealType.Instance);
     }
 

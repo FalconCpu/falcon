@@ -9,7 +9,7 @@ class AstEq(Location location, TokenKind kind, AstExpression left, AstExpression
         right.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         throw new NotImplementedException();
     }
 

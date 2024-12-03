@@ -9,14 +9,21 @@ class AstAssign(Location location, TokenKind op, AstExpression lhs, AstExpressio
         rhs.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope)
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext)
     {
-        rhs.TypeCheckRvalue(scope);
-        lhs.TypeCheckLvalue(scope);
+        if (pathContext.unreachable)
+            Log.Error(location, "Statement is unreachable");
+
+        rhs.TypeCheckRvalue(scope, pathContext);
+        lhs.TypeCheckLvalue(scope, pathContext);
         lhs.type.CheckAssignableFrom(rhs);
 
         if (op!=TokenKind.Eq && lhs.type!=IntType.Instance)
             Log.Error(location, $"{op} only supported for integer operands");
+        
+        if (lhs is AstIdentifier identifier)
+            pathContext.Initialize(identifier.symbol);
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func) {

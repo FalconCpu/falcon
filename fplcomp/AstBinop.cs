@@ -55,9 +55,9 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
 
     ];
 
-    public override void TypeCheckRvalue(AstBlock scope) {
-        left.TypeCheckRvalue(scope);
-        right.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
+        left.TypeCheckRvalue(scope, pathContext);
+        right.TypeCheckRvalue(scope, pathContext);
         
         if (left.type.IsErrorType() || right.type.IsErrorType()) {
             SetError();

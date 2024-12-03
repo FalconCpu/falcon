@@ -72,11 +72,16 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
         methodOf?.AddMethod(funcSym);
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext _) {
         // Type check the body
+        PathContext pathContext = new ();
         foreach(AstStatement stmt in statements) {
-            stmt.TypeCheck(this);
+            pathContext = stmt.TypeCheck(this, pathContext);
         }
+        if (returnType!=UnitType.Instance && !pathContext.unreachable) {
+            Log.Error(location, $"Function does not return '{returnType}' along all paths");
+        }
+        return pathContext;
     }
 
     public TempSymbol NewTemp(Type type) {

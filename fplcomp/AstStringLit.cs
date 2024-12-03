@@ -8,7 +8,7 @@ class AstStringLit(Location location, string value) : AstExpression(location) {
         Console.WriteLine(new string(' ', indent * 2) + "STRING " + value + " (" + type + ")");
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         SetType( StringType.Instance ); 
     }
 

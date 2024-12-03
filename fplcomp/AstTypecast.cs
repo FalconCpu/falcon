@@ -7,8 +7,8 @@ class AstTypecast(Location location, AstExpression astExpression, AstType target
         astExpression.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
-        astExpression.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
+        astExpression.TypeCheckRvalue(scope, pathContext);
         // Todo - are there any typecasts that cannot be allowed?
 
         SetType( targetType.ResolveAsType(scope) );

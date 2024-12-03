@@ -52,7 +52,7 @@ class Program {
             return 0;
         }
 
-        topLevel.TypeCheck(topLevel);
+        topLevel.TypeCheck(topLevel, new PathContext());
 
         if (Log.numErrors!=0) {
             Console.WriteLine($"Failed with {Log.numErrors} errors");

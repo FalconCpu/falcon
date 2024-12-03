@@ -8,17 +8,17 @@ class AstUnary(Location location, TokenKind op, AstExpression expr) : AstExpress
         expr.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         switch(op) {
             case TokenKind.Minus: {
-                expr.TypeCheckRvalue(scope);
+                expr.TypeCheckRvalue(scope, pathContext);
                 IntType.Instance.CheckAssignableFrom(expr);
                 SetType(expr.type);
                 break;
             }
 
             case TokenKind.Not: {
-                expr.TypeCheckRvalue(scope);
+                expr.TypeCheckRvalue(scope, pathContext);
                 BoolType.Instance.CheckAssignableFrom(expr);
                 SetType(expr.type);
                 break;

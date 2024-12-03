@@ -18,8 +18,11 @@ class AstDeclaration(
         initializer?.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        initializer?.TypeCheckRvalue(scope);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        initializer?.TypeCheckRvalue(scope, pathContext);
+
+        if (pathContext.unreachable)
+            Log.Error(location, "Statement is unreachable");
 
         // TODO - handle the type if present
         Type type = astType?.ResolveAsType(scope) ??
@@ -40,6 +43,9 @@ class AstDeclaration(
 
         if (initializer!=null)
             sym.type.CheckAssignableFrom(initializer);
+        else
+            pathContext.AddUninitialized(sym);
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func) {

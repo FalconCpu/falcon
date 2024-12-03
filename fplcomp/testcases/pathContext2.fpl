@@ -1,0 +1,10 @@
+# a function that has a non-void return type must return a value
+
+fun main(a:Int)->Int
+    if a =1
+        return 4
+    # error here as the function returns nothing along one path
+
+@-------------------
+testcase_outputs/pathContext2.fpl:3:1: Function does not return 'Int' along all paths
+Failed with 1 errors

@@ -6,7 +6,7 @@ class AstCharLit(Location location, int value) : AstExpression(location) {
         Console.WriteLine(new string(' ', indent * 2) + $"CHARLIT {value} ({type})");
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         SetType(CharType.Instance);
     }
 

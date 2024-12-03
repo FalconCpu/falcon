@@ -8,8 +8,8 @@ class AstRc(Location location, AstExpression astExpr) : AstExpression(location) 
         astExpr.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope)    {
-        astExpr.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext)    {
+        astExpr.TypeCheckRvalue(scope,pathContext);
         SetType(astExpr.type);
         
         if (astExpr.type is ClassType || astExpr.type is ArrayType || astExpr.type is NullableType || 

@@ -5,4 +5,5 @@ fun main()->Int
     # error here as the function returns nothing
 
 @-------------------
-error
+testcase_outputs/pathContext1.fpl:3:1: Function does not return 'Int' along all paths
+Failed with 1 errors

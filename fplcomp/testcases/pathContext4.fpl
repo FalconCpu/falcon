@@ -1,0 +1,11 @@
+# a statement after a return is unreachable
+
+fun main(a:Int)->Int
+    return a
+    val b = 1
+
+    # error here as the function returns nothing along one path
+
+@-------------------
+testcase_outputs/pathContext4.fpl:5:9: Statement is unreachable
+Failed with 1 errors

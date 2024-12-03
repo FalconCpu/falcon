@@ -133,7 +133,7 @@ ld $6, 0
 ld $7, 11
 jmp @2
 @1:
-ld $8, _object5
+ld $8, _object12
 add $9, $3, $6
 add $8, $8, $9
 ldb $8, $8[0]
@@ -188,7 +188,7 @@ ld $7, 0
 ld $8, 11
 jmp @2
 @1:
-ld $9, _object5
+ld $9, _object12
 add $10, $3, $7
 add $9, $9, $10
 ldb $9, $9[0]
@@ -383,28 +383,28 @@ ldb $1, $1[8]
 bne $1, 0, @41
 jmp @43
 @35:
-ld $1, _object6
+ld $1, _object13
 lsl $2, $2, 2
 add $2, $2, 1
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @38:
-ld $1, _object6
+ld $1, _object13
 lsl $2, $2, 2
 add $2, $2, 3
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @41:
-ld $1, _object6
+ld $1, _object13
 lsl $2, $2, 2
 add $2, $2, 2
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @43:
-ld $1, _object6
+ld $1, _object13
 lsl $2, $2, 2
 add $1, $1, $2
 ldb $8, $1[0]
@@ -443,7 +443,7 @@ ld $1, 0
 stw $1, $9[4]
 ldw $10, $9[0]
 add $1, $10, 4
-ld $2, _object7
+ld $2, _object14
 jsr /malloc
 add $1, $8, 4
 stw $10, $1[-4]
@@ -467,7 +467,7 @@ bge $1, $11, @1
 stw $11, $9[0]
 ldw $10, $9[8]
 add $1, $11, 4
-ld $2, _object7
+ld $2, _object14
 jsr /malloc
 add $1, $8, 4
 stw $11, $1[-4]
@@ -564,7 +564,7 @@ stw $30, $sp[16]
 ld $10, $2
 ld $11, $3
 ld $1, 12
-ld $2, _object8
+ld $2, _object15
 jsr /malloc
 ld $9, $8
 ld $1, $9
@@ -612,7 +612,7 @@ stw $12, $sp[12]
 stw $30, $sp[16]
 ld $11, $2
 ld $1, 12
-ld $2, _object8
+ld $2, _object15
 jsr /malloc
 ld $9, $8
 ld $1, $9
@@ -626,7 +626,7 @@ sub $11, 0, $11
 ld $12, 16
 ld $1, 16
 add $1, $1, 4
-ld $2, _object9
+ld $2, _object16
 jsr /malloc
 add $10, $8, 4
 stw $12, $10[-4]
@@ -1332,7 +1332,7 @@ stw $1, $9[4]
 ldw $10, $9[0]
 lsl $1, $10, 2
 add $1, $1, 4
-ld $2, _object10
+ld $2, _object17
 jsr /malloc
 add $1, $8, 4
 stw $10, $1[-4]
@@ -1360,7 +1360,7 @@ ldw $1, $9[0]
 lsl $12, $1, 1
 lsl $1, $12, 2
 add $1, $1, 4
-ld $2, _object10
+ld $2, _object17
 jsr /malloc
 add $1, $8, 4
 stw $12, $1[-4]
@@ -1519,7 +1519,7 @@ add $1, $1, 1
 @2:
 blt $1, $10, @1
 add $1, $11, 4
-ld $2, _object7
+ld $2, _object14
 jsr /malloc
 add $12, $8, 4
 stw $11, $12[-4]
@@ -1641,7 +1641,7 @@ ld $8, 0
 jmp @ret
 @1:
 add $1, $9, 4
-ld $2, _object7
+ld $2, _object14
 jsr /malloc
 add $12, $8, 4
 stw $9, $12[-4]
@@ -1671,7 +1671,7 @@ stw $30, $sp[24]
 ld $9, $1
 ld $12, $2
 ld $1, 12
-ld $2, _object11
+ld $2, _object18
 jsr /malloc
 ld $10, $8
 ld $1, $10
@@ -1731,7 +1731,63 @@ ldw $30, $sp[24]
 add $sp, 28
 ret
 
+/printNumber:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $9, $1
+ld $1, _object5
+ld $2, $9
+jsr /strequals
+bne $8, 0, @2
+ld $1, _object7
+ld $2, $9
+jsr /strequals
+bne $8, 0, @3
+ld $1, _object8
+ld $2, $9
+jsr /strequals
+bne $8, 0, @4
+jmp @5
+@2:
+ld $1, _object6
+ld $2, 1
+jsr /print
+jmp @1
+@3:
+ld $1, _object6
+ld $2, 2
+jsr /print
+jmp @1
+@4:
+ld $1, _object6
+ld $2, 3
+jsr /print
+jmp @1
+@5:
+ld $1, _object9
+jsr /print
+@1:
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+
 /main:
+sub $sp, 4
+stw $30, $sp[0]
+ld $1, _object5
+jsr /printNumber
+ld $1, _object7
+jsr /printNumber
+ld $1, _object8
+jsr /printNumber
+ld $1, _object10
+jsr /printNumber
+ld $1, _object11
+jsr /printNumber
+ldw $30, $sp[0]
+add $sp, 4
 ret
 dcw 11
 _object0:
@@ -1760,8 +1816,34 @@ dcw 0x6E776F6E
 dcw 0x67616D20
 dcw 0x25206369
 dcw 0x00000A78
-dcw 1140
+dcw 3
 _object5:
+dcw 0x00656E6F
+dcw 3
+_object6:
+dcw 0x000A6425
+dcw 3
+_object7:
+dcw 0x006F7774
+dcw 5
+_object8:
+dcw 0x65726874
+dcw 0x00000065
+dcw 8
+_object9:
+dcw 0x6E6B6E75
+dcw 0x0A6E776F
+dcw 0x00000000
+dcw 4
+_object10:
+dcw 0x72756F66
+dcw 0x00000000
+dcw 4
+_object11:
+dcw 0x65766966
+dcw 0x00000000
+dcw 1140
+_object12:
 dcb 0,0,0,0
 dcb 0,0,0,0
 dcb 0,0,0,0
@@ -2048,7 +2130,7 @@ dcb 6,73,73,48
 dcb 0,0,0,0
 dcb 0,0,0,0
 dcw 1024
-_object6:
+_object13:
 dcb 0,0,0,0
 dcb -19,-19,-19,-19
 dcb 0,0,0,0
@@ -2306,27 +2388,27 @@ dcb -9,-9,-9,-9
 dcb 0,0,0,0
 dcb 0,0,0,0
 dcw 6
-_object7:
+_object14:
 dcw 0x69727453
 dcw 0x0000676E
 dcw 13
-_object8:
+_object15:
 dcw 0x69727453
 dcw 0x7542676E
 dcw 0x65646C69
 dcw 0x00000072
 dcw 11
-_object9:
+_object16:
 dcw 0x61727241
 dcw 0x68433C79
 dcw 0x003E7261
 dcw 8
-_object10:
+_object17:
 dcw 0x61727241
 dcw 0x3E543C79
 dcw 0x00000000
 dcw 12
-_object11:
+_object18:
 dcw 0x7473694C
 dcw 0x7274533C
 dcw 0x3E676E69

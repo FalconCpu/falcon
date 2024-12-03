@@ -1,6 +1,4 @@
 
-using System.Diagnostics.Contracts;
-
 class AstRepeat(Location location, AstBlock parent) : AstBlock(location, parent) {
     public AstExpression? cond = null;
 
@@ -18,12 +16,11 @@ class AstRepeat(Location location, AstBlock parent) : AstBlock(location, parent)
         }
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        cond!.TypeCheckRvalue(scope);
-        BoolType.Instance.CheckAssignableFrom(cond);
-        foreach(AstStatement stmt in statements) {
-            stmt.TypeCheck(this);
-        }
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        foreach(AstStatement stmt in statements)
+            pathContext = stmt.TypeCheck(this, pathContext);
+        (pathContext, _) = cond!.TypeCheckBool(scope, pathContext);
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func)    {

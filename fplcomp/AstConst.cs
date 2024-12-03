@@ -16,8 +16,8 @@ class AstConst(
         initializer?.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        initializer.TypeCheckRvalue(scope);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        initializer.TypeCheckRvalue(scope, pathContext);
 
         Symbol newSym;
         if (initializer.HasKnownIntValue())
@@ -30,6 +30,7 @@ class AstConst(
         }
 
         scope.AddSymbol(location, newSym);
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func) {

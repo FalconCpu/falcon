@@ -1,5 +1,6 @@
 class AstIfClause(Location location, AstExpression? cond, AstBlock parent) : AstBlock(location, parent) {
     public AstExpression? cond = cond;   
+    public PathContext pathContextOut = new();
 
     public override void Print(int indent) {
         Console.WriteLine(new String(' ', indent * 2) + "CLAUSE");
@@ -9,15 +10,22 @@ class AstIfClause(Location location, AstExpression? cond, AstBlock parent) : Ast
         }
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        if (cond != null) {
-            cond.TypeCheckRvalue(scope);
-            BoolType.Instance.CheckAssignableFrom(cond);
-        }
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        // Returns the path context if the condition is false
+        // Sets the path context of the true path in pathContextOut
 
+        Tuple<PathContext,PathContext> pc;
+        if (cond != null)
+            pc = cond.TypeCheckBool(scope, pathContext);
+        else
+            pc = Tuple.Create(pathContext, pathContext);
+    
+        pathContext = pc.Item1;
         foreach(AstStatement stmt in statements) {
-            stmt.TypeCheck(this);
+            pathContext = stmt.TypeCheck(this, pathContext);
         }
+        pathContextOut = pathContext;
+        return pc.Item2;
     }
 
     public override void CodeGen(AstFunction func)    {

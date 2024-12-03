@@ -68,10 +68,10 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
             StringType.Instance.CheckAssignableFrom(astArg);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         type = astType.ResolveAsType(scope);
         foreach (var astArg in astArgs)
-            astArg.TypeCheckRvalue(scope);
+            astArg.TypeCheckRvalue(scope,pathContext);
         if (type == ErrorType.Instance)
             return;
 

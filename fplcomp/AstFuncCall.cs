@@ -9,9 +9,9 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
             arg.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         // Typecheck the function reference itself (e.g., resolve what "left" is)
-        left.TypeCheckRvalue(scope);
+        left.TypeCheckRvalue(scope, pathContext);
         if (left.type==ErrorType.Instance) {
             SetError();
             return;
@@ -24,7 +24,7 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
 
         // Typecheck the arguments
         foreach (AstExpression arg in args)
-            arg.TypeCheckRvalue(scope);
+            arg.TypeCheckRvalue(scope, pathContext);
 
         // Extract the par  ameter types from the function type
         List<Type> paramTypes = func.parameterTypes;

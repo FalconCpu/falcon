@@ -6,20 +6,26 @@ class AstReturn (Location location, AstExpression? expr) : AstStatement(location
         expr?.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        if (pathContext.unreachable)
+            Log.Error(location, "Statement is unreachable");
+
         AstFunction? enclosingFunction = scope.FindEnclosingFunction();
         if (enclosingFunction == null) {
             Log.Error(location, "return outside function");
-            return;
+            return pathContext;
         }
 
         if (expr != null) {
-            expr.TypeCheckRvalue(scope);
+            expr.TypeCheckRvalue(scope, pathContext);
             enclosingFunction.returnType.CheckAssignableFrom(expr);
         } else {
             if (enclosingFunction.returnType != UnitType.Instance)
                 Log.Error(location, "return with no value in non-void function");
         }
+
+        pathContext.SetUnreachable();
+        return pathContext;
     }
 
     public override void CodeGen(AstFunction func) {

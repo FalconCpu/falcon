@@ -1,0 +1,10 @@
+# Variables must be initialized before use
+
+fun main()->Int
+    val a : Int
+    return a     # gives an error
+
+
+@-------------------
+testcase_outputs/uninitializedVar1.fpl:5:12: Symbol 'a' is uninitialized
+Failed with 1 errors

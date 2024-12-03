@@ -1,6 +1,4 @@
 
-using System.Reflection.Metadata;
-
 class AstIdentifier (Location location,string name) : AstExpression(location) {
     public string name = name;
     public Symbol symbol = Symbol.undefined;
@@ -20,23 +18,36 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
         type = newSym.type;
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         symbol =  Type.predefindedScope.GetSymbol(name) ??
                       scope.GetSymbol(name) ??
                       new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false, false);
+        
+        if (pathContext.definitelyUninitialized.Contains(symbol))
+            Log.Error(location, $"Symbol '{symbol}' is uninitialized");
+        else if (pathContext.possiblyUninitialized.Contains(symbol))    
+            Log.Error(location, $"Symbol '{symbol}' may be uninitialized");
+            
         if (symbol is TypeSymbol)
             Log.Error(location, $"Cannot use type '{symbol}' as a variable");
         SetType(symbol.type);
     }
 
 
-    public override void TypeCheckLvalue(AstBlock scope) {
-        TypeCheckRvalue(scope);
+    public override void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
+        symbol =  Type.predefindedScope.GetSymbol(name) ??
+                      scope.GetSymbol(name) ??
+                      new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false, false);
+        
+        if (symbol is TypeSymbol)
+            Log.Error(location, $"Cannot use type '{symbol}' as a variable");
+        SetType(symbol.type);
+
         switch(symbol) {
             case VariableSymbol variableSymbol:
                 if (variableSymbol.isGlobal)
                     throw new NotImplementedException();
-                if (!variableSymbol.isMutable)
+                if (!variableSymbol.isMutable && !pathContext.definitelyUninitialized.Contains(symbol))
                     Log.Error(location, $"Symbol '{symbol}' is immutable");
                 break;
 

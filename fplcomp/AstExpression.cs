@@ -17,10 +17,16 @@ abstract class AstExpression(Location location) : Ast(location) {
         type = ErrorType.Instance;
     }
 
-    public abstract void TypeCheckRvalue(AstBlock scope);
+    public abstract void TypeCheckRvalue(AstBlock scope, PathContext pathContext);
 
-    public virtual void TypeCheckLvalue(AstBlock scope) {
+    public virtual void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
         Log.Error(location, "Not an lvalue");
+    }
+
+    public virtual Tuple<PathContext,PathContext> TypeCheckBool(AstBlock scope, PathContext pathContext) {
+        TypeCheckRvalue(scope, pathContext);
+        BoolType.Instance.CheckAssignableFrom(this);
+        return new Tuple<PathContext,PathContext>(pathContext.Clone(),pathContext.Clone());
     }
 
     public abstract Symbol CodeGenRvalue(AstFunction func);

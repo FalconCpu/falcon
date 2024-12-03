@@ -8,12 +8,12 @@ class AstWhile(Location location, AstExpression condition, AstBlock parent) : As
             stmt.Print(indent + 1);
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        condition.TypeCheckRvalue(scope);
-        BoolType.Instance.CheckAssignableFrom(condition);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        (pathContext, PathContext pathContextFalse) = condition.TypeCheckBool(scope, pathContext);
 
         foreach (AstStatement stmt in statements)
-            stmt.TypeCheck(this);
+            stmt.TypeCheck(this, pathContext);
+        return PathContext.Merge([pathContext, pathContextFalse]);
     }
 
     public override void CodeGen(AstFunction func)    {

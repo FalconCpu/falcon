@@ -1,0 +1,12 @@
+# Paths that are unreachable allow for initialization of variables
+
+fun main(a:Int)
+    val b : Int
+    if a=2
+        b = 1
+    else 
+        return 
+    
+    print("%d\n",b)   # no error as b is initialized along every path that reaches this point
+
+@-------------------

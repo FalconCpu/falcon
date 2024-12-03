@@ -31,15 +31,20 @@ class AstForIn(Location location, AstIdentifier astId, AstExpression astList, As
         return ft.returnType;
     }
 
-    public override void TypeCheck(AstBlock scope) {
-        astList.TypeCheckRvalue(scope);
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        // Save a copy of the initial path context in case the loop iterates zero times
+        PathContext pathContextInitial = pathContext.Clone();
+
+        astList.TypeCheckRvalue(scope, pathContext);
         Type type = VerifyIterator();
         Symbol sym = new VariableSymbol(astId.name, type, false, false);
         AddSymbol(location, sym);
         astId.SetSymbol(sym);
 
         foreach(AstStatement stmt in statements)
-            stmt.TypeCheck(this);
+            pathContext = stmt.TypeCheck(this, pathContext);
+        
+        return PathContext.Merge([pathContext, pathContextInitial]);
     }
 
     public override void CodeGen(AstFunction func) {

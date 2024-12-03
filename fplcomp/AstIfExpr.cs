@@ -11,10 +11,10 @@ class AstIfExpr(Location location, AstExpression cond, AstExpression then, AstEx
         els.Print(indent + 1);
     }
 
-    public override void TypeCheckRvalue(AstBlock scope) {
-        cond.TypeCheckRvalue(scope);
-        then.TypeCheckRvalue(scope);
-        els.TypeCheckRvalue(scope);
+    public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
+        cond.TypeCheckRvalue(scope, pathContext);
+        then.TypeCheckRvalue(scope, pathContext);
+        els.TypeCheckRvalue(scope, pathContext);
         BoolType.Instance.CheckAssignableFrom(cond);
         then.type.CheckAssignableFrom(els);
         SetType(then.type);

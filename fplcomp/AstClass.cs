@@ -38,11 +38,12 @@ class AstClass : AstFunction {
                 func.IdentifyFunctions(this);
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
         // Type check the body
         foreach(AstStatement stmt in statements) {
-            stmt.TypeCheck(this);
+            pathContext = stmt.TypeCheck(this, pathContext);
         }
+        return pathContext;
     }
 
 

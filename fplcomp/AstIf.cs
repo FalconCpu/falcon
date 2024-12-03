@@ -9,9 +9,15 @@ class AstIf(Location location, List<AstIfClause> clauses) : AstStatement(locatio
         }
     }
 
-    public override void TypeCheck(AstBlock scope) {
+    public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
         foreach(AstIfClause clause in clauses)
-            clause.TypeCheck(scope);
+            pathContext = clause.TypeCheck(scope, pathContext);
+
+        List<PathContext> pcAfterClauses = clauses.Select(c => c.pathContextOut).ToList();
+        if (clauses.Last().cond!=null)
+            // If there is no else clause, then add in the fallthrough path context
+            pcAfterClauses.Add(pathContext);
+        return PathContext.Merge( pcAfterClauses );
     }
 
     public override void CodeGen(AstFunction func)    {
