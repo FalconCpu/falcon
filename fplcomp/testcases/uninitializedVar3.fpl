@@ -7,3 +7,5 @@ fun main(a:Int)
     b = 2       # error as may already be initialized
 
 @-------------------
+testcase_outputs/uninitializedVar3.fpl:7:5: Symbol 'b' is immutable
+Failed with 1 errors

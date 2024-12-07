@@ -20,4 +20,12 @@ class AstTypecast(Location location, AstExpression astExpression, AstType target
         func.Add( new InstrMov(ret, sym) );
         return ret;
     }
+
+    public override bool HasKnownIntValue() {
+        return astExpression.HasKnownIntValue();
+    }
+
+    public override int GetKnownIntValue() {
+        return astExpression.GetKnownIntValue();
+    }
 }

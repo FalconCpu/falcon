@@ -1,0 +1,120 @@
+# #####################################################################
+#                             File System
+# #####################################################################
+#
+#
+# Disk Structure (1kb Blocks)
+# Block 0    Boot Block - contains a single Directory Entry for the root directory
+# Block 1-n  Bitmap 1 bit per sector
+# Block n+1  Root Directory
+
+# Directory Entry (64 bytes)
+#   0    Magic Number    (File=0x46494C45, Directory=0x44495245)
+#   4    Date
+#   8    File length
+#  12    Permissions
+#  16    Direct Pointer
+#  20    Indirect Pointer
+#  24    Double Indirect Pointer
+#  28    Triple Indirect Pointer
+#  32    File Name[32] (Padded with 0x00)
+
+# ######################################################################
+#                             Disk Blocks
+# ######################################################################
+# 
+# Since we don't have a disk attached to the FPGA board - we emulate it
+# using the UART. The UART is connected to a PC which is running a
+# program to emulate the disk. All transactions begin with a byte 0xB0
+# to distinguish it from the rest of the UART traffic.
+# 
+# To write to a disk 'sector' we send a command to the UART:
+# 0x495257B0  Write Sector  (*WRI)
+# Sector number (4 bytes)
+# Data (512 bytes)
+# Checksum (4 bytes)
+# 
+# The Host responds with the status:
+# 0x594B4FB0 for success   (*OKY)
+# 0x444142B0 for failure   (*BAD)
+#
+# To read from a disk 'sector' we send a command to the UART:
+# 0x414552B0  Read Sector  (*REA) (sent little endian - B0 is the first byte)
+# Sector number (4 bytes)
+# 
+# The Host responds with the data:
+# 0x544144B0              (*DAT)
+# Data (512 bytes)
+# Checksum (4 bytes)
+const DISKCOMMAND_WRITE = 0x495257B0
+const DISKCOMMAND_READ  = 0x414552B0
+const DISKCOMMAND_OK    = 0x594B4FB0
+const DISKCOMMAND_BAD   = 0x444142B0
+const DISKCOMMAND_DAT   = 0x544144B0
+
+# ######################################################################
+#                             ReadDiskBlock
+# ######################################################################
+# Read a block from the disk
+# Return success
+
+fun uartExpectWord(expected:Int) -> Bool
+    # Wait for the response - allow a few stray bytes before an expected word
+    # (note uartReceiveByte() returns -1 if there is a timeout - which will trigger this function to fail)
+    var count = 0
+    var rx_byte = uartReceiveByte()
+    while rx_byte!=0xB0
+        count += 1
+        if count >=10 
+            return false
+        rx_byte = uartReceiveByte()
+    if uartReceiveByte() != ((expected lsr 8) & 0xff)
+        return false
+    if uartReceiveByte() != ((expected lsr 16) & 0xff)
+        return false
+    if uartReceiveByte() != ((expected lsr 24) & 0xff)
+        return false
+    return true
+
+
+fun writeDiskBlock(blockNumber:Int, address:Array<Char>) -> Bool
+    # Send the command to the UART
+    uartTransmitWord(DISKCOMMAND_WRITE)
+    uartTransmitWord(blockNumber)
+    var checksum = 0
+    for i = 0 to < 512
+        uartTransmitByte(address[i])
+        checksum += (address[i] : Int)
+    uartTransmitWord(checksum)
+    return uartExpectWord(DISKCOMMAND_OK)
+
+fun readDiskBlock(blockNumber:Int, address:Array<Char>) -> Bool
+    # Send the command to the UART
+    uartTransmitWord(DISKCOMMAND_READ)
+    uartTransmitWord(blockNumber)
+
+    uartExpectWord(DISKCOMMAND_DAT)
+    var checksum = 0
+    for i = 0 to < 512
+        val rx_byte = uartReceiveByte()
+        if rx_byte = -1
+            return false
+        address[i] = (rx_byte : Char)
+        checksum += rx_byte
+
+    val cs0 =  uartReceiveByte()
+    if cs0 = -1
+        return false
+    val cs1 =  uartReceiveByte()
+    if cs1 = -1
+        return false
+    val cs2 =  uartReceiveByte()
+    if cs2 = -1
+        return false
+    val cs3 =  uartReceiveByte()
+    if cs3 = -1
+        return false
+    val checksum_received = (cs3 lsl 24) | (cs2 lsl 16) | (cs1 lsl 8) | cs0
+    if checksum_received != checksum
+        return false
+    return true

@@ -2,9 +2,7 @@
 
 fun main(a:Int)->Int
     return a
-    val b = 1
-
-    # error here as the function returns nothing along one path
+    val b = 1 # error as b is unreachable
 
 @-------------------
 testcase_outputs/pathContext4.fpl:5:9: Statement is unreachable

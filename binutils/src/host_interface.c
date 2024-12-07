@@ -14,6 +14,10 @@ typedef const char* string;
 
 static HANDLE hSerial = INVALID_HANDLE_VALUE;
 
+#define DISK_SECTOR_SIZE    1024
+#define DISK_NUMBER_SECTORS 4096
+static FILE* diskImageFile;
+
 /// -----------------------------------------------------
 ///                       fatal
 /// -----------------------------------------------------
@@ -30,6 +34,32 @@ static void fatal(string message, ...) {
         CloseHandle(hSerial);
     exit(20);
 }
+
+
+/// -----------------------------------------------------
+///                    openDiskImageFile
+/// -----------------------------------------------------
+/// Open the disk image file
+
+static void createDiskImageFile() {
+    diskImageFile = fopen("diskImage.dat", "wb");
+    if (diskImageFile == NULL)
+        fatal("Can't open disk image file '%s'", "diskImage.dat");
+    
+    void* emptySector = calloc(1, DISK_SECTOR_SIZE);
+    for (int i=0; i<DISK_NUMBER_SECTORS; i++)
+        fwrite(emptySector, DISK_SECTOR_SIZE, 1, diskImageFile);
+    free(emptySector);
+    fclose(diskImageFile);
+}
+
+
+static void open_disk_image_file() {
+    diskImageFile = fopen("diskImage.dat", "ab");
+    if (diskImageFile == NULL)
+        fatal("Can't open disk image file '%s'", OUT_FILE_NAME);
+}
+
 
 /// -----------------------------------------------------
 ///                       open_com_port
@@ -142,6 +172,11 @@ int main(int argc, char** argv) {
     if (argc < 2) {
         printf("Usage: %s <filename>\n", argv[0]);
         return 1;
+    }
+
+    if (! strcmp(argv[1], "-createDiskImage")) {
+        createDiskImageFile();
+        return 0;
     }
 
     open_com_port();

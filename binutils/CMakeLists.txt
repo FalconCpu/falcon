@@ -28,6 +28,11 @@ set(SIM_SOURCES
     src/disassemble.c
 )
 
+set(FILESYS_SOURCES
+    src/filesys.c
+    src/util.c
+)
+
 # Set output directories for all build types
 set(EXECUTABLE_OUTPUT_PATH "c:/Users/simon/falcon/bin")
 
@@ -36,6 +41,7 @@ add_executable(f32asm ${ASM_SOURCES})
 add_executable(f32dis ${DIS_SOURCES})
 add_executable(f32sim ${SIM_SOURCES})
 add_executable(host_interface src/host_interface.c)
+add_executable(f32filesys ${FILESYS_SOURCES})
 
 # Add compiler warnings
 if(MSVC)

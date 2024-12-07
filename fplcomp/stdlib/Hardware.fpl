@@ -1,0 +1,37 @@
+const hwRegs = (0xE0000000 : HwRegs)
+
+class HwRegs
+    var seven_seg : Int #  R/W  6 digit hexadecimal seven segment display
+    var ledr      : Int #  R/W  10 LEDs
+    var sw        : Int #  R    10 Switches    
+    var key       : Int #  R    4 Push buttons
+    var uart_tx   : Int #  R/W  Write = byte of data to transmit, read = number of slots free in fifo
+    var uart_rx   : Int #  R    1 byte of data from the uart, -1 if no data
+    var mouse_x   : Int #  R    10 bit mouse x position
+    var mouse_y   : Int #  R    10 bit mouse y position
+    var mouse_btn : Int #  R    3 bit mouse buttons
+    var keyboard  : Int #  R    Scan codes from the keyboard, -1 if no data
+    var sim_mode  : Int #  R    1 if in simulation mode, 0 if in hardware
+ 
+fun uartTransmitByte(byte : Char)
+    # wait for there to be room in the fifo
+    while hwRegs.uart_tx = 0
+        val a = 0   # do nothing
+    hwRegs.uart_tx = (byte:Int)
+
+fun uartTransmitWord(word: Int)
+    uartTransmitByte(((word lsr 0) & 0xff : Char))
+    uartTransmitByte(((word lsr 8) & 0xff : Char))
+    uartTransmitByte(((word lsr 16) & 0xff : Char))
+    uartTransmitByte(((word lsr 24) & 0xff : Char))
+
+fun uartReceiveByte() -> Int
+    # fetch a byte from the uart - or -1 if there is a timeout
+    var timeout = 1000000
+    while timeout > 0
+        val ret = hwRegs.uart_rx
+        if ret != -1
+            return ret
+        timeout -= 1
+    return -1
+
