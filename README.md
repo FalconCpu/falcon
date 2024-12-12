@@ -52,8 +52,9 @@ So the instruction kinds are
 010110 ... DDDDD AAAAA ######## #####   jmp  $d, $a[#s13]    Jump to address from register + 4*s13
 010111 ### DDDDD ##### ######## #####   ld   $d, #21<<11     Load upper bits of register with literal value
 011000 ### DDDDD ##### ######## #####   add  $d, $pc, #21    Calculate pc relative address
-011001 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg    load config regs
-011010 ### DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b      Multiply ops: mul/../../../divs/mods/divu/modu
+011001 III DDDDD AAAAA ........ BBBBB   mul  $d, $a, $b      Multiply ops: mul/../../../divs/mods/divu/modu
+011010 III DDDDD AAAAA ######## #####   mul  $d, $a, #s13    Multiply ops: mul/../../../divs/mods/divu/modu
+011011 III DDDDD AAAAA ######## #####   cfg  $d, $a, #reg    load config regs
 ```
 
 The assembler, disassembler and emulator are written in 'C' and can be found in the assembler directory.
@@ -64,7 +65,7 @@ Depending on your point of view I've taken the best, or worst, bits of my three 
 So FPL is a biasically the semantics of 'C', with the syntax of Kotlin, and the significant whitespace of Python (although
 with optional 'end' commands). More details on the language itself in the readme file for the compiler.
 
-The compiler itself is written in C, and runs multiple passes
+The compiler itself is written in C#, and runs multiple passes
 * Interleaved lexing/parsing to build an Abstract syntax tree, using a recursive descent parser
 * Three pass semantic checks, (to allow for forward references)
    * Identify user defined types

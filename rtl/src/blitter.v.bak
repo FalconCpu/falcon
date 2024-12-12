@@ -1,0 +1,149 @@
+`timescale 1ns / 1ns
+
+module blitter(
+    input           clock,
+    input           reset,
+
+    // Connections to the hwregs
+    input [7:0]     blit_cmd,
+    input [15:0]    blit_x1,
+    input [15:0]    blit_y1,
+    input [15:0]    blit_x2,
+    input [15:0]    blit_y2,
+    input [31:0]    blit_addr,
+    input [7:0]     blit_fgcolor,
+    input [7:0]     blit_bgcolor,
+    input           blit_start,
+    output          blit_busy,
+
+    input [15:0]    blit_clip_x1,
+    input [15:0]    blit_clip_y1,
+    input [15:0]    blit_clip_x2,
+    input [15:0]    blit_clip_y2,
+    input [8:0]     blit_transparent_color,
+
+    // connections to the memory bus - write
+    output reg        blitw_request,
+    output reg [25:0] blitw_address,
+    output reg [31:0] blitw_wdata,
+    output reg [3:0]  blitw_byte_en,
+    input             blitw_complete,
+
+    // connections to the memory bus - read
+    output reg        blitr_request,
+    output reg [25:0] blitr_address,
+    input  [31:0]     blitr_rdata,
+    input             blitr_valid,
+    input             blitr_complete
+);
+
+// Signals in the P1 Stage
+reg [15:0]         x, next_x;              // The X-coordinate of the pixel being processed
+reg [15:0]         y, next_y;              // The Y-coordinate of the pixel being processed
+reg [8:0]          color;                  // The color to set the pixel to. Values>256 are transparent
+reg                next_blit_busy;
+
+// Signals in the P2 stage
+reg [15:0]         p2_x;
+reg [15:0]         p2_y;
+reg [8:0]          p2_color;
+reg [25:0]         p2_address;
+reg [3:0]          p2_byte_en;
+reg [31:0]         p2_data;
+
+wire stall = ((blitw_request && !blitw_complete) || (blitr_request && !blitr_valid)) && !reset;
+
+parameter COLOR_TRANSPARENT = 9'h100;
+
+always @(*) begin
+    next_blit_busy = blit_busy;
+    next_x = x;
+    next_y = y;
+    p2_byte_en = 4'h0;
+    p2_data = 32'hx;
+
+    // ***********************************************************
+    //                        Pipeline Stage 1
+    // ***********************************************************
+
+    casex({blit_busy,blit_cmd})
+        9'h0xx: begin       // Idle
+            next_blit_busy = blit_start;
+            next_x = blit_x1;
+            next_y = blit_y1;
+            color  = COLOR_TRANSPARENT;
+        end
+
+        9'h101: begin       // Fill Rectangle
+            next_x = x + 16'h1;
+            if (next_x == blit_x2) begin
+                next_x = blit_x1;
+                next_y = y + 16'h1;
+                if (next_y == blit_y2) begin
+                    next_blit_busy = 1'b0;
+                end
+            end
+            color = blit_fgcolor;
+        end
+
+        default: begin
+            next_blit_busy = 1'b0;
+        end
+
+    endcase
+
+    // ***********************************************************
+    //                        Pipeline Stage 2
+    // ***********************************************************
+
+    p2_address = blit_addr + (p2_y * 640) + (p2_x & 16'hfffc);
+    if (p2_x<blit_clip_x1 ||  p2_x>=blit_clip_x2 || p2_y<blit_clip_y1 || p2_y>=blit_clip_y2 || 
+        p2_color==blit_transparent_color || p2_color[8]) begin
+        p2_byte_en = 4'b0000;
+        p2_data = 32'bx;
+    end else if (p2_x[1:0]==0) begin
+        p2_byte_en = 4'b0001;
+        p2_data = {24'hx,p2_color[7:0]};
+    end else if (p2_x[1:0]==1) begin
+        p2_byte_en = 4'b0010;
+        p2_data = {16'hx,p2_color[7:0],8'hx};
+    end else if (p2_x[1:0]==2) begin
+        p2_byte_en = 4'b0100;
+        p2_data = {8'hx,p2_color[7:0],16'hx};
+    end else begin
+        p2_byte_en = 4'b1000;
+        p2_data = {p2_color[7:0],24'hx};
+    end
+
+    // ***********************************************************
+    //                        Pipeline Stage 2
+    // ***********************************************************
+
+
+    if (reset)
+        next_blit_busy = 1'b0;
+end 
+
+always @(posedge clock) begin
+    if (!stall) begin
+        blit_busy <= next_blit_busy;
+        x <= next_x;
+        y <= next_y;
+        
+        p2_x <= x;
+        p2_y <= y;
+        p2_color <= color;
+
+        blitw_request <= p2_byte_en!=0;
+        blitw_address <= p2_address;
+        blitw_byte_en <= p2_byte_en;
+        blitw_wdata   <= p2_data;
+
+        blitr_request <= 0;
+        blitr_address <= 25'hx;
+    end
+end
+
+
+
+endmodule

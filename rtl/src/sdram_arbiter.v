@@ -31,6 +31,21 @@ module sdram_arbiter(
     output          vga_valid,
     output          vga_complete,
 
+    // VGA = blitter read 3  (read only)
+    input           blitw_request,
+    input   [25:0]  blitw_address,
+    input   [31:0]  blitw_wdata,
+    input   [3:0]   blitw_byte_en,
+    output          blitw_complete,
+
+    // VGA = blitter read 4  (read only)
+    input           blitr_request,
+    input   [25:0]  blitr_address,
+    output  [31:0]  blitr_rdata,
+    output          blitr_valid,
+    output          blitr_complete,
+
+
     // SDRAM slave
     output              sdram_request,
     output reg          sdram_write,
@@ -56,6 +71,12 @@ assign vga_valid    = sdram_valid == 3'h2;
 assign vga_complete = sdram_complete == 3'h2;
 assign vga_rdata    = vga_valid ? sdram_rdata : 32'bx;
 
+assign blitw_complete = sdram_complete == 3'h3;
+
+assign blitr_valid    = sdram_valid == 3'h4;
+assign blitr_complete = sdram_complete == 3'h4;
+assign blitr_rdata    = blitr_valid ? sdram_rdata : 32'bx;
+
 assign sdram_master = next_master;
 
 always @(*) begin
@@ -67,7 +88,11 @@ always @(*) begin
         next_master = 4'b1;
     else if (next_master==3'b0 && vga_request)
         next_master = 4'd2;
-
+    else if (next_master==3'b0 && blitr_request)
+        next_master = 4'd4;
+    else if (next_master==3'b0 && blitw_request)
+        next_master = 4'd3;
+        
 
     // get the signals from the new master
     case (next_master)
@@ -86,6 +111,23 @@ always @(*) begin
             sdram_byte_en = 4'b0;
             sdram_burst   = 1'h1;
         end
+
+        4'h3: begin  // Blitter does single writes
+            sdram_write   = 1'b1;
+            sdram_address = blitw_address;
+            sdram_wdata   = blitw_wdata;
+            sdram_byte_en = blitw_byte_en;
+            sdram_burst   = 1'h0;
+        end
+
+        4'h4: begin  // Blitter always does burst reads
+            sdram_write   = 1'b0;
+            sdram_address = blitr_address;
+            sdram_wdata   = 26'bx;;
+            sdram_byte_en = 4'b0;
+            sdram_burst   = 1'h1;
+        end
+
 
         default: begin
             sdram_write = 1'bx;

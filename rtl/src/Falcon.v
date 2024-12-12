@@ -119,6 +119,25 @@ wire               hwregs_ack;
 wire  [23:0]       seven_seg_data;
 wire               uart_tx_valid;
 wire [7:0]         uart_tx_data;
+wire [7:0]         blit_cmd;        
+wire [15:0]        blit_width;      
+wire [15:0]        blit_height;     
+wire [7:0]         blit_fgcolor;    
+wire [7:0]         blit_bgcolor;    
+wire [25:0]        blit_dest_addr;  
+wire [15:0]        blit_dest_bpr;   
+wire [15:0]        blit_dest_x;     
+wire [15:0]        blit_dest_y;     
+wire [25:0]        blit_src_addr;   
+wire [15:0]        blit_src_bpr;    
+wire [15:0]        blit_src_x;      
+wire [15:0]        blit_src_y;      
+wire [15:0]        blit_clip_x1;
+wire [15:0]        blit_clip_y1;
+wire [15:0]        blit_clip_x2;
+wire [15:0]        blit_clip_y2;
+wire [8:0]         blit_transparent_color;
+
 
 // signals from the UART
 wire  [7:0]        uart_rx_data;
@@ -134,6 +153,11 @@ wire               dcache_complete;
 wire [31:0]        vga_rdata;
 wire               vga_valid;
 wire               vga_complete;
+wire               blitw_complete;
+wire [31:0]        blitr_rdata;
+wire               blitr_valid;
+wire               blitr_complete;
+
 wire               sdram_request;
 wire               sdram_write;
 wire [3:0]         sdram_master;
@@ -141,6 +165,8 @@ wire [25:0]        sdram_address;
 wire [31:0]        sdram_wdata;
 wire [3:0]         sdram_byte_en;
 wire               sdram_burst;
+
+
 
 // Signals from the VGA
 wire               vga_request;
@@ -159,6 +185,15 @@ wire [2:0] mouse_buttons;
 // Signals from the keyboard
 wire  [7:0]  keyboard_code;
 wire         keyboard_strobe;
+
+// Signals from the blitter
+wire          blitw_request;
+wire [25:0]   blitw_address;
+wire [31:0]   blitw_wdata;
+wire [3:0]    blitw_byte_en;
+wire          blitr_request;
+wire [25:0]   blitr_address;
+
 
 wire [31:0]        debug_pc;
 
@@ -264,7 +299,27 @@ hwregs  hwregs_inst (
     .mouse_y(mouse_y),
     .mouse_buttons(mouse_buttons),
     .keyboard_code(keyboard_code),
-    .keyboard_strobe(keyboard_strobe)
+    .keyboard_strobe(keyboard_strobe),
+    .blit_cmd(blit_cmd),
+    .blit_width(blit_width),
+    .blit_height(blit_height),
+    .blit_fgcolor(blit_fgcolor),
+    .blit_bgcolor(blit_bgcolor),
+    .blit_dest_addr(blit_dest_addr),
+    .blit_dest_bpr(blit_dest_bpr),
+    .blit_dest_x(blit_dest_x),
+    .blit_dest_y(blit_dest_y),
+    .blit_src_addr(blit_src_addr),
+    .blit_src_bpr(blit_src_bpr),
+    .blit_src_x(blit_src_x),
+    .blit_src_y(blit_src_y),
+    .blit_clip_x1(blit_clip_x1),
+    .blit_clip_y1(blit_clip_y1),
+    .blit_clip_x2(blit_clip_x2),
+    .blit_clip_y2(blit_clip_y2),
+    .blit_transparent_color(blit_transparent_color),
+    .blit_start(blit_start),
+    .blit_busy(blit_busy)
 );
 
 reg prev_key;
@@ -316,6 +371,16 @@ sdram_arbiter  sdram_arbiter_inst (
     .vga_rdata(vga_rdata),
     .vga_valid(vga_valid),
     .vga_complete(vga_complete),
+    .blitw_request(blitw_request),
+    .blitw_address(blitw_address),
+    .blitw_wdata(blitw_wdata),
+    .blitw_byte_en(blitw_byte_en),
+    .blitw_complete(blitw_complete),
+    .blitr_request(blitr_request),
+    .blitr_address(blitr_address),
+    .blitr_rdata(blitr_rdata),
+    .blitr_valid(blitr_valid),
+    .blitr_complete(blitr_complete),
     .sdram_request(sdram_request),
     .sdram_write(sdram_write),
     .sdram_master(sdram_master),
@@ -391,6 +456,41 @@ keyboard_if  keyboard_if_inst (
     .PS2_DAT2(PS2_DAT2),
     .keyboard_code(keyboard_code),
     .keyboard_strobe(keyboard_strobe)
+  );
+
+blitter  blitter_inst (
+    .clock(clock),
+    .reset(reset),
+    .blit_cmd(blit_cmd),
+    .blit_width(blit_width),
+    .blit_height(blit_height),
+    .blit_start(blit_start),
+    .blit_busy(blit_busy),
+    .blit_fgcolor(blit_fgcolor),
+    .blit_bgcolor(blit_bgcolor),
+    .blit_dest_addr(blit_dest_addr),
+    .blit_dest_bpr(blit_dest_bpr),
+    .blit_dest_x(blit_dest_x),
+    .blit_dest_y(blit_dest_y),
+    .blit_src_addr(blit_src_addr),
+    .blit_src_bpr(blit_src_bpr),
+    .blit_src_x(blit_src_x),
+    .blit_src_y(blit_src_y),
+    .blit_clip_x1(blit_clip_x1),
+    .blit_clip_y1(blit_clip_y1),
+    .blit_clip_x2(blit_clip_x2),
+    .blit_clip_y2(blit_clip_y2),
+    .blit_transparent_color(blit_transparent_color),
+    .blitw_request(blitw_request),
+    .blitw_address(blitw_address),
+    .blitw_wdata(blitw_wdata),
+    .blitw_byte_en(blitw_byte_en),
+    .blitw_complete(blitw_complete),
+    .blitr_request(blitr_request),
+    .blitr_address(blitr_address),
+    .blitr_rdata(blitr_rdata),
+    .blitr_valid(blitr_valid),
+    .blitr_complete(blitr_complete)
   );
 
 

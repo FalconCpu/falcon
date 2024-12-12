@@ -36,11 +36,11 @@ parameter H_TOTAL = 800;
 
 // Vertical timing counters  
 reg [9:0] v_count;
-parameter V_VISIBLE = 480;
-parameter V_FRONT_PORCH = 10;
-parameter V_SYNC = 2;
-parameter V_BACK_PORCH = 33;
-parameter V_TOTAL = 525;
+parameter V_VISIBLE = 10'd480;
+parameter V_FRONT_PORCH = 10'd10;
+parameter V_SYNC = 10'd2;
+parameter V_BACK_PORCH = 10'd33;
+parameter V_TOTAL = 10'd525;
 
 parameter SCREEN_START_ADDRESS = 26'h3f80000;
 parameter SCREEN_END_ADDRESS = 26'h3f80000 + 640*480*4;

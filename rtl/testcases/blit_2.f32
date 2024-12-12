@@ -1,0 +1,101 @@
+HWREGS           = 0xE0000000
+SEVEN_SEG        = 0x00
+BLIT_CMD         = 0x80  
+BLIT_WIDTH       = 0x84  
+BLIT_HEIGHT      = 0x88  
+BLIT_FGCOLOR     = 0x8C  
+BLIT_BGCOLOR     = 0x90  
+BLIT_DEST_ADDR   = 0x94  
+BLIT_DEST_BPR    = 0x98  
+BLIT_DEST_X      = 0x9C  
+BLIT_DEST_Y      = 0xA0  
+BLIT_SRC_ADDR    = 0xA4  
+BLIT_SRC_BPR     = 0xA8  
+BLIT_SRC_X       = 0xAC  
+BLIT_SRC_Y       = 0xB0  
+BLIT_CLIP_X1     = 0xB4  
+BLIT_CLIP_Y1     = 0xB8  
+BLIT_CLIP_X2     = 0xBC  
+BLIT_CLIP_Y2     = 0xC0  
+BLIT_TRANSPARENT_COLOR  = 0xC4  
+
+
+start:
+
+# Set the clipping regions to the full screen
+ld $1, HWREGS
+stw 0, $1[BLIT_CLIP_X1]
+stw 0, $1[BLIT_CLIP_Y1]
+stw 0, $1[BLIT_TRANSPARENT_COLOR]
+ld $2, 640
+stw $2, $1[BLIT_CLIP_X2]
+stw $2, $1[BLIT_DEST_BPR]
+stw $2, $1[BLIT_SRC_BPR]
+ld $2, 480
+stw $2, $1[BLIT_CLIP_Y2]
+ld $2, 0x3F80000
+stw $2, $1[BLIT_DEST_ADDR]
+stw $2, $1[BLIT_SRC_ADDR]
+
+
+# now draw a set of rectangles
+ld $10, 255                   # $10 = counter of rectangles
+
+wait_for_blitter:
+ldw $2, $1[BLIT_CMD]
+bne $2, 0, wait_for_blitter
+
+and $2, $10, 0x0F             # $2 = X coordinate
+mul $2, 40                  
+and $3, $10, 0xF0             # $3 = Y coordinate
+lsr $3, $3, 4
+mul $3, 30
+
+stw $2, $1[BLIT_DEST_X]           # store the coordinates into the hwregs
+stw $3, $1[BLIT_DEST_Y]
+ld  $2,39
+stw $2, $1[BLIT_WIDTH]
+ld  $3,29
+stw $3, $1[BLIT_HEIGHT]
+stw $10, $1[BLIT_FGCOLOR]
+ld $2, -1
+stw $2, $1[BLIT_TRANSPARENT_COLOR]
+
+ld $2, 1                      # start the blit
+stw $2, $1[BLIT_CMD]
+
+sub $10, 1                    # decrement the counter and repeat
+bne $10, 0, wait_for_blitter
+
+
+# delay
+ld $11, 1
+scroll_loop:
+add $11,1
+stw $11, $1[SEVEN_SEG]
+
+#ld $10, 0xFFFFFF
+#delay1:
+#sub $10, 1
+#bne $10, 0, delay1
+
+# Now scroll the screen up
+
+wait_for_blitter2:
+ldw $2, $1[BLIT_CMD]
+bne $2, 0, wait_for_blitter2
+
+ld $2, 0
+stw $2, $1[BLIT_DEST_X]
+stw $2, $1[BLIT_DEST_Y]
+stw $2, $1[BLIT_SRC_X]
+ld $2,1
+stw $2, $1[BLIT_SRC_Y]
+ld $2, 640
+stw $2, $1[BLIT_WIDTH]
+ld $2, 479
+stw $2, $1[BLIT_HEIGHT]
+ld $2, 2
+stw $2, $1[BLIT_CMD]
+
+jmp scroll_loop

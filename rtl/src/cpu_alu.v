@@ -108,11 +108,12 @@ always @(*) begin
     if (p3_op == `INST_CFGW) begin
         case(p3_data_b[12:0]) 
             13'd1: next_epc = p3_data_a;
-            13'd2: next_ecause = p3_data_a;
+            13'd2: next_ecause = p3_data_a[3:0];
             13'd3: next_edata = p3_data_a;
             13'd4: next_estatus = p3_data_a;
             13'd5: next_escratch = p3_data_a;
             13'd6: next_status = p3_data_a;
+				default: begin end 
         endcase
     end 
 
