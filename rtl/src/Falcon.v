@@ -120,26 +120,9 @@ wire               hwregs_valid;
 wire  [23:0]       seven_seg_data;
 wire               uart_tx_valid;
 wire [7:0]         uart_tx_data;
-wire [7:0]         blit_cmd;        
-wire [15:0]        blit_width;      
-wire [15:0]        blit_height;     
-wire [7:0]         blit_fgcolor;    
-wire [7:0]         blit_bgcolor;    
-wire [25:0]        blit_dest_addr;  
-wire [15:0]        blit_dest_bpr;   
-wire [15:0]        blit_dest_x;     
-wire [15:0]        blit_dest_y;     
-wire [25:0]        blit_src_addr;   
-wire [15:0]        blit_src_bpr;    
-wire [15:0]        blit_src_x;      
-wire [15:0]        blit_src_y;      
-wire [15:0]        blit_clip_x1;
-wire [15:0]        blit_clip_y1;
-wire [15:0]        blit_clip_x2;
-wire [15:0]        blit_clip_y2;
-wire [8:0]         blit_transparent_color;
+wire [103:0]       blit_cmd;        
 wire               blit_start;
-wire               blit_busy;
+wire [7:0]         blit_slots_free;
 
 
 // signals from the UART
@@ -312,25 +295,8 @@ hwregs  hwregs_inst (
     .keyboard_code(keyboard_code),
     .keyboard_strobe(keyboard_strobe),
     .blit_cmd(blit_cmd),
-    .blit_width(blit_width),
-    .blit_height(blit_height),
-    .blit_fgcolor(blit_fgcolor),
-    .blit_bgcolor(blit_bgcolor),
-    .blit_dest_addr(blit_dest_addr),
-    .blit_dest_bpr(blit_dest_bpr),
-    .blit_dest_x(blit_dest_x),
-    .blit_dest_y(blit_dest_y),
-    .blit_src_addr(blit_src_addr),
-    .blit_src_bpr(blit_src_bpr),
-    .blit_src_x(blit_src_x),
-    .blit_src_y(blit_src_y),
-    .blit_clip_x1(blit_clip_x1),
-    .blit_clip_y1(blit_clip_y1),
-    .blit_clip_x2(blit_clip_x2),
-    .blit_clip_y2(blit_clip_y2),
-    .blit_transparent_color(blit_transparent_color),
     .blit_start(blit_start),
-    .blit_busy(blit_busy)
+    .blit_slots_free(blit_slots_free)
 );
 
 reg prev_key;
@@ -475,29 +441,12 @@ keyboard_if  keyboard_if_inst (
     .keyboard_strobe(keyboard_strobe)
   );
 
-blitter  blitter_inst (
+  blitter  blitter_inst (
     .clock(clock),
     .reset(reset),
     .blit_cmd(blit_cmd),
-    .blit_width(blit_width),
-    .blit_height(blit_height),
     .blit_start(blit_start),
-    .blit_busy(blit_busy),
-    .blit_fgcolor(blit_fgcolor),
-    .blit_bgcolor(blit_bgcolor),
-    .blit_dest_addr(blit_dest_addr),
-    .blit_dest_bpr(blit_dest_bpr),
-    .blit_dest_x(blit_dest_x),
-    .blit_dest_y(blit_dest_y),
-    .blit_src_addr(blit_src_addr),
-    .blit_src_bpr(blit_src_bpr),
-    .blit_src_x(blit_src_x),
-    .blit_src_y(blit_src_y),
-    .blit_clip_x1(blit_clip_x1),
-    .blit_clip_y1(blit_clip_y1),
-    .blit_clip_x2(blit_clip_x2),
-    .blit_clip_y2(blit_clip_y2),
-    .blit_transparent_color(blit_transparent_color),
+    .blit_slots_free(blit_slots_free),
     .blitw_request(blitw_request),
     .blitw_address(blitw_address),
     .blitw_wdata(blitw_wdata),

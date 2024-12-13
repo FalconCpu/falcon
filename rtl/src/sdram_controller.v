@@ -173,6 +173,7 @@ always @(*) begin
                 next_addr = sdram_address[25:13];
                 next_state = STATE_ACTIVATE;
             end else if (sdram_write) begin
+                $display("WRITE MASTER=%x ADDR=%x DATA=%x %x", sdram_master, sdram_address, sdram_wdata, sdram_byte_en);
                 next_addr = {3'b000, sdram_address[10:2], 1'b0};
                 next_ba   = sdram_address[12:11];
                 next_cmd  = CMD_WRITE;
@@ -182,6 +183,7 @@ always @(*) begin
                 sdram_ready= 1'b1;
                 next_state = STATE_WRITE;
             end else begin // read
+                $display("READ MASTER=%x ADDR=%x", sdram_master, sdram_address);
                 next_addr = {3'b000, sdram_address[10:2], 1'b0};
                 next_latched_address = sdram_address[10:0];
                 next_ba   = sdram_address[12:11];
@@ -288,6 +290,8 @@ always @(posedge clock) begin
 
 //    if (this_state==STATE_IDLE && next_state==STATE_WRITE)
 //        $display("TIME %t [%x]=%x %x", $time, sdram_address, sdram_wdata, sdram_byte_en);
+    if (next_valid!=0)
+        $display("READ DATA %d %x",next_valid,{DRAM_DQ,reg0_dq});
 
     this_counter <= next_counter;
     this_state   <= next_state;

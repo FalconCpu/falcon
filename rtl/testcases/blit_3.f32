@@ -39,7 +39,7 @@ stw $2, $1[BLIT_SRC_ADDR]
 
 
 # now draw a set of rectangles
-ld $10, 255                   # $10 = counter of rectangles
+ld $10, 1                   # $10 = counter of rectangles
 
 wait_for_blitter:
 ldw $2, $1[BLIT_CMD]
@@ -85,10 +85,10 @@ wait_for_blitter2:
 ldw $2, $1[BLIT_CMD]
 bne $2, 0, wait_for_blitter2
 
-ld $2, 639
+ld $2, 63
 stw $2, $1[BLIT_DEST_X]
 stw $2, $1[BLIT_SRC_X]
-ld $2, 479
+ld $2, 47
 stw $2, $1[BLIT_DEST_Y]
 ld $2, 478
 stw $2, $1[BLIT_SRC_Y]

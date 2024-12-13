@@ -1,34 +1,23 @@
 `timescale 1ns / 1ns
+// Blitter commands:
+// CODE NAME                    ARGS
+// 1:   BLIT_SET_DEST_ADDR      address:Int, bytesPerRow:Short
+// 2:   BLIT_SET_SRC_ADDR       address:Int, bytesPerRow:Short
+// 3:   BLIT_FILL_RECT          x1:Short, y1:Short, width:Short, height:Short, color:Short
+// 4:   BLIT_COPY_RECT          destX:Short, destY:Short, width:Short, height:Short, srcX:Short, srcY:Short 
+// 5:   BLIT_COPY_RECT_REVERSED destX:Short, destY:Short, width:Short, height:Short, srcX:Short, srcY:Short
+// 6:   BLIT_SET_CLIP_RECT      x1:Short, y1:Short, x2:Short, y2:Short
+// 7:   BLIT_SET_TRANS_COLOR    color:Short
+
 
 module blitter(
-    input           clock,
-    input           reset,
+    input             clock,
+    input             reset,
 
     // Connections to the hwregs
-    input [7:0]     blit_cmd,        // Blitter command - see above for list of commands
-    input [15:0]    blit_width,      // Width of the blit
-    input [15:0]    blit_height,     // Height of the blit
-    input           blit_start,      // Strobe to start the blit
-    output reg      blit_busy,       // Indicates that the blitter is busy
-
-    input [7:0]     blit_fgcolor,    // Foreground color
-    input [7:0]     blit_bgcolor,    // Background color
-
-    input [25:0]    blit_dest_addr,   // start address of the destination buffer
-    input [15:0]    blit_dest_bpr,    // bytes per row
-    input [15:0]    blit_dest_x,      // x coordinate for destination of blit
-    input [15:0]    blit_dest_y,      // y coordinate for destination of blit
-
-    input [25:0]    blit_src_addr,    // start address of the source buffer
-    input [15:0]    blit_src_bpr,     // bytes per row
-    input [15:0]    blit_src_x,       // x coordinate for source of blit
-    input [15:0]    blit_src_y,       // 
-
-    input [15:0]    blit_clip_x1,
-    input [15:0]    blit_clip_y1,
-    input [15:0]    blit_clip_x2,
-    input [15:0]    blit_clip_y2,
-    input [8:0]     blit_transparent_color,
+    input [103:0]     blit_cmd,
+    input             blit_start,
+    output [7:0]      blit_slots_free,
 
     // connections to the memory bus - write
     output            blitw_request,
@@ -46,8 +35,27 @@ module blitter(
     input             blitr_complete
 );
 
+// Blitter commands:
+parameter BLIT_SET_DEST_ADDR      = 8'h1; 
+parameter BLIT_SET_SRC_ADDR       = 8'h2; 
+parameter BLIT_FILL_RECT          = 8'h3; 
+parameter BLIT_COPY_RECT          = 8'h4; 
+parameter BLIT_COPY_RECT_REVERSED = 8'h5; 
+parameter BLIT_SET_CLIP_RECT      = 8'h6; 
+parameter BLIT_SET_TRANS_COLOR    = 8'h7; 
+
+// registers
+reg [25:0]      dest_addr, next_dest_addr;   // start address of the destination buffer
+reg [15:0]      dest_bpr, next_dest_bpr;     // bytes per row
+reg [25:0]      src_addr, next_src_addr;     // start address of the source
+reg [15:0]      src_bpr, next_src_bpr;       // bytes per row
+reg [15:0]      clip_x1, next_clip_x1;
+reg [15:0]      clip_y1, next_clip_y1;
+reg [15:0]      clip_x2, next_clip_x2;
+reg [15:0]      clip_y2, next_clip_y2;
+reg [8:0]       blit_trans_color, next_blit_trans_color;
+
 // Signals in the P1 Stage
-reg                next_blit_busy;         
 reg [15:0]         p1_x, p1_next_x;        // The X-coordinate of the pixel being processed
 reg [15:0]         p1_y, p1_next_y;        // The Y-coordinate of the pixel being processed
 reg [15:0]         p1_dest_x, p1_dest_y;
@@ -57,7 +65,9 @@ reg [25:0]         p1o_src_addr;
 reg                p1o_write_en;
 reg                p1o_read_en;
 reg [8:0]          p1o_color;
-reg [7:0]          p1o_cmd;
+reg                run_blit;
+reg                cmd_next;
+wire               cmd_valid;
 
 // Signals in the p2 stage
 reg [7:0]          p2i_cmd;
@@ -102,64 +112,127 @@ wire stall = (read_stall || !fifo_wr_ready) && !reset;
 
 parameter COLOR_TRANSPARENT = 9'h1FF;
 
-parameter CMD_IDLE      = 8'h00;
-parameter CMD_FILL_RECT = 8'h01;
-parameter CMD_COPY_RECT = 8'h02;
-parameter CMD_COPY_RECT_REVERSED = 8'h03;
+// Extract the fields from the command
+wire [103:0] fifo_cmd;
+wire [7:0]  p1_cmd    = fifo_cmd[103:96];
+wire [15:0] cmd_width  = fifo_cmd[15:0];
+wire [15:0] cmd_height = fifo_cmd[31:16];
+wire [15:0] cmd_x1     = fifo_cmd[47:32];
+wire [15:0] cmd_y1     = fifo_cmd[63:48];
+wire [15:0] cmd_x2     = fifo_cmd[79:64];
+wire [15:0] cmd_y2     = fifo_cmd[95:80];
+
+
 
 always @(*) begin
-    next_blit_busy = blit_busy;
-    p1_next_x = p1_x;
-    p1_next_y = p1_y;
+    p1_next_x = 16'h0;
+    p1_next_y = 16'h0;
     p1o_write_en = 1'b0;
+    next_dest_addr = dest_addr;   // start address of the destination buffer
+    next_dest_bpr = dest_bpr;     // bytes per row
+    next_src_addr = src_addr;     // start address of the source
+    next_src_bpr  = src_bpr;       // bytes per row
+    next_clip_x1  = clip_x1;
+    next_clip_y1  = clip_y1;
+    next_clip_x2  = clip_x2;
+    next_clip_y2  = clip_y2;
+    next_blit_trans_color = blit_trans_color;
+    cmd_next = 1'b0;
+    run_blit = 1'b0;
+
+    // ***********************************************************
+    //     Pipeline stage 1 : Decode the command
+    // ***********************************************************
+
+    if (! cmd_valid) begin
+        cmd_next = 1'b0;
+    end else begin
+        case (p1_cmd)
+        BLIT_SET_DEST_ADDR: begin
+            next_dest_addr = fifo_cmd[25:0];
+            next_dest_bpr = cmd_x1;
+            cmd_next = 1'b1;
+        end
+
+        BLIT_SET_SRC_ADDR: begin
+            next_src_addr = fifo_cmd[25:0];
+            next_src_bpr = cmd_x1;
+            cmd_next = 1'b1;
+        end
+
+        BLIT_SET_CLIP_RECT: begin
+            next_clip_x1 = cmd_width;
+            next_clip_y1 = cmd_height;
+            next_clip_x2 = cmd_x1;
+            next_clip_y2 = cmd_y1;
+            cmd_next = 1'b1;
+        end
+
+        BLIT_SET_TRANS_COLOR: begin
+            next_blit_trans_color = fifo_cmd[8:0];
+            cmd_next = 1'b1;
+        end 
+
+        BLIT_COPY_RECT,
+        BLIT_COPY_RECT_REVERSED,
+        BLIT_FILL_RECT: begin
+            run_blit = 1'b1;
+        end
+
+        default: begin
+            $display("Unknown blit command %x", p1_cmd);
+            cmd_next = 1'b1;
+        end
+    endcase
+    end
 
     // ***********************************************************
     //        Pipeline stage 1 : Determine pixels to write
     // ***********************************************************
 
-    if (blit_busy) begin
+    if (run_blit) begin
+        p1o_write_en = 1'b1;
         p1_next_x = p1_x + 16'h1;
-        if (p1_next_x == blit_width) begin
+        p1_next_y = p1_y;
+        if (p1_next_x == cmd_width) begin
             p1_next_x = 0;
             p1_next_y = p1_y + 16'h1;
-            if (p1_next_y == blit_height) begin
-                next_blit_busy = 1'b0;
+            if (p1_next_y == cmd_height) begin
+                p1_next_y = 0;
+                cmd_next = 1'b1;
             end
         end
-        p1o_write_en = 1'b1;
-    end else begin
-        next_blit_busy = blit_start;
-        p1_next_x = 0;
-        p1_next_y = 0;
-        p1o_color = COLOR_TRANSPARENT;    
-    end
+    end 
 
     // Convert coordinates to memory address
-    if (blit_cmd == CMD_COPY_RECT_REVERSED) begin
-        p1_dest_x = blit_dest_x - p1_x;
-        p1_dest_y = blit_dest_y - p1_y;
-        p1_src_x  = blit_src_x - p1_x;
-        p1_src_y  = blit_src_y - p1_y;            
+    if (p1_cmd == BLIT_COPY_RECT_REVERSED) begin
+        p1_dest_x = cmd_x1 - p1_x;
+        p1_dest_y = cmd_y1 - p1_y;
+        p1_src_x  = cmd_x2 - p1_x;
+        p1_src_y  = cmd_y2 - p1_y;            
     end else begin
-        p1_dest_x = blit_dest_x + p1_x;
-        p1_dest_y = blit_dest_y + p1_y;
-        p1_src_x  = blit_src_x + p1_x;
-        p1_src_y  = blit_src_y + p1_y;            
+        p1_dest_x = cmd_x1 + p1_x;
+        p1_dest_y = cmd_y1 + p1_y;
+        p1_src_x  = cmd_x2 + p1_x;
+        p1_src_y  = cmd_y2 + p1_y;            
     end
-    p1o_dest_addr = (p1_dest_y * blit_dest_bpr) + p1_dest_x;
-    p1o_src_addr  = (p1_src_y  * blit_src_bpr)  + p1_src_x ;
-    if (p1_dest_x<blit_clip_x1 ||  p1_dest_x>=blit_clip_x2 || p1_dest_y<blit_clip_y1 || p1_dest_y>=blit_clip_y2)
+
+    p1o_dest_addr = (p1_dest_y * dest_bpr) + p1_dest_x;
+    p1o_src_addr  = (p1_src_y  * src_bpr)  + p1_src_x ;
+    
+    // Check for clipping
+    if (p1_dest_x<clip_x1 ||  p1_dest_x>=clip_x2 || p1_dest_y<clip_y1 || p1_dest_y>=clip_y2)
         p1o_write_en = 1'b0;
-    p1o_color = blit_fgcolor;
-    p1o_cmd = blit_cmd;
-    p1o_read_en = blit_busy && (blit_cmd == CMD_COPY_RECT);
+
+    p1o_color = cmd_x2[8:0];
+    p1o_read_en = run_blit && (p1_cmd == BLIT_COPY_RECT || p1_cmd == BLIT_COPY_RECT_REVERSED);
 
     // ***********************************************************
     //  Pipeline Stage 2 - read from the cache
     // ***********************************************************
 
-    p2o_dest_addr = blit_dest_addr + p2i_dest_addr;
-    p2o_src_addr  = blit_src_addr  + p2i_src_addr;
+    p2o_dest_addr = dest_addr + p2i_dest_addr;
+    p2o_src_addr  = src_addr  + p2i_src_addr;
 
 
     // ***********************************************************
@@ -167,14 +240,14 @@ always @(*) begin
     // ***********************************************************
 
     p3o_dest_addr = p3i_dest_addr & 26'h3fffffc;
-    if (p3i_cmd==CMD_FILL_RECT)
+    if (p3i_cmd==BLIT_FILL_RECT)
         p3_data = p3i_color;
-    else if (p3i_cmd==CMD_COPY_RECT || blit_cmd==CMD_COPY_RECT_REVERSED)
-        p3_data = p3i_sdram_data;
+    else if (p3i_cmd==BLIT_COPY_RECT || p3i_cmd==BLIT_COPY_RECT_REVERSED)
+        p3_data = p3i_sdram_data-1'b1;
     else
         p3_data = 8'hx;
 
-    if (p3i_write_en==1'b0 || p3_data == blit_transparent_color) begin
+    if (p3i_write_en==1'b0 ) begin // || p3_data == blit_trans_color) begin
         p3o_dest_addr = 26'bx;
         p3o_byte_en = 4'b0000;
         p3o_data = 32'bx;
@@ -222,7 +295,6 @@ always @(*) begin
     end
 
     if (reset) begin
-        next_blit_busy = 1'b0;
         next_p4_byte_en <= 4'b0000;
         next_p4_addr <= 26'h0;
     end
@@ -230,12 +302,10 @@ end
 
 always @(posedge clock) begin
     if (!stall) begin
-        
-        blit_busy <= next_blit_busy;
         p1_x  <= p1_next_x;
         p1_y  <= p1_next_y;
 
-        p2i_cmd       <= p1o_cmd;
+        p2i_cmd       <= p1_cmd;
         p2i_color     <= p1o_color;
         p2i_write_en  <= p1o_write_en;
         p2i_dest_addr <= p1o_dest_addr;
@@ -253,6 +323,18 @@ always @(posedge clock) begin
         p4_addr       <= next_p4_addr;
         p4_byte_en    <= next_p4_byte_en;
         p4_data       <= next_p4_data;
+
+        dest_addr     <= next_dest_addr;   // start address of the destination buffer
+        dest_bpr      <= next_dest_bpr;     // bytes per row
+        src_addr      <= next_src_addr;     // start address of the source
+        src_bpr       <= next_src_bpr;       // bytes per row
+        clip_x1       <= next_clip_x1;
+        clip_y1       <= next_clip_y1;
+        clip_x2       <= next_clip_x2;
+        clip_y2       <= next_clip_y2;
+        blit_trans_color <= next_blit_trans_color;
+        
+
     end
 end
 
@@ -291,6 +373,17 @@ blitter_cache  blitter_cache_inst (
     .mem_valid(blitr_valid),
     .mem_ack(blitr_ack),
     .mem_complete(blitr_complete)
+  );
+
+blitter_cmd_fifo  blitter_cmd_fifo_inst (
+    .clock(clock),
+    .reset(reset),
+    .blit_cmd(blit_cmd),
+    .blit_start(blit_start),
+    .blit_slots_free(blit_slots_free),
+    .cmd_cmd(fifo_cmd),
+    .cmd_valid(cmd_valid),
+    .cmd_next(cmd_next)
   );
 
 endmodule

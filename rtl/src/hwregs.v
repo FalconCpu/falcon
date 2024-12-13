@@ -17,23 +17,9 @@
 // E0000024  KEYBOARD       R    Scan codes from the keyboard, -1 if no data
 // E0000030  SIM_MODE       R    1 if in simulation mode, 0 if in hardware
 // E0000080  BLIT_CMD       R/W  BLit command
-// E0000084  BLIT_WIDTH     R/W  Blitter width
-// E0000088  BLIT_HEIGHT    R/W  
-// E000008C  BLIT_FGCOLOR   R/W  
-// E0000090  BLIT_BGCOLOR   R/W  
-// E0000094  BLIT_DEST_ADDR R/W  
-// E0000098  BLIT_DEST_BPR  R/W  
-// E000009C  BLIT_DEST_X    R/W  
-// E00000A0  BLIT_DEST_Y    R/W  
-// E00000A4  BLIT_SRC_ADDR  R/W  
-// E00000A8  BLIT_SRC_BPR   R/W  
-// E00000AC  BLIT_SRC_X     R/W  
-// E00000B0  BLIT_SRC_Y     R/W  
-// E00000B4  BLIT_CLIP_X1   R/W  
-// E00000B8  BLIT_CLIP_Y1   R/W  
-// E00000BC  BLIT_CLIP_X2   R/W  
-// E00000C0  BLIT_CLIP_Y2   R/W  
-// E00000C4  BLIT_TRANSPARENT_COLOR 
+// E0000084  BLIT_ARG1      R/W  Blitter Arguments
+// E0000088  BLIT_ARG2      R/W  
+// E000008C  BLIT_ARG3      R/W  
 
 module  hwregs(
     // Connection to the cpu bus
@@ -68,27 +54,9 @@ module  hwregs(
     input            keyboard_strobe,
 
     // connections to the blitter
-    output reg [7:0]  blit_cmd,        // Blitter command - see above for list of commands
-    output reg [15:0] blit_width,      // Width of the blit
-    output reg [15:0] blit_height,     // Height of the blit
-    output reg [7:0]  blit_fgcolor,    // Foreground color
-    output reg [7:0]  blit_bgcolor,    // Background color
-    output reg [25:0] blit_dest_addr,   // start address of the destination buffer
-    output reg [15:0] blit_dest_bpr,    // bytes per row
-    output reg [15:0] blit_dest_x,      // x coordinate for destination of blit
-    output reg [15:0] blit_dest_y,      // y coordinate for destination of blit
-    output reg [25:0] blit_src_addr,    // start address of the source buffer
-    output reg [15:0] blit_src_bpr,     // bytes per row
-    output reg [15:0] blit_src_x,       // x coordinate for source of blit
-    output reg [15:0] blit_src_y,       // 
-    output reg [15:0] blit_clip_x1,
-    output reg [15:0] blit_clip_y1,
-    output reg [15:0] blit_clip_x2,
-    output reg [15:0] blit_clip_y2,
-    output reg [8:0]  blit_transparent_color,
-
-    output reg       blit_start,
-    input            blit_busy
+    output [103:0]     blit_cmd,        // Blitter command - see above for list of commands
+    output reg         blit_start,
+    input [7:0]        blit_slots_free
 );
 
 reg uart_rx_read;                   // Set to indicate we have read a byte from the uart
@@ -98,6 +66,8 @@ wire [7:0] latched_uart_rx_data;    // data at the front of the uart rx fifo
 wire [9:0] uart_tx_slots_free;      // Number of slots free in the uart tx fifo
 wire [7:0] latched_keyboard_code;   // data at the front of the keyboard rx fifo
 wire       keyboard_valid;
+reg [31:0] blit_arg1, blit_arg2, blit_arg3;
+reg [7:0]  blit_cmd_cmd;
 
 // synthesis translate_off
 integer  uart_log_file;
@@ -105,7 +75,7 @@ initial
     uart_log_file = $fopen("rtl_uart.log","w");
 // synthesis translate_on
 
-
+assign blit_cmd = {blit_cmd_cmd, blit_arg3, blit_arg2, blit_arg1};
 
 always @(posedge clock) begin
     valid <= request;
@@ -114,7 +84,7 @@ always @(posedge clock) begin
     blit_start <= 1'b0;
 
     if (request && write)
-        case (address)
+        case (address & 16'hfffc)
             16'h0000: begin seven_seg_data <= wdata[23:0]; $display("seven_seg_data = %h", wdata[23:0]); end
             16'h0004: begin LEDR <= wdata[9:0]; $display("LEDR = %b", wdata[9:0]); end
             16'h0010: begin 
@@ -126,29 +96,29 @@ always @(posedge clock) begin
             end 
 
             16'h0080: begin 
-                if (blit_busy)
-                    $display("ERROR: Blit command while blit_busy");
-                blit_cmd <= wdata[7:0];
+                blit_cmd_cmd <= wdata[7:0];
                 blit_start <= 1'b1;
             end
+            16'h0084: begin
+                if (wstrb[0]) blit_arg1[7:0]   <= wdata[7:0];
+                if (wstrb[1]) blit_arg1[15:8]  <= wdata[15:8];
+                if (wstrb[2]) blit_arg1[23:16] <= wdata[23:16];
+                if (wstrb[3]) blit_arg1[31:24] <= wdata[31:24];
+            end
 
-            16'h0084: blit_width     <= wdata[15:0];      
-            16'h0088: blit_height    <= wdata[15:0];     
-            16'h008C: blit_fgcolor   <= wdata[7:0];    
-            16'h0090: blit_bgcolor   <= wdata[7:0];    
-            16'h0094: blit_dest_addr <= wdata[25:0];  
-            16'h0098: blit_dest_bpr  <= wdata[15:0];   
-            16'h009C: blit_dest_x    <= wdata[15:0];     
-            16'h00A0: blit_dest_y    <= wdata[15:0];     
-            16'h00A4: blit_src_addr  <= wdata[25:0];   
-            16'h00A8: blit_src_bpr   <= wdata[15:0];    
-            16'h00AC: blit_src_x     <= wdata[15:0];      
-            16'h00B0: blit_src_y     <= wdata[15:0];      
-            16'h00B4: blit_clip_x1   <= wdata[15:0];
-            16'h00B8: blit_clip_y1   <= wdata[15:0];
-            16'h00BC: blit_clip_x2   <= wdata[15:0];
-            16'h00C0: blit_clip_y2   <= wdata[15:0];
-            16'h00C4: blit_transparent_color     <= wdata[8:0];
+            16'h0088: begin
+                if (wstrb[0]) blit_arg2[7:0]   <= wdata[7:0];
+                if (wstrb[1]) blit_arg2[15:8]  <= wdata[15:8];
+                if (wstrb[2]) blit_arg2[23:16] <= wdata[23:16];
+                if (wstrb[3]) blit_arg2[31:24] <= wdata[31:24];
+            end
+                
+            16'h008C: begin
+                if (wstrb[0]) blit_arg3[7:0]   <= wdata[7:0];
+                if (wstrb[1]) blit_arg3[15:8]  <= wdata[15:8];
+                if (wstrb[2]) blit_arg3[23:16] <= wdata[23:16];
+                if (wstrb[3]) blit_arg3[31:24] <= wdata[31:24];
+            end
         endcase
 
     if (request && !write)
@@ -183,24 +153,11 @@ always @(posedge clock) begin
                 rdata <= 32'h1;
                 // synthesis translate_on
             end
-            16'h0080: rdata <= blit_busy ? blit_cmd : 32'h00;
-            16'h0084: rdata <= blit_width;
-            16'h0088: rdata <= blit_height;
-            16'h008C: rdata <= blit_fgcolor;
-            16'h0090: rdata <= blit_bgcolor;
-            16'h0094: rdata <= blit_dest_addr;
-            16'h0098: rdata <= blit_dest_bpr;
-            16'h009C: rdata <= blit_dest_x;
-            16'h00A0: rdata <= blit_dest_y;
-            16'h00A4: rdata <= blit_src_addr;
-            16'h00A8: rdata <= blit_src_bpr;
-            16'h00AC: rdata <= blit_src_x;
-            16'h00B0: rdata <= blit_src_y;
-            16'h00B4: rdata <= blit_clip_x1;
-            16'h00B8: rdata <= blit_clip_y1;
-            16'h00BC: rdata <= blit_clip_x2;
-            16'h00C0: rdata <= blit_clip_y2;
-            16'h00C4: rdata <= blit_transparent_color;
+
+            16'h0080: rdata <= blit_slots_free;
+            16'h0084: rdata <= blit_arg1;
+            16'h0088: rdata <= blit_arg2;
+            16'h008C: rdata <= blit_arg3;
 
             default:  rdata <= 32'h0;
         endcase
