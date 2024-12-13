@@ -20,3 +20,4 @@ testcase_outputs/
 # Ignore personal IDE config files
 idea/
 dump.vcd
+a.txt
