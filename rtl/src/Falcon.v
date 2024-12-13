@@ -89,7 +89,7 @@ wire               cpu_write;
 wire  [3:0]        cpu_wstrb;
 wire  [31:0]       cpu_wdata;
 wire  [31:0]       cpu_rdata;
-wire               cpu_ack;
+wire               cpu_valid;
 wire  [31:0]       instr_addr;
 
 // Signals from the address decoder
@@ -98,9 +98,10 @@ wire               hwregs_request;
 wire               imem_request;
 wire               error_request;
 
+
 // signals from the memory
 wire  [31:0]       dmem_rdata;
-wire               dmem_ack;
+wire               dmem_valid;
 wire               dcache_request;
 wire               dcache_write;
 wire  [25:0]       dcache_address;
@@ -110,12 +111,12 @@ wire  [3:0]        dcache_byte_en;
 
 // signals from the instruction memory
 wire  [31:0]       imem_rdata;
-wire               imem_ack;
+wire               imem_valid;
 wire [31:0]        instr_data;
 
 // signals from the hardware registers
 wire  [31:0]       hwregs_rdata;
-wire               hwregs_ack;
+wire               hwregs_valid;
 wire  [23:0]       seven_seg_data;
 wire               uart_tx_valid;
 wire [7:0]         uart_tx_data;
@@ -137,6 +138,8 @@ wire [15:0]        blit_clip_y1;
 wire [15:0]        blit_clip_x2;
 wire [15:0]        blit_clip_y2;
 wire [8:0]         blit_transparent_color;
+wire               blit_start;
+wire               blit_busy;
 
 
 // signals from the UART
@@ -157,6 +160,10 @@ wire               blitw_complete;
 wire [31:0]        blitr_rdata;
 wire               blitr_valid;
 wire               blitr_complete;
+wire               dcache_ack;
+wire               blitr_ack;
+wire               vga_ack;
+wire               blitw_ack;
 
 wire               sdram_request;
 wire               sdram_write;
@@ -176,6 +183,7 @@ wire  [25:0]       vga_address;
 wire [31:0]        sdram_rdata;
 wire [3:0]         sdram_valid;
 wire [3:0]         sdram_complete;
+wire               sdram_ready; 
 
 // Signals from the mouse
 wire [9:0] mouse_x;
@@ -204,7 +212,8 @@ wire [31:0]        debug_pc;
 assign reset = ~locked || ~KEY[0];
 
 assign cpu_rdata = dmem_rdata | hwregs_rdata | imem_rdata;
-assign cpu_ack = dmem_ack | hwregs_ack | imem_ack;
+assign cpu_valid = dmem_valid | hwregs_valid | imem_valid;
+
 
 assign UART_RX = GPIO_0[35];
 assign GPIO_0[34] = UART_TX;
@@ -220,16 +229,17 @@ pll  pll_inst (
 cpu  cpu_inst (
     .clock(clock),
     .reset(reset),
-	.instr_addr(instr_addr),
-	.instr_data(instr_data),
+	  .instr_addr(instr_addr),
+	  .instr_data(instr_data),
     .cpu_request(cpu_request),
     .cpu_address(cpu_address),
     .cpu_write(cpu_write),
     .cpu_wstrb(cpu_wstrb),
     .cpu_wdata(cpu_wdata),
     .cpu_rdata(cpu_rdata),
-    .cpu_ack(cpu_ack),
-	.debug_pc(debug_pc)
+    .cpu_valid(cpu_valid),
+    .cpu_mem_busy(dcache_request),
+	  .debug_pc(debug_pc)
   );
 
 address_decoder  address_decoder_inst (
@@ -249,7 +259,7 @@ instruction_memory  instruction_memory_inst (
     .wstrb(cpu_wstrb),
     .wdata(cpu_wdata),
     .rdata(imem_rdata),
-    .ack(imem_ack),
+    .ack(imem_valid),
 	  .instr_address(instr_addr[15:2]),
     .instr_data(instr_data)
   );
@@ -263,7 +273,7 @@ instruction_memory  instruction_memory_inst (
     .cpu_wstrb(cpu_wstrb),
     .cpu_wdata(cpu_wdata),
     .cpu_rdata(dmem_rdata),
-    .cpu_ack(dmem_ack),
+    .cpu_valid(dmem_valid),
     .sdram_request(dcache_request),
     .sdram_write(dcache_write),
     .sdram_address(dcache_address),
@@ -272,7 +282,8 @@ instruction_memory  instruction_memory_inst (
     .sdram_byte_en(dcache_byte_en),
     .sdram_rdata(dcache_rdata),
     .sdram_valid(dcache_valid),
-    .sdram_complete(dcache_complete)
+    .sdram_complete(dcache_complete),
+    .sdram_ack(dcache_ack)
   );
 
 
@@ -285,7 +296,7 @@ hwregs  hwregs_inst (
     .wstrb(cpu_wstrb),
     .wdata(cpu_wdata),
     .rdata(hwregs_rdata),
-    .ack(hwregs_ack),
+    .valid(hwregs_valid),
     .LEDR(LEDR),
     .seven_seg_data(seven_seg_data),
     .SW(SW),
@@ -366,21 +377,24 @@ sdram_arbiter  sdram_arbiter_inst (
     .dcache_rdata(dcache_rdata),
     .dcache_valid(dcache_valid),
     .dcache_complete(dcache_complete),
+    .dcache_ack(dcache_ack),
     .vga_request(vga_request),
     .vga_address(vga_address),
     .vga_rdata(vga_rdata),
     .vga_valid(vga_valid),
     .vga_complete(vga_complete),
+    .vga_ack(vga_ack),
     .blitw_request(blitw_request),
     .blitw_address(blitw_address),
     .blitw_wdata(blitw_wdata),
     .blitw_byte_en(blitw_byte_en),
-    .blitw_complete(blitw_complete),
+    .blitw_ack(blitw_ack),
     .blitr_request(blitr_request),
     .blitr_address(blitr_address),
     .blitr_rdata(blitr_rdata),
     .blitr_valid(blitr_valid),
     .blitr_complete(blitr_complete),
+    .blitr_ack(blitr_ack),
     .sdram_request(sdram_request),
     .sdram_write(sdram_write),
     .sdram_master(sdram_master),
@@ -390,7 +404,8 @@ sdram_arbiter  sdram_arbiter_inst (
     .sdram_rdata(sdram_rdata),
     .sdram_valid(sdram_valid),
     .sdram_burst(sdram_burst),
-    .sdram_complete(sdram_complete)
+    .sdram_complete(sdram_complete),
+    .sdram_ready(sdram_ready)
   );
 
 sdram_controller  sdram_controller_inst (
@@ -415,7 +430,8 @@ sdram_controller  sdram_controller_inst (
     .sdram_burst(sdram_burst),
     .sdram_rdata(sdram_rdata),
     .sdram_valid(sdram_valid),
-    .sdram_complete(sdram_complete)
+    .sdram_complete(sdram_complete),
+    .sdram_ready(sdram_ready)
   );  
 
   vga_output  vga_output_inst (
@@ -431,6 +447,7 @@ sdram_controller  sdram_controller_inst (
     .vga_address(vga_address),
     .vga_rdata(vga_rdata),
     .vga_valid(vga_valid),
+    .vga_ack(vga_ack),
     .vga_complete(vga_complete),
     .mouse_x(mouse_x),
     .mouse_y(mouse_y)
@@ -485,11 +502,12 @@ blitter  blitter_inst (
     .blitw_address(blitw_address),
     .blitw_wdata(blitw_wdata),
     .blitw_byte_en(blitw_byte_en),
-    .blitw_complete(blitw_complete),
+    .blitw_ack(blitw_ack),
     .blitr_request(blitr_request),
     .blitr_address(blitr_address),
     .blitr_rdata(blitr_rdata),
     .blitr_valid(blitr_valid),
+    .blitr_ack(blitr_ack),
     .blitr_complete(blitr_complete)
   );
 

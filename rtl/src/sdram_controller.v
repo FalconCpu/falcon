@@ -26,9 +26,8 @@ module sdram_controller (
     input                   sdram_burst,        // Set for a 32 byte burst, Clear for single 4 byte transaction
     output [31:0]           sdram_rdata,        // Data for a read
     output reg [3:0]        sdram_valid,        // Pulse with the value of the master to indicate the read data is valid
-    output reg [3:0]        sdram_complete      // pulsed to value of master to indicate trnsaction has been completed and the 
-                                                // sender can deassert the request. Note for a read the final data 
-                                                // arrives the cycle after the complete.
+    output reg [3:0]        sdram_complete,     // pulsed to value of master to indicate a burst trnsaction has been completed
+    output reg              sdram_ready         // Set to indicate the SDRAM is ready to accept a new transaction
 );
 
 reg [6:0]  this_counter, next_counter;
@@ -46,8 +45,10 @@ reg [3:0]  next_complete;
 reg [15:0] reg0_dq, reg1_dq;
 reg [9:0]  next_refresh_counter, this_refresh_counter;
 reg        this_refresh_needed, next_refresh_needed;
+reg [12:0] this_latched_address, next_latched_address;
 reg [15:0] wdata_msb_delay;   // MSBs of wdata delayed by one clock cycle
 reg [1:0]  byte_en_delay;     // MSB of byte enable delayed by one clock cycle
+reg [1:0]  prev_writes;       // Shift reg to remember when the last write cycle was
 
 reg [12:0] bank_addr[0:3];
 reg [3:0]  bank_open;
@@ -106,7 +107,7 @@ always @(*) begin
     next_counter = this_counter + 1'b1;
     next_state = this_state;
     next_addr = 13'bx;
-    next_ba = 2'bx;
+    next_ba = DRAM_BA;
     next_cmd = CMD_NOP;
     next_dq = 16'bx;
     next_dqm = 2'b11;
@@ -115,8 +116,10 @@ always @(*) begin
     next_complete = 4'b0;
     next_refresh_counter = this_refresh_counter + 1'b1;
     next_refresh_needed = this_refresh_needed;
+    next_latched_address = this_latched_address;
     next_col = this_col;
     next_master = this_master;
+    sdram_ready = 1'b0;
 
 
     if (reset) begin
@@ -156,10 +159,14 @@ always @(*) begin
 
         end else if (sdram_request) begin
             if (selected_bank_open && selected_bank_addr!=sdram_address[25:13]) begin
-                next_cmd = CMD_PRECHARGE;
-                next_ba = sdram_address[12:11];
-                next_addr = sdram_address[25:13];
-                next_state = STATE_PRECHARGE;
+                // Bank is open, but at the wrong page. Need to precharge it.
+                // Need to wait for the previous write to complete before we can precharge
+                if (prev_writes==2'b0) begin
+                    next_cmd = CMD_PRECHARGE;
+                    next_ba = sdram_address[12:11];
+                    next_addr = sdram_address[25:13];
+                    next_state = STATE_PRECHARGE;
+                end
             end else if (!selected_bank_open) begin
                 next_cmd = CMD_ACT;
                 next_ba = sdram_address[12:11];
@@ -172,18 +179,27 @@ always @(*) begin
                 next_dqm  = ~sdram_byte_en[1:0];
                 next_dq   = sdram_wdata[15:0];
                 next_dqe  = 1'b1;
-                next_valid  = sdram_master;
-                next_complete = sdram_master;    
+                sdram_ready= 1'b1;
                 next_state = STATE_WRITE;
-            end else begin
+            end else begin // read
                 next_addr = {3'b000, sdram_address[10:2], 1'b0};
+                next_latched_address = sdram_address[10:0];
                 next_ba   = sdram_address[12:11];
                 next_cmd  = CMD_READ;
                 next_dqm  = ~sdram_byte_en[1:0];
                 next_col  = sdram_address[4:2] + 1'b1;
-                next_master = sdram_master;
+                next_master=sdram_master;
+                sdram_ready= 1'b1;
                 next_state = sdram_burst ? STATE_READ_BURST : STATE_READ;
             end
+        end else begin
+            next_addr = 13'bx;
+            next_ba   = 2'bx;
+            next_cmd  = CMD_NOP;
+            next_dqm  = 2'b11;
+            next_col  = 3'bx;
+            next_state = STATE_IDLE;
+            sdram_ready = 1'b1;
         end
 
     end else if (this_state==STATE_READ) begin
@@ -202,8 +218,7 @@ always @(*) begin
     end else if (this_state==STATE_READ_BURST) begin
 
         if (this_counter[0]==1'b1 && this_counter<=14) begin
-            next_addr = {3'b000, sdram_address[10:5],this_col, 1'b0};
-            next_ba   = sdram_address[12:11];
+            next_addr = {3'b000, this_latched_address[10:5],this_col, 1'b0};
             next_cmd  = CMD_READ;
             next_col  = this_col + 1'b1;
         end 
@@ -221,14 +236,10 @@ always @(*) begin
             next_valid = this_master;
 
     end else if (this_state==STATE_WRITE) begin
-        if (this_counter==7'd0) begin
-            next_dqm  = ~byte_en_delay;
-            next_dq   = wdata_msb_delay;
-            next_dqe  = 1'b1;
-
-        end else if (this_counter==1) begin
-            next_state = STATE_IDLE;
-        end
+        next_dqm  = ~byte_en_delay;
+        next_dq   = wdata_msb_delay;
+        next_dqe  = 1'b1;
+        next_state = STATE_IDLE;
 
     end else if (this_state==STATE_REFRESH) begin
         if (this_counter==2) begin
@@ -275,8 +286,8 @@ end
 
 always @(posedge clock) begin
 
-    if (this_state==STATE_IDLE && next_state==STATE_WRITE)
-        $display("TIME %t [%x]=%x %x", $time, sdram_address, sdram_wdata, sdram_byte_en);
+//    if (this_state==STATE_IDLE && next_state==STATE_WRITE)
+//        $display("TIME %t [%x]=%x %x", $time, sdram_address, sdram_wdata, sdram_byte_en);
 
     this_counter <= next_counter;
     this_state   <= next_state;
@@ -293,6 +304,8 @@ always @(posedge clock) begin
     reg1_dq      <= reg0_dq;
     sdram_complete <= next_complete;
     sdram_valid  <= next_valid;
+    prev_writes  <= {this_cmd==CMD_WRITE,prev_writes[1]};
+    this_latched_address <= next_latched_address;
     this_refresh_counter <= next_refresh_counter;
     this_refresh_needed  <= next_refresh_needed;
     wdata_msb_delay    <= sdram_wdata[31:16];

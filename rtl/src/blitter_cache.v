@@ -18,6 +18,7 @@ module blitter_cache (
     output reg           mem_request,
     input  [31:0]        mem_data,
     input                mem_valid,
+    input                mem_ack,
     input                mem_complete
 );
 
@@ -44,10 +45,13 @@ always @(posedge clock) begin
         write_ptr <= 3'h0;
     end
 
+    if (mem_ack) begin
+        mem_request <= 1'b0;
+    end
+
     if (mem_valid) begin
         data[write_ptr] <= mem_data;
-        write_ptr <= write_ptr + 1;
-        mem_request <= 0;
+        write_ptr <= write_ptr + 1'b1;
     end
 
     if (mem_complete) begin

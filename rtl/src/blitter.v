@@ -35,13 +35,14 @@ module blitter(
     output [25:0]     blitw_address,
     output [31:0]     blitw_wdata,
     output [3:0]      blitw_byte_en,
-    input             blitw_complete,
+    input             blitw_ack,
 
     // connections to the memory bus - read
     output            blitr_request,
     output [25:0]     blitr_address,
     input  [31:0]     blitr_rdata,
     input             blitr_valid,
+    input             blitr_ack,
     input             blitr_complete
 );
 
@@ -146,7 +147,7 @@ always @(*) begin
         p1_src_y  = blit_src_y + p1_y;            
     end
     p1o_dest_addr = (p1_dest_y * blit_dest_bpr) + p1_dest_x;
-    p1o_src_addr  = blit_src_addr  + (p1_src_y  * blit_src_bpr)  + p1_src_x ;
+    p1o_src_addr  = (p1_src_y  * blit_src_bpr)  + p1_src_x ;
     if (p1_dest_x<blit_clip_x1 ||  p1_dest_x>=blit_clip_x2 || p1_dest_y<blit_clip_y1 || p1_dest_y>=blit_clip_y2)
         p1o_write_en = 1'b0;
     p1o_color = blit_fgcolor;
@@ -274,7 +275,7 @@ blitter_fifo #(
     .rd_byte_en(blitw_byte_en),
     .rd_data(blitw_wdata),
     .rd_valid(blitw_request),
-    .rd_ready(blitw_complete)
+    .rd_ready(blitw_ack)
 );
 
 blitter_cache  blitter_cache_inst (
@@ -288,6 +289,7 @@ blitter_cache  blitter_cache_inst (
     .mem_request(blitr_request),
     .mem_data(blitr_rdata),
     .mem_valid(blitr_valid),
+    .mem_ack(blitr_ack),
     .mem_complete(blitr_complete)
   );
 

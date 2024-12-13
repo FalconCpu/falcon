@@ -24,7 +24,8 @@ module cpu_alu(
     output reg [3:0]    cpu_wstrb,
     output reg [31:0]   cpu_wdata,
     input  [31:0]       cpu_rdata,
-    input               cpu_ack,
+    input               cpu_valid,      // rdata is valid
+    input               cpu_mem_busy,   // memory is busy
 
     // outputs
     output reg [31:0]   p3_out,
@@ -41,7 +42,8 @@ wire [31:0] jump_target = p2_pc + p3_data_c;
 wire [31:0] mem_addr = p3_data_a + p3_data_c;
 reg [31:0] p3_mult, p4_mult;
 reg [1:0] p3_addr_lsb, p4_addr_lsb;
-reg p3_is_mem, p4_is_mem;
+reg  p3_is_mem;
+reg p4_is_mem;
 reg [31:0] p4_in;
 
 reg [31:0] this_epc ,     next_epc;
@@ -66,8 +68,7 @@ reg         p3_divide_start, p4_divide_start;
 
 
 assign cpu_request = p3_is_mem && !stall;
-
-assign stall = ((p4_is_mem && !cpu_ack) || (p4_divide_start && !p4_divide_done)) && !reset;
+assign stall = ((p4_is_mem && !cpu_valid) || (p4_divide_start && !p4_divide_done)) && !reset;
 
 always @(*) begin
     // default values
@@ -110,9 +111,9 @@ always @(*) begin
             13'd1: next_epc = p3_data_a;
             13'd2: next_ecause = p3_data_a[3:0];
             13'd3: next_edata = p3_data_a;
-            13'd4: next_estatus = p3_data_a;
+            13'd4: next_estatus = p3_data_a[3:0];
             13'd5: next_escratch = p3_data_a;
-            13'd6: next_status = p3_data_a;
+            13'd6: next_status = p3_data_a[3:0];
 				default: begin end 
         endcase
     end 
@@ -359,12 +360,12 @@ always @(posedge clock) begin
     if(!stall) begin
         p4_in = p3_out;
         p4_addr_lsb = mem_addr[1:0];
-        p4_is_mem = p3_is_mem;
         p4_mult = p3_mult;
         p4_numerator <= p3_numerator;
         p4_denominator <= p3_denominator;
         p4_divide_sign <= p3_divide_sign;
         p4_divide_start <= p3_divide_start;
+        p4_is_mem <= p3_is_mem;
         this_epc <= next_epc;
         this_ecause <= next_ecause;
         this_edata <= next_edata;

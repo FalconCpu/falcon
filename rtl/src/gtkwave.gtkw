@@ -1,13 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Thu Dec 12 17:17:40 2024
+[*] Fri Dec 13 13:01:50 2024
 [*]
-[dumpfile] "C:\Users\simon\falcon\rtl\src\dump.vcd"
+[dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
+[dumpfile_mtime] "Fri Dec 13 12:49:57 2024"
+[dumpfile_size] 27357687
 [savefile] "C:\Users\simon\falcon\rtl\src\gtkwave.gtkw"
-[timestart] 56996500
+[timestart] 11699400
 [size] 1920 1129
 [pos] -1 -1
-*-14.479446 57072300 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.479446 11822900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] Falcon_tb.
 [treeopen] Falcon_tb.Falcon_inst.
 [treeopen] Falcon_tb.Falcon_inst.blitter_inst.
@@ -15,72 +17,41 @@
 [signals_width] 220
 [sst_expanded] 1
 [sst_vpaned_height] 339
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blit_clip_x1[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.blit_clip_x2[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.blit_clip_y1[15:0]
-@200
--
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blit_cmd[7:0]
-@28
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_request
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_address[25:0]
-@28
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_stall
-@200
--
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.mem_address[25:0]
-@28
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.mem_request
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.mem_valid
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.mem_complete
-Falcon_tb.Falcon_inst.blitter_inst.blit_busy
-Falcon_tb.Falcon_inst.blitter_inst.blit_start
-Falcon_tb.Falcon_inst.blitter_inst.next_blit_busy
-Falcon_tb.Falcon_inst.blitter_inst.stall
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.reset
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.mem_request
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_request
-@200
--
 @2028
 ^1 C:\Users\simon\falcon\rtl\src\sdram_controller_state.txt
 Falcon_tb.Falcon_inst.sdram_controller_inst.this_state[2:0]
+@22
+Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
 @28
-Falcon_tb.Falcon_inst.sdram_controller_inst.DRAM_BA[1:0]
-Falcon_tb.Falcon_inst.sdram_controller_inst.DRAM_CAS_N
-Falcon_tb.Falcon_inst.sdram_controller_inst.DRAM_RAS_N
-Falcon_tb.Falcon_inst.sdram_controller_inst.DRAM_WE_N
+Falcon_tb.Falcon_inst.sdram_controller_inst.prev_writes[1:0]
+Falcon_tb.Falcon_inst.sdram_controller_inst.this_cmd[2:0]
 @200
 -
 @28
-Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_request
+Falcon_tb.Falcon_inst.blitter_inst.blitr_request
 @22
-Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_address[25:0]
-Falcon_tb.Falcon_inst.sdram_controller_inst.sdram_complete[3:0]
+Falcon_tb.Falcon_inst.blitter_inst.blitr_address[25:0]
+@28
+Falcon_tb.Falcon_inst.blitter_inst.blitr_valid
+@22
+Falcon_tb.Falcon_inst.blitter_inst.blit_src_addr[25:0]
+Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_address[25:0]
+@28
+Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_request
 @200
 -
 @22
-Falcon_tb.Falcon_inst.sdram_arbiter_inst.next_master[3:0]
-Falcon_tb.Falcon_inst.sdram_arbiter_inst.blitw_address[25:0]
+Falcon_tb.Falcon_inst.blitter_inst.blit_src_x[15:0]
+Falcon_tb.Falcon_inst.blitter_inst.blit_src_y[15:0]
+Falcon_tb.Falcon_inst.blitter_inst.p1_src_y[15:0]
+Falcon_tb.Falcon_inst.blitter_inst.p1_src_x[15:0]
+Falcon_tb.Falcon_inst.blitter_inst.blit_cmd[7:0]
+Falcon_tb.Falcon_inst.blitter_inst.p1o_src_addr[25:0]
 @28
-Falcon_tb.Falcon_inst.sdram_arbiter_inst.blitw_complete
-Falcon_tb.Falcon_inst.sdram_arbiter_inst.blitw_request
-@200
--
-@28
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.empty
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.full
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.wr_valid
+Falcon_tb.Falcon_inst.blitter_inst.stall
 @22
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.wr_ptr[8:0]
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.rd_ptr[8:0]
-@29
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.rd_valid
-@28
-Falcon_tb.Falcon_inst.blitter_inst.write_fifo.rd_ready
+Falcon_tb.Falcon_inst.blitter_inst.p2i_src_addr[25:0]
+@23
+Falcon_tb.Falcon_inst.blitter_inst.p2o_src_addr[25:0]
 [pattern_trace] 1
 [pattern_trace] 0

@@ -45,7 +45,7 @@ module  hwregs(
     input [3:0]         wstrb,
     input [31:0]        wdata,
     output reg [31:0]   rdata,
-    output reg          ack,
+    output reg          valid,
 
     // connections to the chip pins
     output reg       [9:0]		LEDR,
@@ -108,7 +108,7 @@ initial
 
 
 always @(posedge clock) begin
-    ack <= request;
+    valid <= request;
     uart_rx_read <= 1'b0;
     keyboard_read <= 1'b0;
     blit_start <= 1'b0;

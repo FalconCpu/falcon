@@ -4,11 +4,11 @@ ld $2, 0xCAFEBABE     # some random data values
 ld $3, 0x87654321    
 
 # store the data into memory
-stw $2, $1[0]
-stw $3, $1[16]
-sth $2, $1[32]
-stb $3, $1[34]
-stb 0, $1[35]
+stw $2, $1[0]         # write 0xCAFEBABE to 0x1234 
+stw $3, $1[16]        # write 0x87654321 to 0x123C
+sth $2, $1[32]        # write 0xBABE to 0x1254
+stb $3, $1[34]        # write 0x21 to 0x1243
+stb 0, $1[35]         # write 0x00 to 0x1244
 
 # and fetch them back
 ldw $10, $1[0]

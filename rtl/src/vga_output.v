@@ -17,6 +17,7 @@ module vga_output (
     input   [31:0]      vga_rdata,
     input               vga_valid,
     input               vga_complete,
+    input               vga_ack,
 
     // Mouse
     input [9:0]         mouse_x,
@@ -46,10 +47,11 @@ parameter SCREEN_START_ADDRESS = 26'h3f80000;
 parameter SCREEN_END_ADDRESS = 26'h3f80000 + 640*480*4;
 
 // Fifo for data read from the SDRAM
+reg        seen_complete;
 reg [31:0] fifo_data [0:255];
 reg [7:0]  fifo_rd_ptr;
 reg [7:0]  fifo_wr_ptr;
-reg [7:0]  fifo_free_slots;
+reg [7:0]  fifo_full_slots;
 
 reg [31:0] fifo_rd_data;
 reg [7:0]  pixel_color_index;
@@ -161,19 +163,19 @@ always @(posedge clock) begin
         fifo_rd_ptr <= fifo_rd_ptr + 1'b1;
 
     // Request data from SDRAM
-    if (vga_complete)
+    if (vga_ack)
         vga_request <= 0;
 
-    fifo_free_slots = fifo_wr_ptr - fifo_rd_ptr;
+    fifo_full_slots = fifo_wr_ptr - fifo_rd_ptr;
 
-    if (reset || (v_count>=V_VISIBLE && v_count== V_TOTAL-2)) begin
+    if (reset || (v_count>=V_VISIBLE && v_count<=V_TOTAL-2) || (v_count==V_TOTAL-1 && h_count<512)) begin
         // Blank the fifo and reset the fifo pointers at the end of a frame
         fifo_rd_ptr <= 0;
         fifo_wr_ptr <= 0;
         vga_address <= SCREEN_START_ADDRESS;
         vga_request <= 0;
-    end else if (fifo_free_slots<240 && vga_address<SCREEN_END_ADDRESS) begin
-        // Whenever we have room in the fifo, request data from SDRAM
+    end else if (fifo_full_slots<200 && vga_address<SCREEN_END_ADDRESS && h_count[4:0]==5'b0 && clock_div==2'h0) begin
+        // Request a new 32 block of data from SDRAM every 32 pixels
         vga_request <= 1;
     end
 
@@ -187,6 +189,7 @@ always @(posedge clock) begin
         VGA_B <= 0;
         h_count <= 0;
         v_count <= V_TOTAL-2'd3;
+        seen_complete <= 1'b0;
     end
 end
 

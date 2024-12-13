@@ -5,13 +5,14 @@ module cpu(
     input               reset,
 
     // Data bus
-    output              cpu_request,
-    output [31:0]       cpu_address,
-    output              cpu_write,
-    output [3:0]        cpu_wstrb,
-    output [31:0]       cpu_wdata,
-    input  [31:0]       cpu_rdata,
-    input               cpu_ack,
+    output              cpu_request,    // Cpu requests a memory access
+    output [31:0]       cpu_address,    // Address
+    output              cpu_write,      // 1 = write, 0 = read
+    output [3:0]        cpu_wstrb,      // Byte enables for a write
+    output [31:0]       cpu_wdata,      // Data to write
+    input  [31:0]       cpu_rdata,      // Data read
+    input               cpu_mem_busy,   // Memory bus is busy
+    input               cpu_valid,      // rdata is valid
 
     output [31:0]       instr_addr,
     input  [31:0]       instr_data,
@@ -129,7 +130,8 @@ cpu_alu  cpu_alu_inst (
     .cpu_wstrb(cpu_wstrb),
     .cpu_wdata(cpu_wdata),
     .cpu_rdata(cpu_rdata),
-    .cpu_ack(cpu_ack)
+    .cpu_mem_busy(cpu_mem_busy),
+    .cpu_valid(cpu_valid)
 );
 
 endmodule

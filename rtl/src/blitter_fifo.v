@@ -37,11 +37,11 @@ module blitter_fifo #(
         end else begin
             if (wr_valid && !full) begin
                 fifo[wr_ptr[($clog2(DEPTH)-1):0]] <= {wr_address, wr_byte_en, wr_data};
-                wr_ptr <= wr_ptr + 1;
+                wr_ptr <= wr_ptr + 1'b1;
             end
             
             if (rd_ready && !empty)
-                rd_ptr = rd_ptr + 1;
+                rd_ptr = rd_ptr + 1'b1;
             {rd_address, rd_byte_en, rd_data} <= fifo[rd_ptr[($clog2(DEPTH)-1):0]];
 
         end
