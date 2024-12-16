@@ -1,3 +1,5 @@
+`timescale 1ns / 1ns
+
 module regfileram (
 	input clock,
 	input [31:0] data,

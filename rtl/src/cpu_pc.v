@@ -54,7 +54,6 @@ end
 // synthesis translate_off
 always @(posedge clock) begin
     if (p2_pc == 32'h0) begin
-        @(posedge clock);
         $finish();
     end
 end

@@ -120,8 +120,8 @@ reg  [25:0] p5_dest_addr;
 reg  [2:0]  p4_src_bit;
 
 // from color unit
-wire [7:0]   p5_write_data;
-wire         p5_write_enable;
+reg [7:0]   p5_write_data;
+reg         p5_write_enable;
 
 // from the write combine unit
 wire [25:0] p6_addr;

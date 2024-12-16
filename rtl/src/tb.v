@@ -1,5 +1,6 @@
+`timescale 1ns / 1ns
 
-module Falcon_tb;
+module tb;
 
   // Parameters
 

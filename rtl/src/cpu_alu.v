@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-`include "/Users/simon/falcon/rtl/src/f32.vh"
+`include "f32.vh"
 
 module cpu_alu(
     input               clock,
@@ -59,7 +59,6 @@ reg raise_misaligned_load;
 
 reg  [31:0] p3_numerator, p4_numerator;
 reg  [31:0] p3_denominator, p4_denominator;
-reg  [31:0] p3_multiply, p4_multiply;
 wire [31:0] p4_quotient;
 wire [31:0] p4_remainder;
 reg         p3_divide_sign, p4_divide_sign;

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-`include "/Users/simon/falcon/rtl/src/f32.vh"
+`include "f32.vh"
 
 module cpu_decoder(
     input               clock,
