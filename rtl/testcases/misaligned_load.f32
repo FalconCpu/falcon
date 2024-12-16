@@ -16,6 +16,7 @@ exception:
     # Save $29 into !escratch
     cfg !escratch, $29
     ld $29, 0x03fff00       # $29 to a known location
+    stw 0,   $29[0]          # Save the registers 
     stw $1,  $29[4]          # Save the registers 
     stw $2,  $29[8]
     stw $3,  $29[12]

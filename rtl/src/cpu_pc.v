@@ -32,8 +32,6 @@ assign  instr_data_out = prev_stall ? instr_data_skid_buffer : instr_data;
 always @(*) begin
     if (p3_jump)
         p1_pc = p3_jump_target;
-    else if (p2_pipeline_bubble || stall)
-        p1_pc = p2_pc;
     else
         p1_pc = p2_pc + 4;
 
@@ -42,9 +40,12 @@ always @(*) begin
     end
 end
 
-
 always @(posedge clock) begin
-    if (!stall) begin
+    prev_stall <= stall || p2_pipeline_bubble;
+    if (!prev_stall) 
+        instr_data_skid_buffer <= instr_data;
+
+    if (!stall && !p2_pipeline_bubble || reset) begin
         p2_pc <= p1_pc;
         p3_pc <= p2_pc;
     end

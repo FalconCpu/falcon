@@ -1,0 +1,18 @@
+
+
+CPU:-
+Data cache
+Instruction cache
+Finish Exceptions
+Interupts
+Add skid buffer to instruction fetch to ease timings
+
+Blitter:
+Blitter draw lines
+Blitter draw triangles
+Blitter draw text
+
+HWregs:
+Add read of vga beam position 
+Allow cotrol of palette
+Add pipeline stage to memory path to hwregs to ease top level timings.

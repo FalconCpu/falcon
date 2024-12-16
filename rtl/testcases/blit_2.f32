@@ -75,41 +75,42 @@ sth $3, $1[BLIT_ARG1Y]
 sth $10, $1[BLIT_ARG3X]
 ld $2, BLIT_FILL_RECT
 stw $2, $1[BLIT_CMD]
-
-sub $10, 1                    # decrement the counter and repeat
+sub $10,1
 bne $10, 0, wait_for_blitter
 
 # We have now drawn all the rectangles.
 # Scroll the screen
 scrollLoop:
-ld $10, 100
-
-# wait_for_blitter2:
-# ld $3, 2
-# stw $3, $1[LEDR]
-# ldw $2, $1[BLIT_CMD]
-# beq $2, 0, wait_for_blitter2
-# stw 0, $1[LEDR]
-# 
-# ld $2, 640
-# ld $3, 480
-# sth $2, $1[BLIT_ARG1X]
-# sth $3, $1[BLIT_ARG1Y]
-# sth 0, $1[BLIT_ARG2X]
-# sth 0, $1[BLIT_ARG2Y]
-# ld $2,1
-# sth 0,  $1[BLIT_ARG3X]
-# sth $2, $1[BLIT_ARG3Y]
-# ld $2, BLIT_COPY_RECT
-# stw $2, $1[BLIT_CMD]
-# 
-# stw $10, $1[SEVEN_SEG]
-# sub $10,1
-# bne $10, 0, wait_for_blitter2
-# 
-# # now scroll down
 
 ld $10, 100
+
+wait_for_blitter2:
+ld $3, 2
+stw $3, $1[LEDR]
+ldw $2, $1[BLIT_CMD]
+beq $2, 0, wait_for_blitter2
+stw 0, $1[LEDR]
+
+ld $2, 640
+ld $3, 480
+sth $2, $1[BLIT_ARG1X]
+sth $3, $1[BLIT_ARG1Y]
+sth 0, $1[BLIT_ARG2X]
+sth 0, $1[BLIT_ARG2Y]
+ld $2,1
+sth 0,  $1[BLIT_ARG3X]
+sth $2, $1[BLIT_ARG3Y]
+ld $2, BLIT_COPY_RECT
+stw $2, $1[BLIT_CMD]
+
+stw $10, $1[SEVEN_SEG]
+sub $10,1
+bne $10, 0, wait_for_blitter2
+
+# now scroll down
+
+ld $10, 100
+
 
 wait_for_blitter3:
 ld $3, 4
@@ -118,10 +119,20 @@ ldw $2, $1[BLIT_CMD]
 beq $2, 0, wait_for_blitter3
 stw 0, $1[LEDR]
 
+stw $10, $1[SEVEN_SEG]
+
+# ld $7,0xFFFFFFF
+# delay:
+# sub $7,1
+# bne $7, 0, delay
+
+
 ld $2, 640  
 ld $3, 480
+stw $10, $1[SEVEN_SEG]
 sth $2, $1[BLIT_ARG1X]      # width and height
 sth $3, $1[BLIT_ARG1Y]
+sub $3, 1
 sth $2, $1[BLIT_ARG2X]       # destination coordinates    
 sth $3, $1[BLIT_ARG2Y]
 sub $3, 1

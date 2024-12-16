@@ -41,6 +41,7 @@ wire [4:0]    p4_reg_d;
 wire [8:0]    p3_op;
 wire [8:0]    p4_op;
 wire          p2_pipeline_bubble;
+wire [31:0]   p2_instr_data;
 
 
 // signals from regfile
@@ -67,14 +68,16 @@ cpu_pc  cpu_pc_inst (
     .p3_jump_target(p3_jump_target),
     .p1_pc(p1_pc),
     .p2_pc(p2_pc),
-    .p3_pc(p3_pc)
+    .p3_pc(p3_pc),
+    .instr_data(instr_data),
+    .instr_data_out(p2_instr_data)
   );
 
 cpu_decoder  cpu_decoder_inst (
     .clock(clock),
     .reset(reset),
     .stall(stall),
-    .p2_instr(instr_data),
+    .p2_instr(p2_instr_data),
     .p2_reg_a(p2_reg_a),
     .p2_reg_b(p2_reg_b),
     .p2_bypass_a3(p2_bypass_a3),

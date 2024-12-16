@@ -1,22 +1,31 @@
 HWREGS           = 0xE0000000
 SEVEN_SEG        = 0x00
+LEDR             = 0x04
 BLIT_CMD         = 0x80  
-BLIT_WIDTH       = 0x84  
-BLIT_HEIGHT      = 0x88  
-BLIT_FGCOLOR     = 0x8C  
-BLIT_BGCOLOR     = 0x90  
-BLIT_DEST_ADDR   = 0x94  
-BLIT_DEST_BPR    = 0x98  
-BLIT_DEST_X      = 0x9C  
-BLIT_DEST_Y      = 0xA0  
-BLIT_SRC_ADDR    = 0xA4  
-BLIT_SRC_BPR     = 0xA8  
-BLIT_SRC_X       = 0xAC  
-BLIT_SRC_Y       = 0xB0  
-BLIT_CLIP_X1     = 0xB4  
-BLIT_CLIP_Y1     = 0xB8  
-BLIT_CLIP_X2     = 0xBC  
-BLIT_CLIP_Y2     = 0xC0  
+BLIT_ARG1        = 0x84
+BLIT_ARG1X       = 0x84
+BLIT_ARG1Y       = 0x86
+BLIT_ARG2        = 0x88
+BLIT_ARG2X       = 0x88
+BLIT_ARG2Y       = 0x8A
+BLIT_ARG3        = 0x8C
+BLIT_ARG3X       = 0x8C
+BLIT_ARG3Y       = 0x8E
+
+# Blitter commands
+BLIT_SET_DEST_ADDR      = 1  # address:Int, bytesPerRow:Short
+BLIT_SET_SRC_ADDR       = 2  # address:Int, bytesPerRow:Short
+BLIT_FILL_RECT          = 3  # x1:Short, y1:Short, width:Short, height:Short, color:Short
+BLIT_COPY_RECT          = 4  # width:Short, height:Short, destX:Short, destY:Short,  srcX:Short, srcY:Short 
+BLIT_COPY_RECT_REVERSED = 5  # destX:Short, destY:Short, width:Short, height:Short, srcX:Short, srcY:Short
+BLIT_SET_CLIP_RECT      = 6  # x1:Short, y1:Short, x2:Short, y2:Short
+BLIT_SET_TRANS_COLOR    = 7  # color:Short
+BLIT_SET_FONT           = 8  # fontAddr:Int, fontWidth:Short, fontHeight:Short, fontBpr:Short, fontBpc:Short
+BLIT_DRAW_CHAR          = 9  # char:Short, _:Short, x:Short, y:Short, color:Short, bgColor:Short
+
+
+
+
 BLIT_TRANSPARENT_COLOR  = 0xC4  
 
 
@@ -24,79 +33,210 @@ start:
 
 # Set the clipping regions to the full screen
 ld $1, HWREGS
-stw 0, $1[BLIT_CLIP_X1]
-stw 0, $1[BLIT_CLIP_Y1]
-stw 0, $1[BLIT_TRANSPARENT_COLOR]
+sth 0, $1[BLIT_ARG1X]
+sth 0, $1[BLIT_ARG1Y]
 ld $2, 640
-stw $2, $1[BLIT_CLIP_X2]
-stw $2, $1[BLIT_DEST_BPR]
-stw $2, $1[BLIT_SRC_BPR]
+sth $2, $1[BLIT_ARG2X]
 ld $2, 480
-stw $2, $1[BLIT_CLIP_Y2]
+sth $2, $1[BLIT_ARG2Y]
+ld $2, BLIT_SET_CLIP_RECT
+stw $2, $1[BLIT_CMD]
+
+# Set the destination address
 ld $2, 0x3F80000
-stw $2, $1[BLIT_DEST_ADDR]
-stw $2, $1[BLIT_SRC_ADDR]
-
-
-# now draw a set of rectangles
-ld $10, 1                   # $10 = counter of rectangles
-
-wait_for_blitter:
-ldw $2, $1[BLIT_CMD]
-bne $2, 0, wait_for_blitter
-
-and $2, $10, 0x0F             # $2 = X coordinate
-mul $2, 40                  
-and $3, $10, 0xF0             # $3 = Y coordinate
-lsr $3, $3, 4
-mul $3, 30
-
-stw $2, $1[BLIT_DEST_X]           # store the coordinates into the hwregs
-stw $3, $1[BLIT_DEST_Y]
-ld  $2,39
-stw $2, $1[BLIT_WIDTH]
-ld  $3,29
-stw $3, $1[BLIT_HEIGHT]
-stw $10, $1[BLIT_FGCOLOR]
-ld $2, -1
-stw $2, $1[BLIT_TRANSPARENT_COLOR]
-
-ld $2, 1                      # start the blit
-stw $2, $1[BLIT_CMD]
-
-sub $10, 1                    # decrement the counter and repeat
-bne $10, 0, wait_for_blitter
-
-
-# delay
-ld $11, 1
-scroll_loop:
-add $11,1
-stw $11, $1[SEVEN_SEG]
-
-#ld $10, 0xFFFFFF
-#delay1:
-#sub $10, 1
-#bne $10, 0, delay1
-
-# Now scroll the screen up
-
-wait_for_blitter2:
-ldw $2, $1[BLIT_CMD]
-bne $2, 0, wait_for_blitter2
-
-ld $2, 63
-stw $2, $1[BLIT_DEST_X]
-stw $2, $1[BLIT_SRC_X]
-ld $2, 47
-stw $2, $1[BLIT_DEST_Y]
-ld $2, 478
-stw $2, $1[BLIT_SRC_Y]
+stw $2, $1[BLIT_ARG1]
 ld $2, 640
-stw $2, $1[BLIT_WIDTH]
-ld $2, 479
-stw $2, $1[BLIT_HEIGHT]
-ld $2, 3
+stw $2, $1[BLIT_ARG2]
+ld $2, BLIT_SET_DEST_ADDR
+stw $2, $1[BLIT_CMD]
+ld $2, BLIT_SET_SRC_ADDR
 stw $2, $1[BLIT_CMD]
 
-jmp scroll_loop
+# Load a font
+ld $2, 0x1900000            # font address
+stw $2, $1[BLIT_ARG1]
+ld $2, 8                    # font width
+sth $2, $1[BLIT_ARG2X]
+ld $2, 12                   # font height   
+sth $2, $1[BLIT_ARG2Y]
+ld $2, 1                    # font bytes per row
+sth $2, $1[BLIT_ARG3X]
+ld $2, BLIT_SET_FONT
+stw $2, $1[BLIT_CMD]
+
+# copy the font into memory
+ld $2, font
+ld $3, 0x1900000
+ld $4, 0x120         # number of words in font
+copy_font_loop:
+ldw $5, $2[0]
+stw $5, $3[0]
+add $2, 4
+add $3, 4
+sub $4, 1
+bne $4, 0, copy_font_loop
+
+
+
+# Draw a character
+ld $2, 0x41                 # 'a'
+sth $2, $1[BLIT_ARG1]
+ld $2, 100                  # x coordinate
+sth $2, $1[BLIT_ARG2X]
+ld $2, 120                  # y coordinate  
+sth $2, $1[BLIT_ARG2Y]
+ld $2, 5                    # color
+sth $2, $1[BLIT_ARG3X]
+ld $2, 0                     # background color
+sth $2, $1[BLIT_ARG3Y]
+ld $2, BLIT_DRAW_CHAR
+stw $2, $1[BLIT_CMD]
+
+
+# draw a rectangle
+ld $2, 200                  # x coordinate
+sth $2, $1[BLIT_ARG2X]
+ld $2, 120                  # y coordinate
+sth $2, $1[BLIT_ARG2Y]
+ld $2, 100                  # width
+sth $2, $1[BLIT_ARG1X]
+ld $2, 100                  # height
+sth $2, $1[BLIT_ARG1Y]
+ld $2, 1                    # color
+sth $2, $1[BLIT_ARG3X]
+ld $2, BLIT_FILL_RECT
+stw $2, $1[BLIT_CMD]
+
+# Draw a character in the rectangle with a solid background
+ld $2, 0x42                 # 'b'
+sth $2, $1[BLIT_ARG1]
+ld $2, 210                  # x coordinate
+sth $2, $1[BLIT_ARG2X]
+ld $2, 140                  # y coordinate  
+sth $2, $1[BLIT_ARG2Y]
+ld $2, 6                    # color
+sth $2, $1[BLIT_ARG3X]
+ld $2, 0                     # background color
+sth $2, $1[BLIT_ARG3Y]
+ld $2, BLIT_DRAW_CHAR
+stw $2, $1[BLIT_CMD]
+
+# Draw a character in the rectangle with a transparent background
+ld $2, 0x43                 # 'c'
+sth $2, $1[BLIT_ARG1]
+ld $2, 230                  # x coordinate
+sth $2, $1[BLIT_ARG2X]
+ld $2, 140                  # y coordinate  
+sth $2, $1[BLIT_ARG2Y]
+ld $2, 7                    # color
+sth $2, $1[BLIT_ARG3X]
+ld $2, -1                   # background color
+sth $2, $1[BLIT_ARG3Y]
+ld $2, BLIT_DRAW_CHAR
+stw $2, $1[BLIT_CMD]
+
+
+
+forever:
+jmp forever
+
+
+
+
+font:
+dcb 0,0,0,0,0,0,0,0,0,0,0,0                 # 
+dcb 24,24,24,24,24,24,24,0,24,0,0,0         # !
+dcb 102,102,0,0,0,0,0,0,0,0,0,0             # "
+dcb 54,54,54,127,54,127,118,54,54,0,0,0     # #
+dcb 12,62,3,3,62,96,96,62,12,0,0,0          # $
+dcb 99,51,48,24,24,12,12,102,102,0,0,0      # %
+dcb 30,51,3,6,6,31,51,51,110,0,0,0          # &
+dcb 24,24,0,0,0,0,0,0,0,0,0,0               # '
+dcb 24,12,12,12,12,12,12,12,24,0,0,0        # (
+dcb 24,48,48,48,48,48,48,48,24,0,0,0        # )
+dcb 99,99,54,28,127,28,54,99,99,0,0,0       # *
+dcb 0,12,12,12,63,12,12,12,0,0,0,0          # +
+dcb 0,0,0,0,0,0,0,24,24,12,0,0              # ,
+dcb 0,0,0,0,0,62,0,0,0,0,0,0                # -
+dcb 0,0,0,0,0,0,0,24,24,0,0,0               # .
+dcb 96,48,48,24,24,12,12,6,6,0,0,0          # /
+dcb 30,51,51,51,51,51,51,51,30,0,0,0        # 0
+dcb 24,28,24,24,24,24,24,24,126,0,0,0       # 1
+dcb 62,99,48,48,24,12,12,6,127,0,0,0        # 2
+dcb 62,99,96,96,62,96,96,99,62,0,0,0        # 3
+dcb 56,60,54,51,51,127,48,48,120,0,0,0      # 4
+dcb 127,3,3,63,96,96,96,99,30,0,0,0         # 5
+dcb 60,6,3,3,63,99,99,99,62,0,0,0           # 6
+dcb 126,98,48,48,24,12,12,12,12,0,0,0       # 7
+dcb 62,99,99,99,62,99,99,99,62,0,0,0        # 8
+dcb 62,99,99,99,126,96,96,96,60,0,0,0       # 9
+dcb 0,0,24,24,0,0,24,24,0,0,0,0             # :
+dcb 0,0,24,24,0,0,24,24,12,0,0,0            # ;
+dcb 0,0,48,12,3,12,48,0,0,0,0,0             # <
+dcb 0,0,0,126,0,0,126,0,0,0,0,0             # =
+dcb 0,0,6,24,96,24,6,0,0,0,0,0              # >
+dcb 60,102,96,96,56,24,24,0,24,0,0,0        # ?
+dcb 30,51,51,51,59,59,59,3,30,0,0,0         # @
+dcb 24,60,60,102,102,126,195,195,195,0,0,0  # A
+dcb 63,102,102,102,62,102,102,102,63,0,0,0  # B
+dcb 62,99,3,3,3,3,3,99,62,0,0,0             # C
+dcb 63,102,102,102,102,102,102,102,63,0,0,0 # D
+dcb 127,102,6,6,30,6,6,102,127,0,0,0        # E
+dcb 127,102,6,6,30,6,6,6,7,0,0,0            # F
+dcb 60,102,3,3,115,99,99,102,60,0,0,0       # G
+dcb 51,51,51,51,63,51,51,51,51,0,0,0        # H
+dcb 63,12,12,12,12,12,12,12,63,0,0,0        # I
+dcb 56,48,48,48,48,48,51,51,30,0,0,0        # J
+dcb 103,102,54,54,30,54,54,102,103,0,0,0    # K
+dcb 7,6,6,6,6,6,6,70,127,0,0,0              # L
+dcb 65,99,119,107,99,99,99,99,99,0,0,0      # M
+dcb 99,99,103,103,107,115,115,99,99,0,0,0   # N
+dcb 28,54,99,99,99,99,99,54,28,0,0,0        # O
+dcb 63,102,102,102,62,6,6,6,7,0,0,0         # P
+dcb 28,54,99,99,99,99,99,54,60,96,0,0       # Q
+dcb 63,102,102,102,62,54,54,102,103,0,0,0   # R
+dcb 30,51,3,3,30,48,48,51,30,0,0,0          # S
+dcb 63,45,12,12,12,12,12,12,30,0,0,0        # T
+dcb 51,51,51,51,51,51,51,51,62,0,0,0        # U
+dcb 195,195,195,102,102,102,60,60,24,0,0,0  # V
+dcb 99,99,99,99,107,107,127,119,99,0,0,0    # W
+dcb 195,102,102,60,24,60,102,102,195,0,0,0  # X
+dcb 195,195,102,102,60,24,24,24,24,0,0,0    # Y
+dcb 127,99,49,48,24,12,76,102,127,0,0,0     # Z
+dcb 30,6,6,6,6,6,6,6,30,0,0,0               # [
+dcb 3,6,12,12,24,48,48,96,192,0,0,0         # \
+dcb 30,24,24,24,24,24,24,24,30,0,0,0        # ]
+dcb 8,20,34,65,0,0,0,0,0,0,0,0              # ^
+dcb 0,0,0,0,0,0,0,0,0,255,0,0               # _
+dcb 4,8,16,0,0,0,0,0,0,0,0,0                # `
+dcb 0,0,30,48,48,62,51,51,110,0,0,0         # a 
+dcb 7,6,6,62,102,102,102,102,62,0,0,0       # b
+dcb 0,0,62,99,3,3,3,99,62,0,0,0             # c
+dcb 56,48,48,62,51,51,51,51,110,0,0,0       # d
+dcb 0,0,30,51,51,63,3,51,30,0,0,0           # e
+dcb 60,102,6,6,15,6,6,6,15,0,0,0            # f
+dcb 0,0,220,102,102,102,60,96,99,62,0,0     # g
+dcb 7,6,6,62,102,102,102,102,103,0,0,0      # h
+dcb 0,24,0,28,24,24,24,24,28,0,0,0          # i
+dcb 0,48,0,56,48,48,48,48,51,30,0,0         # j
+dcb 7,6,102,102,54,30,54,102,103,0,0,0      # k
+dcb 28,24,24,24,24,24,24,24,60,0,0,0        # l
+dcb 0,0,51,119,107,107,99,99,99,0,0,0       # m
+dcb 0,0,31,51,51,51,51,51,51,0,0,0          # n
+dcb 0,0,30,51,51,51,51,51,30,0,0,0          # o
+dcb 0,0,59,102,102,102,102,62,6,6,15,0      # p
+dcb 0,0,30,51,51,51,51,62,48,48,112,0       # q
+dcb 0,0,55,110,102,6,6,6,15,0,0,0           # r
+dcb 0,0,30,35,3,30,48,49,30,0,0,0           # s
+dcb 4,6,31,6,6,6,6,22,12,0,0,0              # t
+dcb 0,0,99,99,99,99,99,99,62,0,0,0          # u
+dcb 0,0,99,99,99,99,54,28,8,0,0,0           # v
+dcb 0,0,99,107,107,107,54,54,54,0,0,0       # w
+dcb 0,0,99,54,54,28,54,54,99,0,0,0          # x
+dcb 0,0,51,51,51,51,51,30,12,12,7,0         # y
+dcb 0,0,63,25,24,12,6,38,63,0,0,0           # z
+dcb 56,12,12,12,6,12,12,12,56,0,0,0         # {
+dcb 24,24,24,24,24,24,24,24,24,0,0,0        # |
+dcb 28,48,48,48,96,48,48,48,28,0,0,0        # }
+dcb 6,73,73,48,0,0,0,0,0,0,0,0              # ~
+

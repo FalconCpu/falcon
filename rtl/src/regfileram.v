@@ -9,8 +9,11 @@ module regfileram (
 reg [31:0] ram[31:0];
 
 assign q = ram[rdaddress];
+integer i;
 
 initial begin
+	for (i = 0; i < 32; i = i + 1)
+		ram[i] = 0;
 	ram[0] = 0;
 end
 
