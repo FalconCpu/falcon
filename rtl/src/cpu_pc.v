@@ -13,8 +13,21 @@ module cpu_pc(
     // Connection to instruction bus
     output reg [31:0]   p1_pc,
     output reg [31:0]   p2_pc,
-    output reg [31:0]   p3_pc
+    output reg [31:0]   p3_pc,
+
+    input  [31:0]       instr_data,
+    output [31:0]       instr_data_out
 );
+
+reg prev_stall;
+reg [31:0] instr_data_skid_buffer;
+
+// By the time the pipeline detects a stall - it may be too late to correct the
+// address we send to the instruction cache. So instead we use a skid buffer
+// to store the current instruction data and send it out on the next cycle.
+// This allows the address that gets sent out to be garbage - as we don't
+// use the instruction data we get back anyway.
+assign  instr_data_out = prev_stall ? instr_data_skid_buffer : instr_data;
 
 always @(*) begin
     if (p3_jump)

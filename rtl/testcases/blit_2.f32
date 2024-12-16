@@ -118,8 +118,8 @@ ldw $2, $1[BLIT_CMD]
 beq $2, 0, wait_for_blitter3
 stw 0, $1[LEDR]
 
-ld $2, 30
-ld $3, 30
+ld $2, 640  
+ld $3, 480
 sth $2, $1[BLIT_ARG1X]      # width and height
 sth $3, $1[BLIT_ARG1Y]
 sth $2, $1[BLIT_ARG2X]       # destination coordinates    

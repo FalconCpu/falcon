@@ -280,7 +280,7 @@ hwregs  hwregs_inst (
     .wdata(cpu_wdata),
     .rdata(hwregs_rdata),
     .valid(hwregs_valid),
-    .LEDR(LEDR),
+    .LEDR(),                                        // LEDR
     .seven_seg_data(seven_seg_data),
     .SW(SW),
     .KEY(KEY),
@@ -457,7 +457,8 @@ keyboard_if  keyboard_if_inst (
     .blitr_rdata(blitr_rdata),
     .blitr_valid(blitr_valid),
     .blitr_ack(blitr_ack),
-    .blitr_complete(blitr_complete)
+    .blitr_complete(blitr_complete),
+    .debug_led(LEDR[5:0])
   );
 
 
