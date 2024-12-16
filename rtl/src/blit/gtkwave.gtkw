@@ -1,0 +1,51 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sun Dec 15 15:50:38 2024
+[*]
+[dumpfile] "C:\Users\simon\falcon\rtl\blit\dump.vcd"
+[dumpfile_mtime] "Sun Dec 15 15:48:19 2024"
+[dumpfile_size] 16227
+[savefile] "C:\Users\simon\falcon\rtl\blit\gtkwave.gtkw"
+[timestart] 0
+[size] 1920 1129
+[pos] -1 -1
+*-4.000000 48 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] blit_drawline_tb.
+[sst_width] 197
+[signals_width] 222
+[sst_expanded] 1
+[sst_vpaned_height] 339
+@28
+blit_drawline_tb.blit_drawline_inst.clock
+@22
+blit_drawline_tb.x1[15:0]
+blit_drawline_tb.x2[15:0]
+blit_drawline_tb.y1[15:0]
+blit_drawline_tb.y2[15:0]
+blit_drawline_tb.x[15:0]
+blit_drawline_tb.y[15:0]
+@28
+blit_drawline_tb.blit_drawline_inst.write
+@200
+-
+@28
+blit_drawline_tb.blit_drawline_inst.stall
+blit_drawline_tb.start
+@22
+blit_drawline_tb.blit_drawline_inst.num_diagonal[15:0]
+@420
+blit_drawline_tb.blit_drawline_inst.minus_num_straight[15:0]
+@28
+blit_drawline_tb.blit_drawline_inst.steep
+blit_drawline_tb.blit_drawline_inst.sx
+blit_drawline_tb.blit_drawline_inst.sy
+@200
+-
+@421
+blit_drawline_tb.blit_drawline_inst.error[15:0]
+@22
+blit_drawline_tb.blit_drawline_inst.next_y[15:0]
+@28
+blit_drawline_tb.blit_drawline_inst.steep
+[pattern_trace] 1
+[pattern_trace] 0
