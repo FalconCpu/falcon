@@ -97,6 +97,7 @@ wire  [31:0]       instr_addr;
 wire               dmem_request;
 wire               hwregs_request;
 wire               imem_request;
+wire               patmem_request;
 wire               error_request;
 
 
@@ -189,6 +190,10 @@ wire [31:0]   blitw_wdata;
 wire [3:0]    blitw_byte_en;
 wire          blitr_request;
 wire [25:0]   blitr_address;
+wire  [31:0]  patmem_rdata;
+wire          patmem_valid;
+wire [31:0]   patmemr_data;
+
 
 
 wire [31:0]        debug_pc;
@@ -199,9 +204,8 @@ wire [31:0]        debug_pc;
 
 assign reset = ~locked || ~KEY[0];
 
-assign cpu_rdata = dmem_rdata | hwregs_rdata | imem_rdata;
-assign cpu_valid = dmem_valid | hwregs_valid | imem_valid;
-
+assign cpu_rdata = dmem_rdata | hwregs_rdata | imem_rdata | patmem_rdata;
+assign cpu_valid = dmem_valid | hwregs_valid | imem_valid | patmem_valid;
 
 assign UART_RX = GPIO_0[35];
 assign GPIO_0[34] = UART_TX;
@@ -235,6 +239,7 @@ address_decoder  address_decoder_inst (
     .cpu_address(cpu_address),
     .dmem_request(dmem_request),
 	  .imem_request(imem_request),
+    .patmem_request(patmem_request),
     .hwregs_request(hwregs_request),
     .error_request(error_request)
   );
@@ -463,6 +468,13 @@ keyboard_if  keyboard_if_inst (
     .blitr_valid(blitr_valid),
     .blitr_ack(blitr_ack),
     .blitr_complete(blitr_complete),
+    .patmem_request(patmem_request),
+    .patmem_address(cpu_address[15:0]),
+    .patmem_write(cpu_write),
+    .patmem_wstrb(cpu_wstrb),
+    .patmem_wdata(cpu_wdata),
+    .patmem_rdata(patmem_rdata),
+    .patmem_ack(patmem_valid),
     .debug_led(led_status[1:0])
   );
 

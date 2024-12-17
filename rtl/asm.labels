@@ -1,4 +1,6 @@
-ffff0158 forever
-ffff0080 copy_font_loop
-ffff015c font
+ffff0100 wait_for_blitter3
+ffff00b0 wait_for_blitter2
+ffff00ac scrollLoop
+ffff00a4 delay
+ffff0048 wait_for_blitter
 ffff0000 start

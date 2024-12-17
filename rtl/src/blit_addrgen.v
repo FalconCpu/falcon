@@ -18,12 +18,12 @@ module blit_addrgen(
     input [15:0] clip_x2,
     input [15:0] clip_y2,
 
-    input [25:0] p2_src_addr,
+    input [31:0] p2_src_addr,
     input [15:0] p2_src_bpr,
     input [25:0] p2_dest_addr,
     input [15:0] p2_dest_bpr,
 
-    output  reg [25:0] p3_src_addr,
+    output  reg [31:0] p3_src_addr,
     output  reg [25:0] p3_dest_addr,
     output  reg [2:0]  p3_src_bit,
     output  reg        p3_write_en

@@ -29,7 +29,7 @@ module blit_cmd(
     output reg [15:0] p2_clip_x2,
     output reg [15:0] p2_clip_y2,
     output reg        p3_mem_read,
-    output reg [25:0] p1_src_addr,
+    output reg [31:0] p1_src_addr,
     output reg [15:0] p2_src_bpr,
     output reg [25:0] p2_dest_addr,
     output reg [15:0] p2_dest_bpr,
@@ -63,14 +63,14 @@ parameter BLIT_DRAW_LINE          = 8'hA;
 // ============================================
 reg [25:0]      dest_addr, next_dest_addr;   // start address of the destination buffer
 reg [15:0]      dest_bpr, next_dest_bpr;     // bytes per row
-reg [25:0]      src_addr, next_src_addr;     // start address of the source
+reg [31:0]      src_addr, next_src_addr;     // start address of the source
 reg [15:0]      src_bpr, next_src_bpr;       // bytes per row
 reg [15:0]      clip_x1, next_clip_x1;
 reg [15:0]      clip_y1, next_clip_y1;
 reg [15:0]      clip_x2, next_clip_x2;
 reg [15:0]      clip_y2, next_clip_y2;
 reg [8:0]       blit_trans_color, next_blit_trans_color;
-reg [25:0]      font_addr, next_font_addr;
+reg [31:0]      font_addr, next_font_addr;
 reg [4:0]       font_width, next_font_width;
 reg [4:0]       font_height, next_font_height;
 reg [4:0]       font_bpr, next_font_bpr;     // Font bytes per row
@@ -169,7 +169,7 @@ always @(*) begin
         end
 
         BLIT_SET_SRC_ADDR: begin
-            next_src_addr = p0_cmd[25:0];
+            next_src_addr = p0_cmd[31:0];
             next_src_bpr = p0_x1;
             cmd_next = 1'b1;
         end
@@ -183,7 +183,7 @@ always @(*) begin
         end
 
         BLIT_SET_FONT: begin
-            next_font_addr = p0_cmd[25:0];
+            next_font_addr = p0_cmd[31:0];
             next_font_width = p0_x1[4:0];
             next_font_height = p0_y1[4:0];
             next_font_bpr = p0_x2[4:0];
@@ -279,7 +279,7 @@ always @(posedge clock) begin
         p2_run_line <= p1_run_line && !line_done;
         p1_run_rect <= p0_run_rect;
         p2_run_rect <= p1_run_rect;
-        p3_active   <= (p2_run_line && !line_done) | (p2_run_rect && !rect_done) & !reset;
+        p3_active   <= (p2_run_line && !line_done) | (p2_run_rect) & !reset;
         p4_active   <= p3_active & !reset;
         p5_active   <= p4_active & !reset;
         p1_reversed <= p0_reversed;

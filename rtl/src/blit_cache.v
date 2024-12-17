@@ -8,7 +8,7 @@ module blit_cache (
     input           reset,
 
     // Blitter interface
-    input      [25:0]    read_address,
+    input      [31:0]    read_address,
     input                read_request,
     output     [7:0]     read_data,
     output               read_stall,
@@ -19,7 +19,11 @@ module blit_cache (
     input  [31:0]        mem_data,
     input                mem_valid,
     input                mem_ack,
-    input                mem_complete
+    input                mem_complete,
+
+    // Interface to pattern memory
+    output [15:0]        pattern_address,
+    input [31:0]         pattern_data
 );
 
 reg [31:0] data[7:0];
@@ -27,25 +31,36 @@ reg [25:5] cache_address;
 reg [7:0]  cache_valid;
 reg [1:0]  prev_addr_lsb;
 reg [31:0] cache_data;
+wire [31:0] rd;
 reg [2:0]  write_ptr;
 reg        prev_stall;
 
-assign read_data = (prev_addr_lsb == 2'b00) ? cache_data[7:0] :
-                   (prev_addr_lsb == 2'b01) ? cache_data[15:8] :
-                   (prev_addr_lsb == 2'b10) ? cache_data[23:16] :
-                   (prev_addr_lsb == 2'b11) ? cache_data[31:24] : 8'hx;
+wire main_memory = read_address[31:26]== 7'h0;
+wire patern_memory = read_address[31:16] == 16'hE100;
+reg  prev_main_memory;
+reg  prev_patern_memory;
+assign pattern_address = patern_memory ? read_address : 16'hx;
+
+assign rd = prev_patern_memory ? pattern_data : cache_data;
+
+assign read_data = (prev_addr_lsb == 2'b00) ? rd[7:0]   :
+                   (prev_addr_lsb == 2'b01) ? rd[15:8]  :
+                   (prev_addr_lsb == 2'b10) ? rd[23:16] :
+                   (prev_addr_lsb == 2'b11) ? rd[31:24] : 8'hx;
 
 wire tag_match = cache_valid[read_address[4:2]] && cache_address[25:5] == read_address[25:5];
-assign read_stall = !reset && read_request && !tag_match;
+assign read_stall = !reset && read_request && main_memory && !tag_match;
 
 always @(posedge clock) begin
     prev_stall <= read_stall;
     if (!read_stall) begin
         cache_data <= data[read_address[4:2]];
         prev_addr_lsb <= read_address[1:0];
+        prev_main_memory <= main_memory;
+        prev_patern_memory <= patern_memory;
     end
 
-    if (read_request && !tag_match && !prev_stall) begin
+    if (read_request && main_memory && !tag_match && !prev_stall) begin
         mem_request <= 1'b1;
         mem_address <= {read_address[25:5], 5'b00000};
         cache_address <= read_address[25:5];

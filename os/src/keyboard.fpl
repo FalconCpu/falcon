@@ -306,8 +306,8 @@ class Keyboard
     var windows = false
 
     fun getKey() -> Char 
-        val hwregs = (0xe0000000:Hwregs)
-        var keycode = hwregs.keycode
+        val hwregs = (0xe0000000:HwRegs)
+        var keycode = hwregs.keyboard
         # if no key pressed then return 0
         if keycode = -1
             return 0

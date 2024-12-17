@@ -51,6 +51,15 @@ module blitter(
     input             blitr_ack,
     input             blitr_complete, 
 
+    // connections to the pattern memory
+    input             patmem_request,
+    input [15:0]      patmem_address,
+    input             patmem_write,
+    input [3:0]       patmem_wstrb,
+    input [31:0]      patmem_wdata,
+    output [31:0]     patmem_rdata,
+    output            patmem_ack,
+
     output [1:0]      debug_led
 );
 
@@ -80,8 +89,8 @@ wire             p2_run_rect;
 wire             p1_reversed;
 wire             p2_textmode;
 wire             p4_textmode;
-wire [25:0]      p1_src_addr;
-wire [25:0]      p2_src_addr;
+wire [31:0]      p1_src_addr;
+wire [31:0]      p2_src_addr;
 wire [15:0]      p2_src_bpr;
 wire [25:0]      p2_dest_addr;
 wire [15:0]      p2_dest_bpr;
@@ -110,7 +119,7 @@ wire [15:0]   p2_line_y;
 wire          line_done;
 
 // from address generator
-wire [25:0] p3_src_addr;
+wire [31:0] p3_src_addr;
 wire [25:0] p3_dest_addr;
 wire [2:0]  p3_src_bit;
 wire        p3_write_en;
@@ -122,6 +131,9 @@ wire        read_stall, write_stall;
 reg  [25:0] p4_dest_addr;
 reg  [25:0] p5_dest_addr;
 reg  [2:0]  p4_src_bit;
+wire [15:0] pattern_address;
+wire [31:0] pattern_data;
+
 
 // from color unit
 wire [7:0]   p5_write_data;
@@ -302,7 +314,9 @@ blit_cache  blit_cache_inst (
     .mem_data(blitr_rdata),
     .mem_valid(blitr_valid),
     .mem_ack(blitr_ack),
-    .mem_complete(blitr_complete)
+    .mem_complete(blitr_complete),
+    .pattern_address(pattern_address),
+    .pattern_data(pattern_data)
   );
 
 
@@ -361,6 +375,24 @@ blit_combine  blit_combine_inst (
     .rd_data(blitw_wdata),
     .rd_valid(blitw_request),
     .rd_ready(blitw_ack)
+  );
+
+
+// ==================================================
+//                Pattern memory
+// ==================================================
+
+  pattern_memory  pattern_memory_inst (
+    .clock(clock),
+    .request(patmem_request),
+    .address(patmem_address),
+    .write(patmem_write),
+    .wstrb(patmem_wstrb),
+    .wdata(patmem_wdata),
+    .rdata(patmem_rdata),
+    .ack(patmem_ack),
+    .pattern_address(pattern_address),
+    .pattern_data(pattern_data)
   );
 
 // ==================================================

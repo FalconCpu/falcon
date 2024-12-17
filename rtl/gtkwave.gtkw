@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Dec 16 18:03:23 2024
+[*] Tue Dec 17 11:40:36 2024
 [*]
 [dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
-[dumpfile_mtime] "Mon Dec 16 18:02:16 2024"
-[dumpfile_size] 34803031
+[dumpfile_mtime] "Tue Dec 17 11:36:50 2024"
+[dumpfile_size] 37392898
 [savefile] "C:\Users\simon\falcon\rtl\gtkwave.gtkw"
-[timestart] 24260900
+[timestart] 35680100
 [size] 1920 1129
 [pos] -1 -1
-*-17.380966 24390000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-17.380966 36173300 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.Falcon_inst.
 [treeopen] tb.Falcon_inst.blitter_inst.
@@ -50,17 +50,13 @@ tb.Falcon_inst.blitter_inst.blit_combine_inst.out_write
 @22
 tb.Falcon_inst.blitter_inst.blit_text_addr_inst.p1_char[7:0]
 tb.Falcon_inst.blitter_inst.blit_text_addr_inst.p1_font_bpc[7:0]
-tb.Falcon_inst.blitter_inst.blit_text_addr_inst.p1_src_addr[25:0]
-tb.Falcon_inst.blitter_inst.blit_text_addr_inst.p2_src_addr[25:0]
 @200
 -
 @22
-tb.Falcon_inst.blitter_inst.blit_color_inst.fg_color[8:0]
-@28
-tb.Falcon_inst.blitter_inst.blit_color_inst.src_bit[2:0]
-@22
-tb.Falcon_inst.blitter_inst.blit_color_inst.src_data[7:0]
-@23
-tb.Falcon_inst.blitter_inst.blit_color_inst.wr_data[7:0]
+tb.Falcon_inst.blitter_inst.blit_cache_inst.mem_address[25:0]
+tb.Falcon_inst.blitter_inst.blit_cache_inst.read_address[31:0]
+tb.Falcon_inst.blitter_inst.blit_cache_inst.cache_address[25:5]
+@29
+tb.Falcon_inst.blitter_inst.blit_cache_inst.main_memory
 [pattern_trace] 1
 [pattern_trace] 0

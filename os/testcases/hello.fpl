@@ -1,0 +1,6 @@
+
+fun main()
+    print("Hello World!\n")
+
+@------------------------
+Hello World!

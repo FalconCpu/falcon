@@ -1,0 +1,2435 @@
+
+/_start:
+sub $sp, 4
+stw $30, $sp[0]
+jsr /main
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/FreeMemChunk:
+ret
+
+/AllocatedMemChunk:
+ret
+
+/SystemVariables:
+ret
+
+/initializeMemorySystem:
+ld $1, 256
+ld $3, 66519040
+ld $4, 4096
+sub $2, $3, $4
+stw $2, $1[0]
+ld $4, 4096
+ld $2, $4
+ld $3, 815157357
+stw $3, $2[0]
+ld $3, 66519040
+ld $4, 4096
+sub $3, $3, $4
+stw $3, $2[4]
+ld $3, 0
+stw $3, $2[8]
+ld $3, 0
+stw $3, $2[12]
+ld $4, 4096
+stw $4, $1[4]
+ret
+
+/dumpMemorySystem:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, 4096
+jmp @3
+@1:
+ldw $1, $9[0]
+ld $2, 815157357
+beq $1, $2, @6
+ldw $1, $9[0]
+ld $2, 600496568
+beq $1, $2, @8
+jmp @10
+@6:
+ld $1, _object0
+ldw $3, $9[4]
+ld $2, $9
+jsr /print
+jmp @4
+@8:
+ld $10, $9
+ld $1, _object1
+ldw $3, $10[4]
+ldw $4, $10[8]
+ld $2, $10
+jsr /print
+ldw $1, $10[12]
+ld $2, 1
+bge $2, $1, @12
+ld $1, _object2
+ldw $2, $10[12]
+jsr /print
+@12:
+ld $1, _object3
+jsr /print
+jmp @4
+@10:
+ld $1, _object4
+ldw $3, $9[4]
+ldw $4, $9[0]
+ld $2, $9
+jsr /print
+@4:
+ldw $1, $9[4]
+add $9, $9, $1
+@3:
+ld $1, 66519040
+blt $9, $1, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/dummpMemoryAllocations:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, 4096
+jmp @3
+@1:
+ldw $1, $9[0]
+ld $2, 600496568
+beq $1, $2, @6
+ldw $1, $9[0]
+ld $2, 815157357
+bne $1, $2, @8
+jmp @4
+@6:
+ld $10, $9
+ld $1, _object1
+ldw $3, $10[4]
+ldw $4, $10[8]
+ld $2, $10
+jsr /print
+ldw $1, $10[12]
+ld $2, 1
+bge $2, $1, @10
+ld $1, _object2
+ldw $2, $10[12]
+jsr /print
+@10:
+ld $1, _object3
+jsr /print
+jmp @4
+@8:
+ld $1, _object4
+ldw $3, $9[4]
+ldw $4, $9[0]
+ld $2, $9
+jsr /print
+@4:
+ldw $1, $9[4]
+add $9, $9, $1
+@3:
+ld $1, 66519040
+blt $9, $1, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/addChunkToFreeList:
+beq $2, 0, @ret
+ld $3, 815157357
+stw $3, $1[0]
+stw $2, $1[4]
+ld $4, 256
+ldw $3, $4[4]
+ld $5, 0
+beq $3, $5, @7
+ldw $5, $3[4]
+bge $5, $2, @9
+jmp @11
+@7:
+ld $5, 0
+stw $5, $1[8]
+stw $1, $4[4]
+jmp @5
+@9:
+stw $3, $1[8]
+stw $1, $4[4]
+jmp @5
+@11:
+jmp @15
+@13:
+ldw $3, $3[8]
+@15:
+ldw $4, $3[8]
+ld $5, 0
+beq $4, $5, @14
+ldw $4, $3[8]
+ldw $4, $4[4]
+blt $4, $2, @13
+@14:
+ldw $2, $3[8]
+stw $2, $1[8]
+stw $1, $3[8]
+@5:
+@ret:
+ret
+
+/malloc:
+sub $sp, 24
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $30, $sp[20]
+ld $9, $2
+bne $1, 0, @1
+ld $8, 0
+jmp @ret
+@1:
+add $1, $1, 31
+sub $2, 0, 16
+and $10, $1, $2
+ld $12, 256
+ldw $11, $12[4]
+ld $8, 0
+ld $13, $8
+jmp @7
+@5:
+ld $13, $11
+ldw $11, $11[8]
+@7:
+ld $8, 0
+beq $11, $8, @6
+ldw $1, $11[4]
+blt $1, $10, @5
+@6:
+ld $8, 0
+bne $11, $8, @9
+ld $1, 4096
+jsr /abort
+@9:
+ld $8, 0
+bne $13, $8, @17
+ldw $1, $11[8]
+stw $1, $12[4]
+jmp @13
+@17:
+ldw $1, $11[8]
+stw $1, $13[8]
+ldw $1, $13[0]
+ld $2, 815157357
+beq $1, $2, @19
+ld $1, 4097
+jsr /abort
+@19:
+@13:
+add $1, $11, $10
+ldw $2, $11[4]
+sub $2, $2, $10
+jsr /addChunkToFreeList
+ld $1, $11
+ld $2, 600496568
+stw $2, $1[0]
+stw $10, $1[4]
+stw $9, $1[8]
+ld $2, 1
+stw $2, $1[12]
+add $8, $11, 16
+@ret:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $30, $sp[20]
+add $sp, 24
+ret
+
+/free:
+sub $sp, 4
+stw $30, $sp[0]
+ld $2, 0
+beq $1, $2, @ret
+sub $1, $1, 16
+ldw $2, $1[0]
+ld $3, 600496568
+beq $2, $3, @7
+ldw $1, $1[0]
+ld $2, 815157357
+beq $1, $2, @9
+jmp @11
+@7:
+ldw $2, $1[4]
+jsr /addChunkToFreeList
+jmp @5
+@9:
+ld $1, 4098
+jsr /abort
+jmp @5
+@11:
+ld $1, 4097
+jsr /abort
+@5:
+@ret:
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/StringBuilder:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $1, 128
+stw $1, $9[0]
+ld $1, 0
+stw $1, $9[4]
+ldw $10, $9[0]
+add $1, $10, 4
+ld $2, _object7
+jsr /malloc
+add $1, $8, 4
+stw $10, $1[-4]
+stw $1, $9[8]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/StringBuilder/resize:
+sub $sp, 16
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $30, $sp[12]
+ld $9, $1
+ld $11, $2
+ldw $1, $9[0]
+bge $1, $11, @1
+stw $11, $9[0]
+ldw $10, $9[8]
+add $1, $11, 4
+ld $2, _object7
+jsr /malloc
+add $1, $8, 4
+stw $11, $1[-4]
+stw $1, $9[8]
+ldw $1, $9[8]
+ldw $3, $9[0]
+ld $2, $10
+jsr /memcpy
+ldw $1, $9[4]
+ldw $2, $9[8]
+stw $1, $2[-4]
+ld $1, $10
+jsr /free
+@1:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $30, $sp[12]
+add $sp, 16
+ret
+
+/StringBuilder/append:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $10, $2
+ldw $1, $9[4]
+add $1, $1, 1
+ldw $2, $9[0]
+blt $1, $2, @1
+ldw $1, $9[0]
+lsl $2, $1, 1
+ld $1, $9
+jsr /StringBuilder/resize
+@1:
+ldw $1, $9[8]
+ldw $2, $9[4]
+add $1, $1, $2
+stb $10, $1[0]
+ldw $1, $9[4]
+add $1, $1, 1
+stw $1, $9[4]
+ldw $1, $9[4]
+ldw $2, $9[8]
+stw $1, $2[-4]
+ld $1, 0
+ldw $2, $9[8]
+ldw $3, $9[4]
+add $2, $2, $3
+stb $1, $2[0]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/StringBuilder/appendString:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $9, $1
+ld $10, $2
+ld $12, 0
+ldw $11, $10[-4]
+jmp @2
+@1:
+add $1, $10, $12
+ldb $2, $1[0]
+ld $1, $9
+jsr /StringBuilder/append
+add $12, $12, 1
+@2:
+blt $12, $11, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/StringBuilder/intToHex:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $10, $2
+ld $11, $3
+ld $1, 12
+ld $2, _object8
+jsr /malloc
+ld $9, $8
+ld $1, $9
+jsr /StringBuilder
+ld $1, $11
+ld $11, 0
+ld $12, 7
+jmp @2
+@1:
+lsr $2, $10, 28
+ld $3, 10
+blt $2, $3, @3
+add $2, $2, 7
+@3:
+bne $1, 0, @9
+beq $2, 0, @7
+@9:
+add $2, $2, 48
+ld $1, $9
+jsr /StringBuilder/append
+ld $1, 1
+@7:
+lsl $10, $10, 4
+add $11, $11, 1
+@2:
+bge $12, $11, @1
+ldw $10, $9[8]
+ld $1, $9
+jsr /free
+ld $8, $10
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/StringBuilder/intToString:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $11, $2
+ld $1, 12
+ld $2, _object8
+jsr /malloc
+ld $9, $8
+ld $1, $9
+jsr /StringBuilder
+bge $11, 0, @1
+ld $1, $9
+ld $2, 45
+jsr /StringBuilder/append
+sub $11, 0, $11
+@1:
+ld $12, 16
+ld $1, 16
+add $1, $1, 4
+ld $2, _object9
+jsr /malloc
+add $10, $8, 4
+stw $12, $10[-4]
+ld $12, 0
+@5:
+mods $1, $11, 10
+add $1, $1, 48
+add $2, $10, $12
+stb $1, $2[0]
+add $12, $12, 1
+divs $11, $11, 10
+bne $11, 0, @5
+jmp @9
+@7:
+sub $12, $12, 1
+add $1, $10, $12
+ldb $2, $1[0]
+ld $1, $9
+jsr /StringBuilder/append
+@9:
+blt 0, $12, @7
+sub $1, $10, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @10
+jsr /free
+@10:
+ldw $10, $9[8]
+ld $1, $9
+jsr /free
+ld $8, $10
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/StringBuilder/appendWithPad:
+sub $sp, 24
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $30, $sp[20]
+ld $9, $1
+ld $11, $2
+ld $10, $4
+ldw $1, $11[-4]
+sub $12, $3, $1
+bge 0, $12, @1
+beq $10, 0, @1
+ld $13, 0
+jmp @7
+@6:
+ld $1, $9
+ld $2, 32
+jsr /StringBuilder/append
+add $13, $13, 1
+@7:
+blt $13, $12, @6
+@1:
+ld $1, $9
+ld $2, $11
+jsr /StringBuilder/appendString
+bge 0, $12, @8
+ld $1, 0
+bne $10, $1, @8
+ld $10, 0
+jmp @14
+@13:
+ld $1, $9
+ld $2, 32
+jsr /StringBuilder/append
+add $10, $10, 1
+@14:
+blt $10, $12, @13
+@8:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $30, $sp[20]
+add $sp, 24
+ret
+
+/StringBuilder/toString:
+ldw $8, $1[8]
+ret
+
+/StringBuilder/insert:
+sub $sp, 16
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $30, $sp[12]
+ld $9, $1
+ld $11, $2
+ld $10, $3
+ldw $1, $9[4]
+add $1, $1, 1
+ldw $2, $9[0]
+blt $1, $2, @1
+ldw $1, $9[0]
+lsl $2, $1, 1
+ld $1, $9
+jsr /StringBuilder/resize
+@1:
+ldw $1, $9[4]
+blt $11, $1, @6
+ldw $11, $9[4]
+jmp @7
+@6:
+@7:
+ldw $1, $9[4]
+jmp @9
+@8:
+ldw $2, $9[8]
+sub $3, $1, 1
+add $2, $2, $3
+ldb $2, $2[0]
+ldw $3, $9[8]
+add $3, $3, $1
+stb $2, $3[0]
+sub $1, $1, 1
+@9:
+blt $11, $1, @8
+ldw $1, $9[8]
+add $1, $1, $11
+stb $10, $1[0]
+ldw $1, $9[4]
+add $1, $1, 1
+stw $1, $9[4]
+ldw $1, $9[4]
+ldw $2, $9[8]
+stw $1, $2[-4]
+ld $1, 0
+ldw $2, $9[8]
+ldw $3, $9[4]
+add $2, $2, $3
+stb $1, $2[0]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $30, $sp[12]
+add $sp, 16
+ret
+
+/StringBuilder/remove:
+ldw $3, $1[4]
+bge $2, $3, @ret
+ldw $3, $1[4]
+sub $3, $3, 1
+jmp @6
+@5:
+ldw $4, $1[8]
+add $5, $2, 1
+add $4, $4, $5
+ldb $4, $4[0]
+ldw $5, $1[8]
+add $5, $5, $2
+stb $4, $5[0]
+add $2, $2, 1
+@6:
+bge $3, $2, @5
+ld $2, 0
+ldw $3, $1[8]
+ldw $4, $1[4]
+add $3, $3, $4
+stb $2, $3[0]
+ldw $2, $1[4]
+sub $2, $2, 1
+stw $2, $1[4]
+ldw $2, $1[4]
+ldw $1, $1[8]
+stw $2, $1[-4]
+@ret:
+ret
+
+/StringBuilder/clear:
+ld $2, 0
+stw $2, $1[4]
+ld $2, 0
+ldw $1, $1[8]
+stw $2, $1[-4]
+ret
+
+/StringBuilder/get:
+ldw $1, $1[8]
+add $1, $1, $2
+ldb $8, $1[0]
+ret
+
+/StringBuilder/vsprintf:
+sub $sp, 48
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $14, $sp[20]
+stw $15, $sp[24]
+stw $16, $sp[28]
+stw $17, $sp[32]
+stw $18, $sp[36]
+stw $19, $sp[40]
+stw $30, $sp[44]
+ld $9, $1
+ld $10, $2
+ld $11, $3
+ld $16, 0
+ld $1, 0
+ld $18, $1
+ld $17, 0
+ld $1, 1
+ld $12, $1
+ld $1, 0
+ld $13, $1
+ld $15, 0
+ldw $14, $10[-4]
+jmp @2
+@1:
+add $1, $10, $15
+ldb $19, $1[0]
+beq $18, 0, @7
+ld $1, 45
+beq $1, $19, @10
+ld $1, 48
+beq $1, $19, @11
+ld $1, 49
+beq $1, $19, @12
+ld $1, 50
+beq $1, $19, @12
+ld $1, 51
+beq $1, $19, @12
+ld $1, 52
+beq $1, $19, @12
+ld $1, 53
+beq $1, $19, @12
+ld $1, 54
+beq $1, $19, @12
+ld $1, 55
+beq $1, $19, @12
+ld $1, 56
+beq $1, $19, @12
+ld $1, 57
+beq $1, $19, @12
+ld $1, 115
+beq $1, $19, @13
+ld $1, 120
+beq $1, $19, @14
+ld $1, 100
+beq $1, $19, @15
+ld $1, 37
+beq $1, $19, @16
+jmp @17
+@10:
+ld $1, 0
+ld $12, $1
+jmp @9
+@11:
+bne $17, 0, @22
+ld $1, 1
+ld $13, $1
+jmp @18
+@22:
+mul $17, $17, 10
+@18:
+jmp @9
+@12:
+mul $1, $17, 10
+add $1, $1, $19
+sub $17, $1, 48
+jmp @9
+@13:
+lsl $1, $16, 2
+add $1, $11, $1
+ldw $2, $1[0]
+ld $1, $9
+ld $3, $17
+ld $4, $12
+jsr /StringBuilder/appendWithPad
+add $16, $16, 1
+ld $1, 0
+ld $18, $1
+jmp @9
+@14:
+lsl $1, $16, 2
+add $1, $11, $1
+ldw $2, $1[0]
+ld $1, $9
+ld $3, $13
+jsr /StringBuilder/intToHex
+ld $19, $8
+ld $1, $9
+ld $2, $19
+ld $3, $17
+ld $4, $12
+jsr /StringBuilder/appendWithPad
+add $16, $16, 1
+ld $1, 0
+ld $18, $1
+sub $1, $19, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @9
+jsr /free
+jmp @9
+@15:
+lsl $1, $16, 2
+add $1, $11, $1
+ldw $2, $1[0]
+ld $1, $9
+jsr /StringBuilder/intToString
+ld $19, $8
+ld $1, $9
+ld $2, $19
+ld $3, $17
+ld $4, $12
+jsr /StringBuilder/appendWithPad
+add $16, $16, 1
+ld $1, 0
+ld $18, $1
+sub $1, $19, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @9
+jsr /free
+jmp @9
+@16:
+ld $1, $9
+ld $2, 37
+jsr /StringBuilder/append
+ld $1, 0
+ld $18, $1
+jmp @9
+@17:
+ld $1, $9
+ld $2, 37
+jsr /StringBuilder/append
+ld $1, $9
+ld $2, $19
+jsr /StringBuilder/append
+ld $1, 0
+ld $18, $1
+@9:
+ld $1, 0
+bne $18, $1, @3
+ld $17, 0
+ld $1, 1
+ld $12, $1
+ld $1, 0
+ld $13, $1
+jmp @3
+@7:
+ld $1, 37
+bne $19, $1, @34
+ld $1, 1
+ld $18, $1
+jmp @30
+@34:
+ld $1, $9
+ld $2, $19
+jsr /StringBuilder/append
+@30:
+@3:
+add $15, $15, 1
+@2:
+blt $15, $14, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $14, $sp[20]
+ldw $15, $sp[24]
+ldw $16, $sp[28]
+ldw $17, $sp[32]
+ldw $18, $sp[36]
+ldw $19, $sp[40]
+ldw $30, $sp[44]
+add $sp, 48
+ret
+
+/StringBuilder/sprintf:
+sub $sp, 4
+stw $30, $sp[0]
+jsr /StringBuilder/vsprintf
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/StringBuilder/delete:
+sub $sp, 4
+stw $30, $sp[0]
+ldw $1, $1[8]
+sub $1, $1, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @1
+jsr /free
+@1:
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/List:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $1, 8
+stw $1, $9[0]
+ld $1, 0
+stw $1, $9[4]
+ldw $10, $9[0]
+lsl $1, $10, 2
+add $1, $1, 4
+ld $2, _object10
+jsr /malloc
+add $1, $8, 4
+stw $10, $1[-4]
+stw $1, $9[8]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/add:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $9, $1
+ld $10, $2
+ldw $1, $9[4]
+ldw $2, $9[0]
+bne $1, $2, @1
+ldw $11, $9[8]
+ldw $1, $9[0]
+lsl $12, $1, 1
+lsl $1, $12, 2
+add $1, $1, 4
+ld $2, _object10
+jsr /malloc
+add $1, $8, 4
+stw $12, $1[-4]
+stw $1, $9[8]
+ld $1, 0
+ldw $2, $9[0]
+jmp @6
+@5:
+lsl $3, $1, 2
+add $3, $11, $3
+ldw $3, $3[0]
+ldw $4, $9[8]
+lsl $5, $1, 2
+add $4, $4, $5
+stw $3, $4[0]
+add $1, $1, 1
+@6:
+blt $1, $2, @5
+sub $1, $11, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @7
+jsr /free
+@7:
+ldw $1, $9[0]
+lsl $1, $1, 1
+stw $1, $9[0]
+@1:
+ldw $1, $9[8]
+ldw $2, $9[4]
+lsl $2, $2, 2
+add $1, $1, $2
+stw $10, $1[0]
+ldw $1, $9[4]
+add $1, $1, 1
+stw $1, $9[4]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/List/get:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $10, $1
+ld $9, $2
+blt $9, 0, @3
+ldw $1, $10[4]
+blt $9, $1, @1
+@3:
+ld $1, 4099
+jsr /abort
+@1:
+ldw $1, $10[8]
+lsl $2, $9, 2
+add $1, $1, $2
+ldw $8, $1[0]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/size:
+ldw $8, $1[4]
+ret
+
+/List/remove:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $10, $2
+blt $10, 0, @3
+ldw $1, $9[4]
+blt $10, $1, @1
+@3:
+ld $1, 4099
+jsr /abort
+@1:
+ldw $1, $9[8]
+lsl $2, $10, 2
+add $1, $1, $2
+ldw $8, $1[0]
+ldw $1, $9[4]
+sub $1, $1, 1
+stw $1, $9[4]
+ldw $1, $9[4]
+jmp @7
+@6:
+ldw $2, $9[8]
+add $3, $10, 1
+lsl $3, $3, 2
+add $2, $2, $3
+ldw $2, $2[0]
+ldw $3, $9[8]
+lsl $4, $10, 2
+add $3, $3, $4
+stw $2, $3[0]
+add $10, $10, 1
+@7:
+blt $10, $1, @6
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/List/clear:
+ld $2, 0
+stw $2, $1[4]
+ret
+
+/List/delete:
+sub $sp, 4
+stw $30, $sp[0]
+ldw $1, $1[8]
+sub $1, $1, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @1
+jsr /free
+@1:
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
+/stringConcat:
+sub $sp, 24
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $30, $sp[20]
+ld $9, $1
+ld $10, $2
+ld $11, 0
+ld $1, 0
+jmp @2
+@1:
+lsl $2, $1, 2
+add $2, $9, $2
+ldw $2, $2[0]
+ldw $2, $2[-4]
+add $11, $11, $2
+add $1, $1, 1
+@2:
+blt $1, $10, @1
+add $1, $11, 4
+ld $2, _object7
+jsr /malloc
+add $12, $8, 4
+stw $11, $12[-4]
+ld $13, 0
+ld $11, 0
+jmp @4
+@3:
+add $1, $12, $13
+lsl $2, $11, 2
+add $2, $9, $2
+ldw $2, $2[0]
+lsl $3, $11, 2
+add $3, $9, $3
+ldw $3, $3[0]
+ldw $3, $3[-4]
+jsr /memcpy
+lsl $1, $11, 2
+add $1, $9, $1
+ldw $1, $1[0]
+ldw $1, $1[-4]
+add $13, $13, $1
+add $11, $11, 1
+@4:
+blt $11, $10, @3
+ld $8, $12
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $30, $sp[20]
+add $sp, 24
+ret
+
+/strcmp:
+ldw $3, $1[-4]
+ldw $4, $2[-4]
+bge $3, $4, @2
+ldw $3, $1[-4]
+jmp @3
+@2:
+ldw $3, $2[-4]
+@3:
+ld $4, 0
+jmp @5
+@4:
+add $5, $1, $4
+ldb $5, $5[0]
+add $6, $2, $4
+ldb $6, $6[0]
+beq $5, $6, @6
+add $1, $1, $4
+ldb $1, $1[0]
+add $2, $2, $4
+ldb $2, $2[0]
+sub $8, $1, $2
+jmp @ret
+@6:
+add $4, $4, 1
+@5:
+blt $4, $3, @4
+ldw $1, $1[-4]
+ldw $2, $2[-4]
+sub $8, $1, $2
+@ret:
+ret
+
+/strequals:
+bne $1, $2, @1
+ld $8, 1
+jmp @ret
+@1:
+ldw $3, $1[-4]
+ldw $4, $2[-4]
+beq $3, $4, @5
+ld $8, 0
+jmp @ret
+@5:
+ld $4, 0
+ldw $3, $1[-4]
+jmp @10
+@9:
+add $5, $1, $4
+ldb $5, $5[0]
+add $6, $2, $4
+ldb $6, $6[0]
+beq $5, $6, @11
+ld $8, 0
+jmp @ret
+@11:
+add $4, $4, 1
+@10:
+blt $4, $3, @9
+ld $8, 1
+@ret:
+ret
+
+/substring:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $11, $1
+ld $10, $2
+ld $9, $3
+blt $10, 0, @3
+ldw $1, $11[-4]
+bge $10, $1, @3
+blt $9, 0, @3
+add $1, $10, $9
+ldw $2, $11[-4]
+bge $2, $1, @1
+@3:
+ld $1, 4099
+jsr /abort
+ld $8, 0
+jmp @ret
+@1:
+add $1, $9, 4
+ld $2, _object7
+jsr /malloc
+add $12, $8, 4
+stw $9, $12[-4]
+ld $1, $12
+add $2, $11, $10
+ld $3, $9
+jsr /memcpy
+ld $8, $12
+@ret:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/splitString:
+sub $sp, 28
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $14, $sp[20]
+stw $30, $sp[24]
+ld $9, $1
+ld $12, $2
+ld $1, 12
+ld $2, _object11
+jsr /malloc
+ld $10, $8
+ld $1, $10
+jsr /List
+ld $11, 0
+ld $1, 0
+ld $14, 0
+ldw $13, $9[-4]
+jmp @2
+@1:
+add $2, $9, $14
+ldb $2, $2[0]
+bne $2, $12, @4
+bne $1, 0, @5
+@4:
+add $2, $9, $14
+ldb $2, $2[0]
+beq $2, $12, @3
+xor $2, $1, 1
+bne $2, 0, @8
+jmp @3
+@5:
+sub $3, $14, $11
+ld $1, $9
+ld $2, $11
+jsr /substring
+ld $1, $10
+ld $2, $8
+jsr /List/add
+ld $1, 0
+jmp @3
+@8:
+ld $11, $14
+ld $1, 1
+@3:
+add $14, $14, 1
+@2:
+blt $14, $13, @1
+beq $1, 0, @11
+ldw $1, $9[-4]
+sub $3, $1, $11
+ld $1, $9
+ld $2, $11
+jsr /substring
+ld $1, $10
+ld $2, $8
+jsr /List/add
+@11:
+ld $8, $10
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $14, $sp[20]
+ldw $30, $sp[24]
+add $sp, 28
+ret
+
+/HwRegs:
+ret
+
+/uartTransmitByte:
+jmp @3
+@1:
+@3:
+ld $2, -536870912
+ldw $2, $2[16]
+beq $2, 0, @1
+ld $2, -536870912
+stw $1, $2[16]
+ret
+
+/uartTransmitWord:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $9, $1
+and $1, $9, 255
+jsr /uartTransmitByte
+lsr $1, $9, 8
+and $1, $1, 255
+jsr /uartTransmitByte
+lsr $1, $9, 16
+and $1, $1, 255
+jsr /uartTransmitByte
+lsr $1, $9, 24
+and $1, $1, 255
+jsr /uartTransmitByte
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+
+/uartReceiveByte:
+ld $1, 1000000
+jmp @3
+@1:
+ld $2, -536870912
+ldw $8, $2[20]
+sub $2, 0, 1
+bne $8, $2, @ret
+sub $1, $1, 1
+@3:
+blt 0, $1, @1
+sub $8, 0, 1
+@ret:
+ret
+
+/uartExpectWord:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+ld $10, 0
+jsr /uartReceiveByte
+ld $1, $8
+jmp @3
+@1:
+add $10, $10, 1
+ld $1, 10
+blt $10, $1, @4
+ld $8, 0
+jmp @ret
+@4:
+jsr /uartReceiveByte
+ld $1, $8
+@3:
+ld $2, 176
+bne $1, $2, @1
+jsr /uartReceiveByte
+lsr $1, $9, 8
+and $1, $1, 255
+beq $8, $1, @8
+ld $8, 0
+jmp @ret
+@8:
+jsr /uartReceiveByte
+lsr $1, $9, 16
+and $1, $1, 255
+beq $8, $1, @12
+ld $8, 0
+jmp @ret
+@12:
+jsr /uartReceiveByte
+lsr $1, $9, 24
+and $1, $1, 255
+beq $8, $1, @16
+ld $8, 0
+jmp @ret
+@16:
+ld $8, 1
+@ret:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/writeDiskBlock:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $10, $1
+ld $9, $2
+ld $1, 1230133168
+jsr /uartTransmitWord
+ld $1, $10
+jsr /uartTransmitWord
+ld $11, 0
+ld $12, 0
+ld $10, 512
+jmp @2
+@1:
+add $1, $9, $12
+ldb $1, $1[0]
+jsr /uartTransmitByte
+add $1, $9, $12
+ldb $1, $1[0]
+add $11, $11, $1
+add $12, $12, 1
+@2:
+blt $12, $10, @1
+ld $1, $11
+jsr /uartTransmitWord
+ld $1, 1498107824
+jsr /uartExpectWord
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/readDiskBlock:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $9, $1
+ld $10, $2
+ld $1, 1095062192
+jsr /uartTransmitWord
+ld $1, $9
+jsr /uartTransmitWord
+ld $1, 1413563568
+jsr /uartExpectWord
+ld $9, 0
+ld $12, 0
+ld $11, 512
+jmp @2
+@1:
+jsr /uartReceiveByte
+ld $1, $8
+sub $2, 0, 1
+bne $1, $2, @3
+ld $8, 0
+jmp @ret
+@3:
+add $2, $10, $12
+stb $1, $2[0]
+add $9, $9, $1
+add $12, $12, 1
+@2:
+blt $12, $11, @1
+jsr /uartReceiveByte
+ld $10, $8
+sub $1, 0, 1
+bne $10, $1, @7
+ld $8, 0
+jmp @ret
+@7:
+jsr /uartReceiveByte
+ld $11, $8
+sub $1, 0, 1
+bne $11, $1, @11
+ld $8, 0
+jmp @ret
+@11:
+jsr /uartReceiveByte
+ld $12, $8
+sub $1, 0, 1
+bne $12, $1, @15
+ld $8, 0
+jmp @ret
+@15:
+jsr /uartReceiveByte
+sub $1, 0, 1
+bne $8, $1, @19
+ld $8, 0
+jmp @ret
+@19:
+lsl $1, $8, 24
+lsl $2, $12, 16
+or $1, $1, $2
+lsl $2, $11, 8
+or $1, $1, $2
+or $1, $1, $10
+beq $1, $9, @23
+ld $8, 0
+jmp @ret
+@23:
+ld $8, 1
+@ret:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
+/Keyboard:
+ld $2, 0
+stb $2, $1[0]
+ld $2, 0
+stb $2, $1[1]
+ld $2, 0
+stb $2, $1[2]
+ld $2, 0
+stb $2, $1[3]
+ld $2, 0
+stb $2, $1[4]
+ld $2, 0
+stb $2, $1[5]
+ld $2, 0
+stb $2, $1[6]
+ld $2, 0
+stb $2, $1[7]
+ld $2, 0
+stb $2, $1[8]
+ld $2, 0
+stb $2, $1[9]
+ld $2, 0
+stb $2, $1[10]
+ret
+
+/Keyboard/getKey:
+ld $2, -536870912
+ldw $2, $2[36]
+sub $3, 0, 1
+bne $2, $3, @1
+ld $8, 0
+jmp @ret
+@1:
+ld $3, 224
+beq $2, $3, @7
+ld $3, 240
+beq $2, $3, @9
+jmp @5
+@7:
+ld $2, 1
+stb $2, $1[0]
+ld $8, 0
+jmp @ret
+@9:
+ld $2, 1
+stb $2, $1[1]
+ld $8, 0
+jmp @ret
+@5:
+ldb $3, $1[0]
+beq $3, 0, @12
+add $2, $2, 128
+jmp @13
+@12:
+@13:
+ldb $3, $1[1]
+xor $3, $3, 1
+ld $4, 0
+stb $4, $1[0]
+ld $4, 0
+stb $4, $1[1]
+ld $4, 18
+beq $4, $2, @15
+ld $4, 20
+beq $4, $2, @16
+ld $4, 17
+beq $4, $2, @17
+ld $4, 89
+beq $4, $2, @18
+ld $4, 148
+beq $4, $2, @19
+ld $4, 145
+beq $4, $2, @20
+ld $4, 159
+beq $4, $2, @21
+ld $4, 175
+beq $4, $2, @22
+ld $4, 88
+beq $4, $2, @23
+jmp @24
+@15:
+stb $3, $1[2]
+jmp @14
+@16:
+stb $3, $1[4]
+jmp @14
+@17:
+stb $3, $1[6]
+jmp @14
+@18:
+stb $3, $1[3]
+jmp @14
+@19:
+stb $3, $1[5]
+jmp @14
+@20:
+stb $3, $1[7]
+jmp @14
+@21:
+stb $3, $1[10]
+jmp @14
+@22:
+stb $3, $1[9]
+jmp @14
+@23:
+beq $3, 0, @14
+ldb $2, $1[8]
+xor $2, $2, 1
+stb $2, $1[8]
+jmp @14
+@24:
+beq $3, 0, @29
+ldb $3, $1[2]
+bne $3, 0, @35
+ldb $3, $1[3]
+bne $3, 0, @35
+ldb $3, $1[4]
+bne $3, 0, @38
+ldb $3, $1[5]
+bne $3, 0, @38
+ldb $1, $1[8]
+bne $1, 0, @41
+jmp @43
+@35:
+ld $1, _object6
+lsl $2, $2, 2
+add $2, $2, 1
+add $1, $1, $2
+ldb $8, $1[0]
+jmp @ret
+@38:
+ld $1, _object6
+lsl $2, $2, 2
+add $2, $2, 3
+add $1, $1, $2
+ldb $8, $1[0]
+jmp @ret
+@41:
+ld $1, _object6
+lsl $2, $2, 2
+add $2, $2, 2
+add $1, $1, $2
+ldb $8, $1[0]
+jmp @ret
+@43:
+ld $1, _object6
+lsl $2, $2, 2
+add $1, $1, $2
+ldb $8, $1[0]
+jmp @ret
+@29:
+@14:
+ld $8, 0
+@ret:
+ret
+
+/Keyboard/waitKey:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $9, $1
+@1:
+ld $1, $9
+jsr /Keyboard/getKey
+ld $1, $8
+beq $1, 0, @1
+ld $8, $1
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
+ret
+
+/Blitter:
+ret
+
+/Blitter_Pointer:
+ret
+
+/initializeGraphics:
+ld $1, -536870784
+ld $2, 66584576
+stw $2, $1[4]
+ld $2, 640
+sth $2, $1[8]
+ld $2, 1
+stw $2, $1[0]
+ld $2, 2
+stw $2, $1[0]
+ld $2, -536870784
+ld $3, 0
+sth $3, $2[4]
+ld $3, 0
+sth $3, $2[6]
+ld $3, 640
+sth $3, $2[8]
+ld $3, 480
+sth $3, $2[10]
+ld $3, 6
+stw $3, $2[0]
+sub $3, 0, 1
+sth $3, $2[4]
+ld $3, 7
+stw $3, $2[0]
+ld $2, -520093696
+stw $2, $1[4]
+ld $2, 8
+sth $2, $1[8]
+ld $2, 12
+sth $2, $1[10]
+ld $2, 1
+sth $2, $1[12]
+ld $2, 12
+sth $2, $1[14]
+ld $2, 8
+stw $2, $1[0]
+ret
+
+/drawPixel:
+blt $1, 0, @ret
+ld $4, 640
+bge $1, $4, @ret
+blt $2, 0, @ret
+ld $4, 480
+bge $2, $4, @ret
+ld $4, 66584576
+mul $2, $2, 640
+add $1, $2, $1
+add $1, $4, $1
+stb $3, $1[0]
+@ret:
+ret
+
+/abs:
+blt $1, 0, @5
+ld $8, $1
+jmp @ret
+@5:
+sub $8, 0, $1
+@ret:
+ret
+
+/drawLine:
+ld $6, -536870784
+sth $1, $6[4]
+sth $2, $6[6]
+sth $3, $6[8]
+sth $4, $6[10]
+sth $5, $6[12]
+jmp @3
+@1:
+@3:
+ldw $1, $6[0]
+beq $1, 0, @1
+ld $1, 10
+stw $1, $6[0]
+ret
+
+/fillRect:
+sub $3, $3, $1
+add $6, $3, 1
+sub $3, $4, $2
+add $4, $3, 1
+blt $6, 0, @ret
+blt $4, 0, @ret
+ld $3, -536870784
+sth $6, $3[4]
+sth $4, $3[6]
+sth $1, $3[8]
+sth $2, $3[10]
+sth $5, $3[12]
+jmp @8
+@6:
+@8:
+ldw $1, $3[0]
+beq $1, 0, @6
+ld $1, 3
+stw $1, $3[0]
+@ret:
+ret
+
+/drawString:
+sub $sp, 28
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $14, $sp[20]
+stw $30, $sp[24]
+ld $9, $1
+ld $10, $2
+ld $11, $3
+ld $12, $4
+ld $14, 0
+ldw $13, $11[-4]
+jmp @2
+@1:
+lsl $1, $14, 3
+add $1, $9, $1
+add $2, $11, $14
+ldb $3, $2[0]
+ld $2, $10
+ld $4, $12
+jsr /drawChar
+add $14, $14, 1
+@2:
+blt $14, $13, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $14, $sp[20]
+ldw $30, $sp[24]
+add $sp, 28
+ret
+
+/drawChar:
+ld $5, -536870784
+sub $3, $3, 32
+sth $3, $5[4]
+ld $3, 0
+sth $3, $5[6]
+sth $1, $5[8]
+sth $2, $5[10]
+sth $4, $5[12]
+sub $1, 0, 1
+sth $1, $5[14]
+jmp @3
+@1:
+@3:
+ldw $1, $5[0]
+beq $1, 0, @1
+ld $1, 9
+stw $1, $5[0]
+ret
+
+/drawCharBg:
+ld $6, -536870784
+sub $3, $3, 32
+sth $3, $6[4]
+ld $3, 0
+sth $3, $6[6]
+sth $1, $6[8]
+sth $2, $6[10]
+sth $4, $6[12]
+sth $5, $6[14]
+jmp @3
+@1:
+@3:
+ldw $1, $6[0]
+beq $1, 0, @1
+ld $1, 9
+stw $1, $6[0]
+ret
+
+/scrollScreen:
+ld $2, -536870784
+bge 0, $1, @5
+ld $3, 640
+sth $3, $2[4]
+ld $3, 480
+sub $3, $3, $1
+sth $3, $2[6]
+ld $3, 0
+sth $3, $2[8]
+ld $3, 0
+sth $3, $2[10]
+ld $3, 0
+sth $3, $2[12]
+sth $1, $2[14]
+jmp @9
+@7:
+@9:
+ldw $3, $2[0]
+beq $3, 0, @7
+ld $3, 4
+stw $3, $2[0]
+ld $3, 640
+sth $3, $2[4]
+sth $1, $2[6]
+ld $3, 480
+sub $1, $3, $1
+sth $1, $2[8]
+ld $1, 0
+sth $1, $2[10]
+ld $1, 0
+sth $1, $2[12]
+jmp @12
+@10:
+@12:
+ldw $1, $2[0]
+beq $1, 0, @10
+ld $1, 3
+stw $1, $2[0]
+jmp @1
+@5:
+ld $3, 640
+sth $3, $2[4]
+ld $3, 480
+sth $3, $2[6]
+ld $3, 640
+sth $3, $2[8]
+ld $3, 480
+sth $3, $2[10]
+ld $3, 640
+sth $3, $2[12]
+ld $3, 480
+add $3, $3, $1
+sth $3, $2[14]
+jmp @15
+@13:
+@15:
+ldw $3, $2[0]
+beq $3, 0, @13
+ld $3, 5
+stw $3, $2[0]
+ld $3, 640
+sth $3, $2[4]
+sub $1, 0, $1
+sth $1, $2[6]
+ld $1, 0
+sth $1, $2[8]
+ld $1, 0
+sth $1, $2[10]
+ld $1, 0
+sth $1, $2[12]
+jmp @18
+@16:
+@18:
+ldw $1, $2[0]
+beq $1, 0, @16
+ld $1, 3
+stw $1, $2[0]
+@1:
+ret
+
+/main:
+sub $sp, 28
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $13, $sp[16]
+stw $14, $sp[20]
+stw $30, $sp[24]
+jsr /initializeGraphics
+ld $1, 100
+ld $2, 200
+ld $3, 300
+ld $4, 250
+ld $5, 5
+jsr /fillRect
+ld $1, 100
+ld $2, 200
+ld $3, 300
+ld $4, 250
+ld $5, 50
+jsr /drawLine
+ld $1, 100
+ld $2, 150
+ld $3, 65
+ld $4, 50
+jsr /drawChar
+ld $3, _object5
+ld $1, 100
+ld $2, 300
+ld $4, 15
+jsr /drawString
+ld $10, 32
+ld $9, 127
+jmp @2
+@1:
+ld $1, 100
+and $2, $10, 31
+lsl $2, $2, 3
+add $1, $1, $2
+ld $2, 400
+ld $3, 12
+asr $4, $10, 5
+mul $3, $3, $4
+add $2, $2, $3
+ld $3, $10
+ld $4, $10
+jsr /drawChar
+add $10, $10, 1
+@2:
+blt $10, $9, @1
+ld $9, 0
+ld $10, 5
+jmp @4
+@3:
+ld $11, 0
+ld $12, 5
+jmp @6
+@5:
+ld $13, 0
+ld $14, 5
+jmp @8
+@7:
+mul $1, $9, 6
+add $1, $1, $11
+mul $1, $1, 17
+mul $2, $13, 17
+add $2, $2, 17
+add $3, $1, 15
+add $4, $2, 15
+ld $5, 16
+mul $6, $9, 36
+add $5, $5, $6
+mul $6, $11, 6
+add $5, $5, $6
+add $5, $5, $13
+jsr /fillRect
+add $13, $13, 1
+@8:
+bge $14, $13, @7
+add $11, $11, 1
+@6:
+bge $12, $11, @5
+add $9, $9, 1
+@4:
+bge $10, $9, @3
+ld $9, 0
+ld $10, 23
+jmp @10
+@9:
+mul $1, $9, 17
+ld $2, 6
+mul $2, $2, 17
+add $2, $2, 17
+add $3, $1, 15
+add $4, $2, 15
+ld $5, 232
+add $5, $5, $9
+jsr /fillRect
+add $9, $9, 1
+@10:
+bge $10, $9, @9
+ld $9, 0
+ld $10, 11
+jmp @12
+@11:
+add $1, $9, 24
+mul $1, $1, 17
+ld $2, 6
+mul $2, $2, 17
+add $2, $2, 17
+add $3, $1, 15
+add $4, $2, 15
+ld $5, $9
+jsr /fillRect
+add $9, $9, 1
+@12:
+bge $10, $9, @11
+ld $9, 0
+ld $10, 10
+jmp @14
+@13:
+ld $11, 0
+ld $12, 15
+jmp @16
+@15:
+ld $1, 1
+jsr /scrollScreen
+add $11, $11, 1
+@16:
+bge $12, $11, @15
+ld $11, 0
+ld $12, 15
+jmp @18
+@17:
+sub $1, 0, 1
+jsr /scrollScreen
+add $11, $11, 1
+@18:
+bge $12, $11, @17
+add $9, $9, 1
+@14:
+bge $10, $9, @13
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $13, $sp[16]
+ldw $14, $sp[20]
+ldw $30, $sp[24]
+add $sp, 28
+ret
+dcw 11
+_object0:
+dcw 0x25207825
+dcw 0x52462078
+dcw 0x000A4545
+dcw 8
+_object1:
+dcw 0x25207825
+dcw 0x73252078
+dcw 0x00000000
+dcw 6
+_object2:
+dcw 0x252A2820
+dcw 0x00002964
+dcw 1
+_object3:
+dcw 0x0000000A
+dcw 30
+_object4:
+dcw 0x25207825
+dcw 0x52452078
+dcw 0x3A524F52
+dcw 0x6B6E5520
+dcw 0x6E776F6E
+dcw 0x67616D20
+dcw 0x25206369
+dcw 0x00000A78
+dcw 12
+_object5:
+dcw 0x6C6C6548
+dcw 0x6F57206F
+dcw 0x21646C72
+dcw 0x00000000
+dcw 1024
+_object6:
+dcb 0,0,0,0
+dcb -19,-19,-19,-19
+dcb 0,0,0,0
+dcb -15,-15,-15,-15
+dcb -13,-13,-13,-13
+dcb -11,-11,-11,-11
+dcb -12,-12,-12,-12
+dcb -22,-22,-22,-22
+dcb 0,0,0,0
+dcb -20,-20,-20,-20
+dcb -18,-18,-18,-18
+dcb -16,-16,-16,-16
+dcb -14,-14,-14,-14
+dcb 9,9,9,9
+dcb 96,96,96,96
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 113,81,81,17
+dcb 49,33,49,49
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 122,90,90,26
+dcb 115,83,83,19
+dcb 97,65,65,1
+dcb 119,87,87,23
+dcb 50,34,50,34
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 99,67,67,3
+dcb 120,88,88,24
+dcb 100,68,68,4
+dcb 101,69,69,5
+dcb 52,36,52,52
+dcb 51,163,51,51
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 32,32,32,32
+dcb 118,86,86,22
+dcb 102,70,70,6
+dcb 116,84,84,20
+dcb 114,82,82,18
+dcb 53,37,53,53
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 110,78,78,14
+dcb 98,66,66,2
+dcb 104,72,72,8
+dcb 103,71,71,7
+dcb 121,89,89,26
+dcb 54,94,54,54
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 109,77,77,13
+dcb 106,74,74,10
+dcb 117,85,85,21
+dcb 55,38,55,55
+dcb 56,42,56,56
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 44,60,44,44
+dcb 107,75,75,11
+dcb 105,73,73,9
+dcb 111,79,79,15
+dcb 48,41,48,48
+dcb 57,40,57,57
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 46,62,46,46
+dcb 47,63,47,47
+dcb 108,76,76,12
+dcb 59,58,59,59
+dcb 112,80,80,16
+dcb 45,95,45,45
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 39,64,39,39
+dcb 0,0,0,0
+dcb 91,123,91,91
+dcb 61,43,61,61
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 10,10,10,10
+dcb 93,125,93,93
+dcb 0,0,0,0
+dcb 35,126,35,35
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 92,124,92,92
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 7,7,7,7
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 49,49,49,49
+dcb 0,0,0,0
+dcb 52,52,52,52
+dcb 55,55,55,55
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 48,48,48,48
+dcb 46,46,46,46
+dcb 50,50,50,50
+dcb 53,53,53,53
+dcb 54,54,54,54
+dcb 56,56,56,56
+dcb 27,27,27,27
+dcb -23,-23,-23,-23
+dcb -21,-21,-21,-21
+dcb 43,43,43,43
+dcb 51,51,51,51
+dcb 45,45,45,45
+dcb 42,42,42,42
+dcb 57,57,57,57
+dcb -24,-24,-24,-24
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb -17,-17,-17,-17
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 1,47,47,47
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 13,13,13,13
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb -6,-6,-6,-6
+dcb 0,0,0,0
+dcb -3,-3,-3,-3
+dcb -5,-5,-5,-5
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb -7,-7,-7,-7
+dcb -8,-8,-8,-8
+dcb -2,-2,-2,-2
+dcb 0,0,0,0
+dcb -4,-4,-4,-4
+dcb -1,-1,-1,-1
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb -10,-10,-10,-10
+dcb 0,0,0,0
+dcb -25,-25,-25,-25
+dcb -9,-9,-9,-9
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcw 6
+_object7:
+dcw 0x69727453
+dcw 0x0000676E
+dcw 13
+_object8:
+dcw 0x69727453
+dcw 0x7542676E
+dcw 0x65646C69
+dcw 0x00000072
+dcw 11
+_object9:
+dcw 0x61727241
+dcw 0x68433C79
+dcw 0x003E7261
+dcw 8
+_object10:
+dcw 0x61727241
+dcw 0x3E543C79
+dcw 0x00000000
+dcw 12
+_object11:
+dcw 0x7473694C
+dcw 0x7274533C
+dcw 0x3E676E69
+dcw 0x00000000

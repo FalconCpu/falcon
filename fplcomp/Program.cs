@@ -6,40 +6,48 @@ class Program {
 
         if (args.Length==0) {
             // Hack to be able to run debugger
-            args = ["c:\\users\\Simon\\falcon\\fplcomp\\example.fpl"];
+            //args = ["c:\\users\\Simon\\falcon\\fplcomp\\example.fpl"];
+            Console.Out.WriteLine("Usage: fplcomp <options> <files>");
+            return 0;
         }
 
         AstTop topLevel = new();
+        Console.Out.WriteLine("Parsing...");
 
+        try {
         for(int index=0; index<args.Length; index++) {
-            switch(args[index]) {
-                case "-stop_at_parse": 
-                    stopAt = 1;
-                    break;
+                switch(args[index]) {
+                    case "-stop_at_parse": 
+                        stopAt = 1;
+                        break;
 
-                case "-stop_at_typecheck":
-                    stopAt = 2;
-                    break;
+                    case "-stop_at_typecheck":
+                        stopAt = 2;
+                        break;
 
-                case "-stop_at_codegen":
-                    stopAt = 3;
-                    break;
+                    case "-stop_at_codegen":
+                        stopAt = 3;
+                        break;
 
-                case "-stop_at_backend":
-                    stopAt = 4;
-                    break;
+                    case "-stop_at_backend":
+                        stopAt = 4;
+                        break;
 
-                case "-o":
-                    index++;
-                    outputFilename = args[index];
-                    break;
+                    case "-o":
+                        index++;
+                        outputFilename = args[index];
+                        break;
 
-                default:
-                    Lexer lexer = new(args[index]);
-                    Parser parser = new(lexer);
-                    parser.Parse(topLevel);
-                    break;
+                    default:
+                        Lexer lexer = new(args[index]);
+                        Parser parser = new(lexer);
+                        parser.Parse(topLevel);
+                        break;
+                }
             }
+        } catch (FileNotFoundException e) {
+            Console.WriteLine($"File not found: {e.FileName}");
+            return 1;
         }
 
         if (Log.numErrors!=0) {

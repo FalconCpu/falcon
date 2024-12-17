@@ -4,12 +4,12 @@ module blit_text_addr(
     input clock,
     input stall,
 
-    input [25:0] p1_src_addr,
+    input [31:0] p1_src_addr,
     input [7:0]  p1_char,
     input [7:0]  p1_font_bpc,
     input        p1_textmode,
 
-    output reg [25:0]  p2_src_addr
+    output reg [31:0]  p2_src_addr
 );
 
 always @(posedge clock) begin

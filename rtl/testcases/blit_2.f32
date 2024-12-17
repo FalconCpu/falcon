@@ -79,23 +79,23 @@ sub $10,1
 bne $10, 0, wait_for_blitter
 
 
-# ld $11, 0xfffffff
-# delay:
-# sub $11,1
-# bne $11, 0, delay
+ld $11, 0xfffffff
+delay:
+sub $11,1
+bne $11, 0, delay
 
 
 # create a recognizable pattern
-ld $10, 0x3f80280
-ld $11, 0x03020100
-ld $12, 512
-ld $13, 0x04040404
-.loop:
-stw $11,$10[0]
-add $10,4
-add $11, $13
-sub $12,1
-bne $12, 0, .loop
+# ld $10, 0x3f80280
+# ld $11, 0x03020100
+# ld $12, 512
+# ld $13, 0x04040404
+# .loop:
+# stw $11,$10[0]
+# add $10,4
+# add $11, $13
+# sub $12,1
+# bne $12, 0, .loop
 
 
 # We have now drawn all the rectangles.
