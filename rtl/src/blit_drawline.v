@@ -35,7 +35,7 @@ always @(*) begin
     next_error = 16'hx;
 
     // The control logic will always set up x1, y1, x2, y2 at least one cycle before the start
-    // signal is asserted. This gives us time to calculate the slope before the start signal.
+    // signal is asserted. This gives us time to calculate the slope before we need to draw.
     // ie this next block of logic will have already been executed by the time the start signal is asserted
 
     dx = x2 - x1;               // Calculate the distance to move in each direction
@@ -64,7 +64,7 @@ always @(*) begin
         next_y     = 16'hx;
     end else if (start==1 && prev_start==0) begin
         // First time through the loop
-        next_error = minus_num_straight / 2;
+        next_error = {minus_num_straight[15],minus_num_straight[15:1]};
         next_x     = x1;
         next_y     = y1;
     end else begin
@@ -73,12 +73,12 @@ always @(*) begin
             done = 1'b1;
         end else begin
             if (steep || error>=0)
-                next_y = y + (sy ? -1 : 1);
+                next_y = y + (sy ? -16'd1 : 16'd1);
             else
                 next_y = y;
 
             if (!steep || error>=0)
-                next_x = x + (sx ? -1 : 1);
+                next_x = x + (sx ? -16'd1 : 16'd1);
             else    
                 next_x = x;
 

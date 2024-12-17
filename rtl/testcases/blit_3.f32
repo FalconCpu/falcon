@@ -61,6 +61,8 @@ ld $2, 12                   # font height
 sth $2, $1[BLIT_ARG2Y]
 ld $2, 1                    # font bytes per row
 sth $2, $1[BLIT_ARG3X]
+ld $2, 12                   # font bytes per char
+sth $2, $1[BLIT_ARG3Y]
 ld $2, BLIT_SET_FONT
 stw $2, $1[BLIT_CMD]
 

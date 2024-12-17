@@ -30,6 +30,9 @@ reg [15:0]      next_p2_rect_src_x;
 reg [15:0]      next_p2_rect_src_y;
 
 always @(*) begin
+    done = 1'b0;
+    next_x = x;
+    next_y = y;
     if (start==0) begin
         next_x = 16'h0;
         next_y = 16'h0;

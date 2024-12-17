@@ -70,6 +70,9 @@ wire [15:0]      p1_x2;
 wire [15:0]      p1_y2;
 wire [15:0]      p1_width;
 wire [15:0]      p1_height;
+wire [7:0]       p1_char;
+wire [7:0]       p1_font_bpc;
+wire             p1_textmode;
 wire             p1_run_line;
 wire             p2_run_line;
 wire             p1_run_rect;
@@ -77,6 +80,7 @@ wire             p2_run_rect;
 wire             p1_reversed;
 wire             p2_textmode;
 wire             p4_textmode;
+wire [25:0]      p1_src_addr;
 wire [25:0]      p2_src_addr;
 wire [15:0]      p2_src_bpr;
 wire [25:0]      p2_dest_addr;
@@ -135,7 +139,7 @@ assign debug_led[1] = stall;
 
 
 // general
-wire stall = read_stall || write_stall;
+wire stall = (read_stall || write_stall) & !reset;
 
 // ==================================================
 //                 Command Fifo
@@ -149,7 +153,7 @@ blit_cmd_fifo  blitter_cmd_fifo_inst (
     .blit_slots_free(blit_slots_free),
     .cmd(p0_cmd),
     .cmd_valid(p0_cmd_valid),
-    .cmd_next(cmd_next)
+    .cmd_next(cmd_next & !stall)
   );
 
 // ==================================================
@@ -159,6 +163,7 @@ blit_cmd_fifo  blitter_cmd_fifo_inst (
 blit_cmd  blit_cmd_inst (
     .clock(clock),
     .stall(stall),
+    .reset(reset),
     .p0_cmd(p0_cmd),
     .p0_cmd_valid(p0_cmd_valid),
     .cmd_next(cmd_next),
@@ -168,14 +173,17 @@ blit_cmd  blit_cmd_inst (
     .p1_y2(p1_y2),
     .p1_width(p1_width),
     .p1_height(p1_height),
+    .p1_char(p1_char),
+    .p1_font_bpc(p1_font_bpc),
     .p1_run_line(p1_run_line),
     .p2_run_line(p2_run_line),
     .p1_run_rect(p1_run_rect),
     .p2_run_rect(p2_run_rect),
     .p1_reversed(p1_reversed),
+    .p1_textmode(p1_textmode),
     .p2_textmode(p2_textmode),
     .p4_textmode(p4_textmode),
-    .p2_src_addr(p2_src_addr),
+    .p1_src_addr(p1_src_addr),
     .p2_src_bpr(p2_src_bpr),
     .p2_dest_addr(p2_dest_addr),
     .p2_dest_bpr(p2_dest_bpr),
@@ -232,6 +240,20 @@ blit_drawline  blit_drawline_inst (
     .x(p2_line_x),
     .y(p2_line_y),
     .done(line_done)
+  );
+
+// ==================================================
+//                Text Address Generator
+// ==================================================
+
+  blit_text_addr  blit_text_addr_inst (
+    .clock(clock),
+    .stall(stall),
+    .p1_src_addr(p1_src_addr),
+    .p1_char(p1_char),
+    .p1_font_bpc(p1_font_bpc),
+    .p1_textmode(p1_textmode),
+    .p2_src_addr(p2_src_addr)
   );
 
 // ==================================================
@@ -332,7 +354,7 @@ blit_combine  blit_combine_inst (
     .wr_address(p6_addr),
     .wr_byte_en(p6_byte_en),
     .wr_data(p6_data),
-    .wr_valid(p6_write),
+    .wr_valid(p6_write & !stall),
     .wr_full(write_stall),
     .rd_address(blitw_address),
     .rd_byte_en(blitw_byte_en),
@@ -346,11 +368,12 @@ blit_combine  blit_combine_inst (
 // ==================================================
 
   always @(posedge clock) begin
-    p4_dest_addr  <= p3_dest_addr;
-    p5_dest_addr  <= p4_dest_addr;
-    p4_src_bit    <= p3_src_bit;
-    p4_write_en   <= p3_write_en;
+    if (!stall) begin
+      p4_dest_addr  <= p3_dest_addr;
+      p5_dest_addr  <= p4_dest_addr;
+      p4_src_bit    <= p3_src_bit;
+      p4_write_en   <= p3_write_en;
+    end
   end
-
 
 endmodule

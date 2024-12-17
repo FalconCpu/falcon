@@ -24,7 +24,7 @@ module blit_cache (
 
 reg [31:0] data[7:0];
 reg [25:5] cache_address;
-reg        cache_valid;
+reg [7:0]  cache_valid;
 reg [1:0]  prev_addr_lsb;
 reg [31:0] cache_data;
 reg [2:0]  write_ptr;
@@ -35,7 +35,7 @@ assign read_data = (prev_addr_lsb == 2'b00) ? cache_data[7:0] :
                    (prev_addr_lsb == 2'b10) ? cache_data[23:16] :
                    (prev_addr_lsb == 2'b11) ? cache_data[31:24] : 8'hx;
 
-wire tag_match = cache_valid && cache_address[25:5] == read_address[25:5];
+wire tag_match = cache_valid[read_address[4:2]] && cache_address[25:5] == read_address[25:5];
 assign read_stall = !reset && read_request && !tag_match;
 
 always @(posedge clock) begin
@@ -48,6 +48,8 @@ always @(posedge clock) begin
     if (read_request && !tag_match && !prev_stall) begin
         mem_request <= 1'b1;
         mem_address <= {read_address[25:5], 5'b00000};
+        cache_address <= read_address[25:5];
+        cache_valid <= 8'b0;
         write_ptr <= 3'h0;
     end
 
@@ -57,13 +59,14 @@ always @(posedge clock) begin
 
     if (mem_valid) begin
         data[write_ptr] <= mem_data;
-       write_ptr <= write_ptr + 1'b1;
+        cache_valid[write_ptr] <= 1'b1;
+        write_ptr <= write_ptr + 1'b1;
     end
 
-    if (mem_complete) begin
-        cache_valid <= 1'b1;
-        cache_address <= mem_address[25:5];
-    end
+//     if (mem_complete) begin
+//         cache_valid <= 1'b1;
+//         cache_address <= mem_address[25:5];
+//     end
 
     if (reset) begin
         cache_valid <= 0;

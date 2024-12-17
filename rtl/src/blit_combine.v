@@ -31,7 +31,7 @@ always @(*) begin
         // Flush the buffer at the end of a blit
         out_write    = (out_byte_en!=4'h0);
         next_byte_en = 4'h0;
-        next_addr    = 26'hx;
+        next_addr    = 26'h0;
         next_data    = 32'hx;
 
     end else if (in_en) begin

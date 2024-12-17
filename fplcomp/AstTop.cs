@@ -23,6 +23,7 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
         AddSymbol(Location.unknown, new TypeSymbol("Int", IntType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Bool", BoolType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Char", CharType.Instance));
+        AddSymbol(Location.unknown, new TypeSymbol("Short", ShortType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("String", StringType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Real", RealType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Unit", UnitType.Instance));

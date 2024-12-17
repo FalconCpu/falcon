@@ -1,0 +1,52 @@
+
+`define INST_ALU  9'b010000xxx
+`define INST_ALUI 9'b010001xxx
+`define INST_LD   9'b010010xxx
+`define INST_ST   9'b010011xxx
+`define INST_BRA  9'b010100xxx
+`define INST_JMP  9'b010101xxx
+`define INST_JMPR 9'b010110xxx
+`define INST_LDU  9'b010111xxx
+`define INST_LDPC 9'b011000xxx
+`define INST_MULR 9'b011001xxx
+`define INST_MULI 9'b011010xxx
+`define INST_CFG  9'b011011xxx
+
+`define INST_AND   9'b010000000
+`define INST_OR    9'b010000001
+`define INST_XOR   9'b010000010
+`define INST_SHIFT 9'b010000011
+`define INST_ADD   9'b010000100
+`define INST_SUB   9'b010000101
+`define INST_CLT   9'b010000110
+`define INST_CLTU  9'b010000111
+`define INST_LDB   9'b010010000
+`define INST_LDH   9'b010010001
+`define INST_LDW   9'b010010010
+`define INST_STB   9'b010011000
+`define INST_STH   9'b010011001
+`define INST_STW   9'b010011010
+`define INST_BEQ   9'b010100000
+`define INST_BNE   9'b010100001
+`define INST_BLT   9'b010100010
+`define INST_BGE   9'b010100011
+`define INST_BLTU  9'b010100100
+`define INST_BGEU  9'b010100101
+`define INST_MUL   9'b011001000
+`define INST_DIVU  9'b011001100
+`define INST_DIVS  9'b011001101
+`define INST_MODU  9'b011001110
+`define INST_MODS  9'b011001111
+`define INST_CFGR  9'b011011000
+`define INST_CFGW  9'b011011001
+
+
+`define CAUSE_INSTRUCTION_ACCESS_FAULT 4'd1
+`define CAUSE_ILLEGAAL_INSTRUCTION     4'd2
+`define CAUSE_BREAKPOINT               4'd3
+`define CAUSE_MISALIGNED_LOAD          4'd4
+`define CAUSE_LOAD_ACCESS_FAULT        4'd5
+`define CAUSE_MISALIGNED_STORE         4'd6
+`define CAUSE_STORE_ACCESS_FAULT       4'd7
+`define CAUSE_ENVIRONMENT_CALL         4'd8
+

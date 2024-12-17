@@ -1,4 +1,4 @@
-ffff0150 forever
-ffff0078 copy_font_loop
-ffff0154 font
+ffff0158 forever
+ffff0080 copy_font_loop
+ffff015c font
 ffff0000 start

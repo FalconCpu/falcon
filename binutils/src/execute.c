@@ -227,7 +227,7 @@ static void write_memory_size(unsigned int addr, int value, int size) {
             break;
         case 1: 
             // Halfword
-            if (addr & 2)
+            if (addr & 1)
                 raise_exception(CAUSE_STORE_ADDRESS_MISALIGNED, addr);
             mask = 0xffff << shift;
             value = (value & 0xffff) << shift;
@@ -263,7 +263,7 @@ static int read_memory_size(unsigned int addr, int size) {
             break;
         case 1:
             // Halfword
-            if (addr & 2)
+            if (addr & 1)
                 raise_exception(CAUSE_LOAD_ADDRESS_MISALIGNED, addr);
             value = (value >> shift) & 0xffff;
             if (value & 0x8000)

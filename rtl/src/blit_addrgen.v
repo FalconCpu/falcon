@@ -37,7 +37,7 @@ always @(posedge clock) begin
     if (!stall) begin
         p3_src_addr  <= p2_src_addr  + {10'b0,src_x}  + p2_rect_src_y*p2_src_bpr;
         p3_dest_addr <= p2_dest_addr + {10'b0,dest_x} +   dest_y*p2_dest_bpr;
-        p3_src_bit <= p2_rect_src_x[2:0];
+        p3_src_bit   <= p2_rect_src_x[2:0];
 
         p3_write_en <= (p2_run_line || p2_run_rect) &&
                     (dest_x>=clip_x1) && (dest_x<clip_x2) &&

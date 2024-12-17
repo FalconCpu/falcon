@@ -2,6 +2,7 @@
 
 module blit_cmd(
     input clock,
+    input reset,
     input stall,
 
     input [103:0] p0_cmd,
@@ -14,18 +15,21 @@ module blit_cmd(
     output reg [15:0] p1_y2,
     output reg [15:0] p1_width,
     output reg [15:0] p1_height,
+    output reg [7:0]  p1_char,
     output reg        p1_run_line,
     output reg        p2_run_line,
     output reg        p1_run_rect,
     output reg        p2_run_rect,
     output reg        p1_reversed,
+    output reg        p1_textmode,
     output reg        p2_textmode,
+    output reg [7:0]  p1_font_bpc,
     output reg [15:0] p2_clip_x1,
     output reg [15:0] p2_clip_y1,
     output reg [15:0] p2_clip_x2,
     output reg [15:0] p2_clip_y2,
     output reg        p3_mem_read,
-    output reg [25:0] p2_src_addr,
+    output reg [25:0] p1_src_addr,
     output reg [15:0] p2_src_bpr,
     output reg [25:0] p2_dest_addr,
     output reg [15:0] p2_dest_bpr,
@@ -70,6 +74,7 @@ reg [25:0]      font_addr, next_font_addr;
 reg [4:0]       font_width, next_font_width;
 reg [4:0]       font_height, next_font_height;
 reg [4:0]       font_bpr, next_font_bpr;     // Font bytes per row
+reg [7:0]       font_bpc, next_font_bpc;     // Font bytes per character
 
 // ============================================
 //               Pipeline registers
@@ -82,16 +87,15 @@ reg [15:0] p0_x2;
 reg [15:0] p0_y2;
 reg [15:0] p0_width;
 reg [15:0] p0_height;
+reg [7:0]  p0_char;
 reg        p0_run_line;
 reg        p0_run_rect;
 reg        p0_reversed;
 reg        p0_textmode;
-reg        p1_textmode;
 reg        p3_textmode;
 reg        p0_mem_read;
 reg        p1_mem_read;
 reg        p2_mem_read;
-reg [25:0] p1_src_addr;
 reg [15:0] p1_src_bpr;
 reg [25:0] p1_dest_addr;
 reg [15:0] p1_dest_bpr;
@@ -131,6 +135,7 @@ always @(*) begin
     next_font_width  = font_width;
     next_font_height = font_height;
     next_font_bpr    = font_bpr;
+    next_font_bpc    = font_bpc;
     cmd_next = 1'b0;
 
     p0_width      = p0_cmd[15:0];
@@ -148,6 +153,7 @@ always @(*) begin
     p0_reversed   = 1'b0;
     p0_textmode   = 1'b0;
     p0_mem_read   = 1'b0;
+    p0_char       = 8'h0;
 
 
     if (! p0_cmd_valid) begin
@@ -181,6 +187,7 @@ always @(*) begin
             next_font_width = p0_x1[4:0];
             next_font_height = p0_y1[4:0];
             next_font_bpr = p0_x2[4:0];
+            next_font_bpc = p0_y2[4:0];
             cmd_next = 1'b1;
         end 
 
@@ -191,6 +198,9 @@ always @(*) begin
 
         BLIT_DRAW_LINE: begin
             p0_run_line = ! first_cycle;
+            p0_x2       = p0_cmd[15:0];
+            p0_y2       = p0_cmd[31:16];        
+            p0_fg_color = p0_cmd[72:64];
             cmd_next = line_done;            
         end
 
@@ -199,11 +209,23 @@ always @(*) begin
             p0_textmode = 1'b1;
             p0_fg_color = p0_cmd[72:64];
             p0_bg_color = p0_cmd[88:80];
-            cmd_next = rect_done;
+            p0_mem_read = 1'b1;
+            p0_width    = font_width;
+            p0_height   = font_height;
+            p0_char     = p0_cmd[7:0];
+            p0_x2       = 0;
+            p0_y2       = 0;
+            cmd_next    = rect_done;
         end
 
-        BLIT_COPY_RECT,
         BLIT_COPY_RECT_REVERSED: begin
+            p0_run_rect = ! first_cycle;
+            p0_mem_read = 1'b1;
+            p0_reversed = 1'b1;
+            cmd_next = rect_done;            
+        end
+
+        BLIT_COPY_RECT : begin
             p0_run_rect = ! first_cycle;
             p0_mem_read = 1'b1;
             cmd_next = rect_done;            
@@ -229,7 +251,7 @@ end
 
 always @(posedge clock) begin
     if (!stall) begin
-        first_cycle <= cmd_next;
+        first_cycle <= cmd_next | ! p0_cmd_valid;
         dest_addr   <= next_dest_addr;   
         dest_bpr    <= next_dest_bpr;
         src_addr    <= next_src_addr;
@@ -238,11 +260,12 @@ always @(posedge clock) begin
         clip_y1     <= next_clip_y1;
         clip_x2     <= next_clip_x2;
         clip_y2     <= next_clip_y2;
-        blit_trans_color <= next_blit_trans_color;
+        blit_trans_color <= reset ? -8'h1 : next_blit_trans_color;
         font_addr   <= next_font_addr;
         font_width  <= next_font_width;
         font_height <= next_font_height;
         font_bpr    <= next_font_bpr;
+        font_bpc    <= next_font_bpc;
 
         p1_x1       <= p0_x1;
         p1_y1       <= p0_y1;
@@ -250,30 +273,31 @@ always @(posedge clock) begin
         p1_y2       <= p0_y2;
         p1_width    <= p0_width;
         p1_height   <= p0_height;
-        p1_run_line <= p0_run_line;
-        p2_run_line <= p1_run_line;
+        p1_font_bpc <= font_bpc;
+        p1_char     <= p0_char;
+        p1_run_line <= p0_run_line && !line_done;
+        p2_run_line <= p1_run_line && !line_done;
         p1_run_rect <= p0_run_rect;
         p2_run_rect <= p1_run_rect;
-        p3_active   <= p2_run_line | p2_run_rect;
-        p4_active   <= p3_active;
-        p5_active   <= p4_active;
+        p3_active   <= (p2_run_line && !line_done) | (p2_run_rect && !rect_done) & !reset;
+        p4_active   <= p3_active & !reset;
+        p5_active   <= p4_active & !reset;
         p1_reversed <= p0_reversed;
         p1_textmode <= p0_textmode;
         p2_textmode <= p1_textmode;
         p3_textmode <= p2_textmode;
         p4_textmode <= p3_textmode;
-        p1_src_addr <= src_addr;
-        p1_src_bpr  <= src_bpr;
+        p1_src_addr <= p0_textmode ? font_addr : src_addr;
+        p1_src_bpr  <= p0_textmode ? font_bpr :src_bpr;
         p1_dest_addr<= dest_addr;
         p1_dest_bpr <= dest_bpr;
-        p2_src_addr <= p1_src_addr;
         p2_src_bpr  <= p1_src_bpr;
         p2_dest_addr<= p1_dest_addr;
         p2_dest_bpr <= p1_dest_bpr;
-        p1_mem_read <= p0_mem_read;
-        p2_mem_read <= p1_mem_read;
-        p3_mem_read <= p2_mem_read;
-        p4_mem_read <= p3_mem_read;
+        p1_mem_read <= p0_mem_read & !reset;
+        p2_mem_read <= p1_mem_read & !reset;
+        p3_mem_read <= p2_mem_read & !reset;
+        p4_mem_read <= p3_mem_read & !reset;
         p1_fg_color <= p0_fg_color;
         p2_fg_color <= p1_fg_color;
         p3_fg_color <= p2_fg_color;
@@ -290,6 +314,7 @@ always @(posedge clock) begin
         p2_clip_y1  <= clip_y1;
         p2_clip_x2  <= clip_x2;
         p2_clip_y2  <= clip_y2;
+        p1_font_bpc <= font_bpc;
     
     end
 end

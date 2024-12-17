@@ -20,8 +20,9 @@ BLIT_COPY_RECT          = 4  # destX:Short, destY:Short, width:Short, height:Sho
 BLIT_COPY_RECT_REVERSED = 5  # destX:Short, destY:Short, width:Short, height:Short, srcX:Short, srcY:Short
 BLIT_SET_CLIP_RECT      = 6  # x1:Short, y1:Short, x2:Short, y2:Short
 BLIT_SET_TRANS_COLOR    = 7  # color:Short
-
-
+BLIT_SET_FONT           = 8
+BLIT_DRAW_CHAR          = 9
+BLIT_DRAW_LINE          = 10
 
 
 BLIT_TRANSPARENT_COLOR  = 0xC4  
@@ -50,120 +51,36 @@ stw $2, $1[BLIT_CMD]
 ld $2, BLIT_SET_SRC_ADDR
 stw $2, $1[BLIT_CMD]
 
-# now draw a set of rectangles
+# now draw a set of lines
 ld $10, 255                    # $10 = counter of rectangles
 
 wait_for_blitter:
-ld $3, 1
-stw $3, $1[LEDR]
+ld $4, 4
 ldw $2, $1[BLIT_CMD]
-beq $2, 0, wait_for_blitter
-stw 0, $1[LEDR]
+blt $2, $4, wait_for_blitter
 
-and $2, $10, 0x0F             # $2 = X coordinate
-mul $2, 40                  
-and $3, $10, 0xF0             # $3 = Y coordinate
-lsr $3, $3, 4
-mul $3, 30
-
+ld $2, 320
+ld $3, 400
 sth $2, $1[BLIT_ARG2X]           # store the coordinates into the hwregs
 sth $3, $1[BLIT_ARG2Y]
-ld  $2,39
+lsl $2, $10, 1
+ld $3, 200
 sth $2, $1[BLIT_ARG1X]           # Store width and height
-ld  $3,29
 sth $3, $1[BLIT_ARG1Y]
 sth $10, $1[BLIT_ARG3X]
-ld $2, BLIT_FILL_RECT
+ld $2, BLIT_DRAW_LINE
 stw $2, $1[BLIT_CMD]
+
+ld $2, 320
+ld $3, 20
+sth $2, $1[BLIT_ARG2X]           # store the coordinates into the hwregs
+sth $3, $1[BLIT_ARG2Y]
+ld $2, BLIT_DRAW_LINE
+stw $2, $1[BLIT_CMD]
+
+
 sub $10,1
 bne $10, 0, wait_for_blitter
 
-
-# ld $11, 0xfffffff
-# delay:
-# sub $11,1
-# bne $11, 0, delay
-
-
-# create a recognizable pattern
-ld $10, 0x3f80280
-ld $11, 0x03020100
-ld $12, 512
-ld $13, 0x04040404
-.loop:
-stw $11,$10[0]
-add $10,4
-add $11, $13
-sub $12,1
-bne $12, 0, .loop
-
-
-# We have now drawn all the rectangles.
-# Scroll the screen
-scrollLoop:
-
-ld $10, 100
-
-wait_for_blitter2:
-ld $3, 2
-stw $3, $1[LEDR]
-ldw $2, $1[BLIT_CMD]
-beq $2, 0, wait_for_blitter2
-stw 0, $1[LEDR]
-
-ld $2, 640
-ld $3, 480
-sth $2, $1[BLIT_ARG1X]
-sth $3, $1[BLIT_ARG1Y]
-sth 0, $1[BLIT_ARG2X]
-sth 0, $1[BLIT_ARG2Y]
-ld $2,1
-sth 0,  $1[BLIT_ARG3X]
-sth $2, $1[BLIT_ARG3Y]
-ld $2, BLIT_COPY_RECT
-stw $2, $1[BLIT_CMD]
-
-stw $10, $1[SEVEN_SEG]
-sub $10,1
-bne $10, 0, wait_for_blitter2
-
-# now scroll down
-
-ld $10, 100
-
-
-wait_for_blitter3:
-ld $3, 4
-stw $3, $1[LEDR]
-ldw $2, $1[BLIT_CMD]
-beq $2, 0, wait_for_blitter3
-stw 0, $1[LEDR]
-
-stw $10, $1[SEVEN_SEG]
-
-# ld $7,0xFFFFFFF
-# delay:
-# sub $7,1
-# bne $7, 0, delay
-
-
-ld $2, 640  
-ld $3, 480
-stw $10, $1[SEVEN_SEG]
-sth $2, $1[BLIT_ARG1X]      # width and height
-sth $3, $1[BLIT_ARG1Y]
-sub $3, 1
-sth $2, $1[BLIT_ARG2X]       # destination coordinates    
-sth $3, $1[BLIT_ARG2Y]
-sub $3, 1
-sth $2, $1[BLIT_ARG3X]       # source coordinates    
-sth $3, $1[BLIT_ARG3Y]
-ld $2, BLIT_COPY_RECT_REVERSED
-stw $2, $1[BLIT_CMD]
-
-stw $10, $1[SEVEN_SEG]
-sub $10,1
-bne $10, 0, wait_for_blitter3
-
-jmp scrollLoop
-
+forever:
+jmp forever

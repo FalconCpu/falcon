@@ -22,6 +22,8 @@ abstract class Type (string name) {
         // Bit messy as I currently allow for both signed and unsigned bytes. 
         if (this is CharType && expr.HasKnownIntValue() && expr.GetKnownIntValue() is >=-128 and <=255 )
             return;
+        if (this is ShortType && expr.HasKnownIntValue() && expr.GetKnownIntValue() is >=-0x8000 and <=0x8000)
+            return;
 
         if (!IsAssignableFrom(expr.type))
             Log.Error(expr.location, $"Type {expr.type} is not assignable to {this}");
@@ -35,6 +37,7 @@ abstract class Type (string name) {
         return this switch {
             BoolType => 1,
             CharType => 1,
+            ShortType => 2,
             IntType => 4,
             StringType => 4,
             RealType => 8,
@@ -62,6 +65,12 @@ class CharType : Type {
     public static readonly CharType Instance = new();
     private CharType() : base("Char") {}
 }
+
+class ShortType : Type {
+    public static readonly ShortType Instance = new();
+    private ShortType() : base("Short") {}
+}
+
 
 class StringType : Type {
     public static readonly StringType Instance = new();
@@ -152,8 +161,7 @@ class FunctionType : Type {
 
     static readonly List<FunctionType> cache = [];
 
-
-    // FIXME - the code for generating names of variadic functions is not quite right -> is needs to be element of for the last element
+    // TODO - the code for generating names of variadic functions is not quite right -> is needs to be element of for the last element
     private FunctionType(Type returnType, List<Type> parameterTypes) 
     : base($"({string.Join(", ",parameterTypes)}) -> {returnType}>") {
         this.returnType = returnType;

@@ -64,9 +64,9 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
             return;
         }
 
-        // Do automatic type promotion of Char to Int
-        Type leftType = (left.type==CharType.Instance) ? IntType.Instance : left.type;
-        Type rightType = (right.type==CharType.Instance) ? IntType.Instance : right.type;
+        // Do automatic type promotion of Char/Short to Int
+        Type leftType = (left.type==CharType.Instance || left.type==ShortType.Instance) ? IntType.Instance : left.type;
+        Type rightType = (right.type==CharType.Instance || right.type==ShortType.Instance) ? IntType.Instance : right.type;
 
         foreach (var entry in binopTable) {
             if (entry.op == kind && entry.leftType.IsAssignableFrom(leftType) && entry.rightType.IsAssignableFrom(rightType)) {
