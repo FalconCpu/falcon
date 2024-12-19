@@ -21,3 +21,6 @@ testcase_outputs/
 idea/
 rtl/dump.vcd
 rtl/a.txt
+
+vos/asm.labels
+os/output.f32

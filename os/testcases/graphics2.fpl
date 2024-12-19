@@ -44,7 +44,7 @@ const ballSpriteData = new Array<Char> {
 
 fun main()
     initializeGraphics()
-    
+
     # this is a bit of a hack for now. The compiler is generating the array above in the ROM,
     # which is not accessible for the blitter. So we need to copy it to an array on the heap.
     val ballData =  new Array<Char>(32*32)
@@ -65,8 +65,7 @@ fun main()
     val backingStore = new BitmapImage(32,32,null)
     val screenImage = getScreenImage()  
 
-    for j = 1 to 2000
-
+    while true
         # draw the ball
         backingStore.copyFrom(screenImage, ballX-15, ballY-15)
         setTransparencyColor(0)
