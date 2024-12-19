@@ -1,106 +1,184 @@
 ﻿
-class Program {
-    static int Main(string[] args) {
-        int stopAt = 0;
-        string outputFilename = "out.f32";
+using System.Runtime.CompilerServices;
 
+class Program {
+    static List<string> files = [];
+    static string outputFilename = "output.f32";
+    static Boolean includeStdlib = true;
+    static Boolean includeOs = true;
+    static Boolean verbose = false;
+
+    static AstTop topLevel = new();
+
+    const int PHASE_PARSE = 1;
+    const int PHASE_TYPECHECK = 2;
+    const int PHASE_CODEGEN = 3;
+    const int PHASE_BACKEND = 4;
+    const int PHASE_ALL = 5;
+    static int stopAt = PHASE_ALL;
+
+    readonly static string   stdLibPath = "C:\\Users\\simon\\falcon\\fplcomp\\stdlib";
+    readonly static string   osLibPath   = "C:\\Users\\simon\\falcon\\os\\src";
+
+    static void parseArgs(string[] args) {
         if (args.Length==0) {
-            // Hack to be able to run debugger
-            //args = ["c:\\users\\Simon\\falcon\\fplcomp\\example.fpl"];
-            Console.Out.WriteLine("Usage: fplcomp <options> <files>");
-            return 0;
+            Log.Error("Usage: fplcomp <options> <files>");
+            return;
         }
 
-        AstTop topLevel = new();
-        Console.Out.WriteLine("Parsing...");
+        var index =0; 
+        while(index<args.Length) {
+            string arg = args[index++];
+            switch(arg) {
+                case "-stop_at_parse":
+                    stopAt = PHASE_PARSE;
+                    break;
 
-        try {
-        for(int index=0; index<args.Length; index++) {
-                switch(args[index]) {
-                    case "-stop_at_parse": 
-                        stopAt = 1;
-                        break;
+                case "-stop_at_typecheck":
+                    stopAt = PHASE_TYPECHECK;
+                    break;
 
-                    case "-stop_at_typecheck":
-                        stopAt = 2;
-                        break;
+                case "-stop_at_codegen":
+                    stopAt = PHASE_CODEGEN;
+                    break;
 
-                    case "-stop_at_codegen":
-                        stopAt = 3;
-                        break;
+                case "-stop_at_backend":
+                    stopAt = PHASE_BACKEND;
+                    break;
 
-                    case "-stop_at_backend":
-                        stopAt = 4;
-                        break;
+                case "-o":
+                    outputFilename = args[index++];
+                    break;
 
-                    case "-o":
-                        index++;
-                        outputFilename = args[index];
-                        break;
+                case "-no_stdlib":
+                    includeStdlib = false;
+                    break;
 
-                    default:
-                        Lexer lexer = new(args[index]);
-                        Parser parser = new(lexer);
-                        parser.Parse(topLevel);
-                        break;
+                case "-no_os":
+                    includeOs = false;
+                    break;
+
+                case "-v":
+                    verbose = true;
+                    break;
+
+                default:
+                    if (arg.StartsWith('-'))
+                        Console.Out.WriteLine($"Unknown option: {arg}");
+                    else
+                        files.Add(arg);
+                    break;
+            }
+        }
+    }
+
+    static List<string> GetFilesToCompile() {
+        List<string> ret = [];
+
+        // Get the memory allocator from OS if we are compiling for OS, else get it from the stdlib
+        if (includeOs)
+            ret.Add($"{osLibPath}\\Memory.fpl");
+        else if (includeStdlib)
+            ret.Add($"{stdLibPath}\\Memory.fpl");
+
+        if (includeOs) {
+            // Include the files from the OS
+            string lstFileName = $"{osLibPath}\\files.lst";
+            string[] filesList = File.ReadAllLines(lstFileName);
+            foreach (string file in filesList) {
+                if (!string.IsNullOrWhiteSpace(file)) {
+                    ret.Add($"{osLibPath}\\{file.Trim()}");
                 }
             }
-        } catch (FileNotFoundException e) {
-            Console.WriteLine($"File not found: {e.FileName}");
-            return 1;
         }
 
-        if (Log.numErrors!=0) {
-            Console.WriteLine($"Failed with {Log.numErrors} errors");
-            return Log.numErrors;
-        }
-            
-        if (stopAt==1) {
-            topLevel.Print(0);
-            return 0;
-        }
-
-        topLevel.TypeCheck(topLevel, new PathContext());
-
-        if (Log.numErrors!=0) {
-            Console.WriteLine($"Failed with {Log.numErrors} errors");
-            return Log.numErrors;
-        }
-        if (stopAt==2) {
-            topLevel.Print(0);
-            return 0;
+        if (includeStdlib) {
+            // Include the files from the OS
+            string lstFileName = $"{stdLibPath}\\files.lst";
+            string[] filesList = File.ReadAllLines(lstFileName);
+            foreach (string file in filesList) {
+                if (!string.IsNullOrWhiteSpace(file)) {
+                    ret.Add($"{stdLibPath}\\{file.Trim()}");
+                }
+            }
         }
 
-        foreach(AstFunction func in AstFunction.allFunctions)
-            func.CodeGen(func);
+        ret.AddRange(files);
+        return ret;
+    }
 
-        if (Log.numErrors!=0) {
-            Console.WriteLine($"Failed with {Log.numErrors} errors");
-            return Log.numErrors;
+    static void RunParser() {
+ 
+        foreach (string file in GetFilesToCompile()) {
+            try {
+                if (verbose)
+                    Console.Out.WriteLine($"Parsing {file}");
+                Lexer lexer = new(file);
+                Parser parser = new(lexer);
+                parser.Parse(topLevel);
+            } catch (FileNotFoundException e) {
+                Log.Error($"File not found: {e.FileName}");
+            }
         }
-        if (stopAt==3) {
-            topLevel.PrintCode();
-            return 0;
-        }
+    }
 
-        foreach(AstFunction func in AstFunction.allFunctions)
-            func.RunBackend();
-
-        if (Log.numErrors!=0) {
-            Console.WriteLine($"Failed with {Log.numErrors} errors");
-            return Log.numErrors;
-        }
-        if (stopAt==4) {
-            topLevel.PrintCode();
-            return 0;
-        }
-
-        OutputAssembly output = new( new StreamWriter("output.f32"));
+    static void GenerateAssembly() {
+        OutputAssembly output = new( new StreamWriter(outputFilename));
         foreach(AstFunction func in AstFunction.allFunctions)
             output.Output(func);
         foreach(ConstObjectSymbol cos in ConstObjectSymbol.allConstObjects)
             output.Output(cos);
         output.Close();
+    }
+
+    static int Main(string[] args) {
+        
+
+        // Parse the arguments
+        parseArgs(args);
+
+        // Run the compilation
+        for(int phase=1; phase<stopAt; phase++) {
+            switch(phase) {
+                case PHASE_PARSE: 
+                    RunParser();  
+                    break;
+
+                case PHASE_TYPECHECK: 
+                    topLevel.TypeCheck(topLevel, new PathContext());
+                    break;
+
+                case PHASE_CODEGEN: 
+                    foreach(AstFunction func in AstFunction.allFunctions)
+                        func.CodeGen(func);
+                    break;
+
+                case PHASE_BACKEND: 
+                    foreach(AstFunction func in AstFunction.allFunctions)
+                        func.RunBackend();
+                    break;
+
+                default:
+                    Log.Error($"Unknown phase {phase}");
+                    break;
+            }
+
+            if (Log.numErrors!=0) {
+                Console.WriteLine($"Failed with {Log.numErrors} errors");
+                return Log.numErrors;
+            }
+        }
+
+        // Output the result for the phase we stopped at
+        switch(stopAt) {
+            case PHASE_PARSE:     topLevel.Print(0);    break;
+            case PHASE_TYPECHECK: topLevel.Print(0);    break;
+            case PHASE_CODEGEN:   topLevel.PrintCode(); break;
+            case PHASE_BACKEND:   topLevel.PrintCode(); break;
+            case PHASE_ALL:       GenerateAssembly();   break;
+            default: Log.Error($"Unknown phase {stopAt}"); break;
+        }
+
         return 0;
     }
 }

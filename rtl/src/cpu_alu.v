@@ -54,8 +54,9 @@ reg [31:0] this_escratch, next_escratch;
 reg [3:0]  this_status,   next_status;
 reg [31:0] cfg_read;
 
-reg raise_misaligned_store;
-reg raise_misaligned_load;
+reg p3_misaligned_store, p4_misaligned_store;
+reg p3_misaligned_load, p4_misaligned_load;
+reg [31:0] p4_mem_address;
 
 reg  [31:0] p3_numerator, p4_numerator;
 reg  [31:0] p3_denominator, p4_denominator;
@@ -64,6 +65,7 @@ wire [31:0] p4_remainder;
 reg         p3_divide_sign, p4_divide_sign;
 wire        p4_divide_done;
 reg         p3_divide_start, p4_divide_start;
+
 
 
 assign cpu_request = p3_is_mem && !stall;
@@ -89,10 +91,8 @@ always @(*) begin
     next_edata = this_edata;
     next_estatus = this_estatus;
     next_escratch = this_escratch;
-    next_status = this_status;
-    raise_misaligned_load = 1'b0;
-    raise_misaligned_store = 1'b0;
-
+    next_status = this_status, p4_misaligned_store;;
+    p3_misaligned_load = 1'b0, p4_misaligned_load;;
     // config registers
     case(p3_data_b[12:0])
         13'd0: cfg_read = 32'h00000001;
@@ -184,18 +184,12 @@ always @(*) begin
             cpu_write = 1'b0;
         end  
 
-        `INST_LDH: begin 
-            raise_misaligned_load = mem_addr[0];
-            p3_is_mem = ! raise_misaligned_load;
-            cpu_address = mem_addr;
-            cpu_write = 1'b0; 
+        `INST_LDH: begin, p4_misaligned_store; 
+            p3_misaligned_load = mem_addr[0],, p4_misaligned_load; p4_misaligned_store;;
         end // TODO: Check align
 
-        `INST_LDW: begin 
-            raise_misaligned_load = mem_addr[1:0] != 2'b00;
-            p3_is_mem = ! raise_misaligned_load;
-            cpu_address = mem_addr;
-            cpu_write = 1'b0; 
+        `INST_LDW: begin, p4_misaligned_store; 
+            p3_misaligned_load = mem_addr[1:0, p4_misaligned_load;] != 2'b00, p4_misaligned_store;;
         end // TODO: Check align
 
         `INST_STB: begin 
@@ -218,8 +212,8 @@ always @(*) begin
             end
         
         `INST_STH: begin
-            raise_misaligned_store = mem_addr[0];
-            p3_is_mem = ! raise_misaligned_store;
+            p3_misaligned_store = mem_addr[0];
+            p3_is_mem = ! p3_misaligned_store;
             cpu_address = mem_addr;
             cpu_write = 1'b1;
             if (mem_addr[1:0] == 2'b00) begin
@@ -235,8 +229,8 @@ always @(*) begin
         end
 
         `INST_STW: begin
-            raise_misaligned_store = mem_addr[1:0] != 2'b00;
-            p3_is_mem = ! raise_misaligned_store;
+            p3_misaligned_store = mem_addr[1:0] != 2'b00;
+            p3_is_mem = ! p3_misaligned_store;
             cpu_address = mem_addr;
             if (mem_addr[1:0] == 2'b00) begin
                 cpu_write = 1'b1;
@@ -338,14 +332,14 @@ always @(*) begin
     endcase
 
     // Exception handling
-    if (raise_misaligned_load) begin
-        next_epc = p3_pc;
-        next_edata = cpu_address;
+    if (p4_misaligned_load) begin
+        next_epc = p4_pc;        
+        next_edata = p4_cpu_address;
         next_estatus = this_status;
         next_ecause = `CAUSE_MISALIGNED_LOAD;
         p3_jump = 1'b1;
         p3_jump_target = 32'hFFFF0004;
-    end else if (raise_misaligned_store) begin
+    end else if (p3_misaligned_store) begin
         next_epc = p3_pc;
         next_edata = cpu_address;
         next_estatus = this_status;
@@ -365,6 +359,9 @@ always @(posedge clock) begin
         p4_divide_sign <= p3_divide_sign;
         p4_divide_start <= p3_divide_start;
         p4_is_mem <= p3_is_mem;
+        p4_misaligned_load <= p3_misaligned_load;
+        p4_misaligned_store <= p3_misaligned_store;
+        p4_cpu_address <= cpu_address;
         this_epc <= next_epc;
         this_ecause <= next_ecause;
         this_edata <= next_edata;

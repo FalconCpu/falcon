@@ -68,8 +68,13 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
         // type checking up to this point -> throw an exception.
 
         if (thisSymbol.type is ClassType classType) {
-            if (! classType.fields.Contains(field))
+            classType.UpdateFieldsAndMethods();
+
+            if (! classType.generic.fields.Contains(field)) {
+                // Console.Out.WriteLine("fields:-");
+                // Console.Out.WriteLine(string.Join(",",classType.fields));
                 throw new ArgumentException($"Field '{field}' is not a member of class '{classType}'");
+            }
         } else if (thisSymbol.type is GenericClassType gClassType) {
             if (! gClassType.fields.Contains(field))
                 throw new ArgumentException($"Field '{field}' is not a member of class '{gClassType}'");

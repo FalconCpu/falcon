@@ -47,6 +47,7 @@ class SystemVariables
     var memfree : Int            # Total free memory
     var freeList : FreeMemChunk? # Pointer to first free block
     var screenImage : BitmapImage
+    var blitterOwner = (null:GraphicsContext?)
 
 const startOfHeap  = 0x00001000
 const endOfHeap    = 0x03f70000    # 64Mb - Screen - Stack

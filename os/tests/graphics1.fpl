@@ -1,8 +1,7 @@
+# simple testcase to display a few graphics primitives on the screen
 
 fun main()
     val gc = new GraphicsContext()
-
-    print ("Got here")
 
     gc.fillRect(100,200,300,250,5)
     gc.drawLine(100,200,300,250,50)
@@ -30,8 +29,8 @@ fun main()
         val y = 6*17 + 17
         gc.fillRect(x, y, x+15, y+15, g)
 
-    # for rept=0 to 10
-    #     for i=0 to 15
-    #         gc.scrollVertical(1)
-    #     for i=0 to 15
-    #         gc.scrollVertical(-1)
+    for rept=0 to 10
+        for i=0 to 15
+            gc.scrollVertical(1)
+        for i=0 to 15
+            gc.scrollVertical(-1)

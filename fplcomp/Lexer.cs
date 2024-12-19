@@ -74,7 +74,8 @@ class Lexer (string fileName) {
         {"print" , TokenKind.Print},
         {"rc",     TokenKind.Rc},
         {"when" , TokenKind.When},
-        {"delete", TokenKind.Delete}
+        {"delete", TokenKind.Delete},
+        {"@-",    TokenKind.EndOfFile},
     };
 
     private char NextChar() {
@@ -132,7 +133,8 @@ class Lexer (string fileName) {
              (c=='+' && lookahead=='=') ||
              (c=='-' && lookahead=='=') ||
              (c=='*' && lookahead=='=') ||
-             (c=='/' && lookahead=='=') )
+             (c=='/' && lookahead=='=') ||
+             (c=='@' && lookahead=='-'))
              return "" + c + NextChar();
         return "" + c;
     }
@@ -244,6 +246,8 @@ class Lexer (string fileName) {
 
         if (kind == TokenKind.Error)    
             Log.Error(location, $"Unexpected character '{lookahead}'");
+        if (kind == TokenKind.EndOfFile)
+            eof = true;
 
         atStartOfLine = (kind==TokenKind.EndOfLine) || (kind==TokenKind.Dedent);
         lineContinues = (kind>=TokenKind.Plus && kind<=TokenKind.OpenCl) || (kind==TokenKind.EndOfLine);

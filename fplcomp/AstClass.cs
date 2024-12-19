@@ -1,6 +1,7 @@
 
 class AstClass : AstFunction {
     public GenericClassType classType;
+    public ClassType instanceClassType;
 
     public AstClass(Location location, string name, List<AstIdentifier> astTypeParameters, List<AstParameter> astParams, AstBlock parent)
     : base(location, name, astParams, null, parent) {
@@ -15,9 +16,11 @@ class AstClass : AstFunction {
         }
 
         classType = new GenericClassType(name, this, typeParameters);
+        instanceClassType = ClassType.MakeClassType(classType, typeParameters.Select(it => it as Type).ToList());
         TypeSymbol symbol = new TypeSymbol(name, classType);
         parent.AddSymbol(location, symbol);
-        thisSymbol = new VariableSymbol("this", classType, false, false);
+
+        thisSymbol = new VariableSymbol("this", instanceClassType, false, false);
         AddSymbol(location, thisSymbol);
     }
 

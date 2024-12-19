@@ -6,6 +6,7 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
     public readonly List<AstParameter> astParameters = astParameters;
     public readonly AstType? astReturnType = astReturnType;
     public readonly GenericClassType? methodOf = (parent is AstClass classAst) ? classAst.classType : null;
+    public readonly ClassType? instanceOf = (parent is AstClass classAst) ? classAst.instanceClassType : null;
     public readonly string qualifiedName = (parent==null || parent is AstTop) ? $"/{name}" : $"{((AstFunction)parent).qualifiedName}/{name}";
     public static readonly List<AstFunction> allFunctions = [];
 
@@ -57,8 +58,8 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
             AddSymbol(astParameters[i].location, sym);
         }
 
-        if (methodOf!=null) {
-            thisSymbol = new VariableSymbol("this", methodOf, false, false);
+        if (instanceOf!=null) {
+            thisSymbol = new VariableSymbol("this", instanceOf, false, false);
             AddSymbol(location, thisSymbol);
         }
 

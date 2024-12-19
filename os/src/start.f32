@@ -34,6 +34,13 @@ SYSREGS_END_HEAP   = 0x104
 ERR_OK             = 0x0000
 ERR_OUT_OF_MEMORY  = 0x1000
 
+# ############################################################
+#                        Reset vectors
+# ############################################################
+
+ResetAddress: jmp Boot
+ExceptionAddress: jmp ExceptionHandler
+
 
 
 # ############################################################
@@ -41,7 +48,7 @@ ERR_OUT_OF_MEMORY  = 0x1000
 # ############################################################
 
 Boot:
-    ld $sp, VGA_BASE              # Initialize the stack pointer
+    ld $sp, 0x04000000            # Initialize the stack pointer
 
     ld $1, HWREG_BASE
     stw 0, $1[HWREG_7SEG]         # Turn off the 7-segment display
@@ -146,7 +153,54 @@ _success:
     bne $3, 0, .not_aligned
     ret
 
+# ############################################################
+#                      Exception Handler
+# ############################################################
+# Copy the contents of all the registers into a task control 
+# block, setup the supervisor stack and jump to the fpl coded
+# exception handler.
 
+ExceptionHandler:
+    cfg $29, !escratch, $29     # Get the task control block into $29
+    stw $1, $29[4]              # save all the registers into the tcb
+    stw $2, $29[8]
+    stw $3, $29[12]
+    stw $4, $29[16]
+    stw $5, $29[20]
+    stw $6, $29[24]
+    stw $7, $29[28]
+    stw $8, $29[32]
+    stw $9, $29[36]
+    stw $10, $29[40]
+    stw $11, $29[44]
+    stw $12, $29[48]
+    stw $13, $29[52]
+    stw $14, $29[56]
+    stw $15, $29[60]
+    stw $16, $29[64]
+    stw $17, $29[68]
+    stw $18, $29[72]
+    stw $19, $29[76]
+    stw $20, $29[80]
+    stw $21, $29[84]
+    stw $22, $29[88]
+    stw $23, $29[92]
+    stw $24, $29[96]
+    stw $25, $29[100]
+    stw $26, $29[104]
+    stw $27, $29[108]
+    stw $28, $29[112]
+    stw $30, $29[120]
+    stw $sp, $29[124]
+    cfg $1, !escratch             # Get the user's $29 back out of the scratch register
+    stw $1, $29[116]
+    ld $sp, 0x04000000            # Setup the supervisor stack
+
+    cfg $1, !epc                  # Get the exception PC
+    stw $1, $29[0]                # Store the exception PC into the tcb
+    cfg $1, !ecause               # Get the exception cause as argument1
+    ld $2, $29                    # pass the tcb as argument 2
+    jmp /ExceptionHandler
 
 # ############################################################
 #                         print

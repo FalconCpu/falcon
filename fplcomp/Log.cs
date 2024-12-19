@@ -7,4 +7,10 @@ static class Log {
         numErrors++;
     }
 
+    public static void Error(string message) {
+        Console.WriteLine(message);
+        numErrors++;
+    }
+
+
 }

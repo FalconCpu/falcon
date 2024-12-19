@@ -52,7 +52,7 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         }
 
         for (int i = 0; i < astArgs.Count; i++)
-            if (!parameterTypes[i].IsAssignableFrom(astArgs[i].type))
+            if (!parameterTypes[i].IsAssignableFrom(astArgs[i]))
                 Log.Error(location, $"Expected argument {i+1} to be type {parameterTypes[i]}, got {astArgs[i].type}");
     }
 

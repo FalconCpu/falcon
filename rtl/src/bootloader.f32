@@ -6,11 +6,13 @@ HWREG_KEY       = 12      #  4 Push buttons
 HWREG_UART_TX   = 16      # Write = byte of data to transmit, read = uart tx busy
 HWREG_UART_RX   = 20      # Byte of data from the uart, -1 if no data
 
+
 #
 # Do a RAM self test before loading the boot code.
 #
 
 start:
+
     ld $10, HWREG_BASE             # HW regs base
     ld $1, 0x00000000              # SDRAM base
     ld $2, 0                       # Counter/pattern

@@ -18,7 +18,7 @@ def run_test(test_name: str):
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
     #stdlib = " stdlib/graphics.fpl stdlib/keyboard.fpl stdlib/StringBuilder.fpl stdlib/Memory.fpl stdlib/List.fpl stdlib/String.fpl stdlib/Hardware.fpl stdlib/FileSystem.fpl "
-    stdlib = "  stdlib/Memory.fpl stdlib/StringBuilder.fpl stdlib/List.fpl stdlib/String.fpl"
+    #stdlib = "  stdlib/Memory.fpl stdlib/StringBuilder.fpl stdlib/List.fpl stdlib/String.fpl"
 
     # Split the source file into the executable and expected sections
     expected_output = []
@@ -33,7 +33,7 @@ def run_test(test_name: str):
             else:
                 src.write(line)
 
-    command = f".\\bin\\Debug\\net8.0\\fplcomp.exe {stdlib} {srcname} > {outname}"
+    command = f"fplcomp.exe -no_os {srcname} > {outname}"
     err = os.system(command)
 
     if err==0:

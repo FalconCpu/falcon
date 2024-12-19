@@ -17,15 +17,18 @@ abstract class Type (string name) {
         ;
     }
 
-    public void CheckAssignableFrom(AstExpression expr) {
-        // Special case -> allow integer expressions to be assigned to char, if can be proved within range at compile time.
+    public bool IsAssignableFrom(AstExpression expr) {
+        // Special case -> allow integer expressions to be assigned to char/short, if can be proved within range at compile time.
         // Bit messy as I currently allow for both signed and unsigned bytes. 
         if (this is CharType && expr.HasKnownIntValue() && expr.GetKnownIntValue() is >=-128 and <=255 )
-            return;
+            return true;
         if (this is ShortType && expr.HasKnownIntValue() && expr.GetKnownIntValue() is >=-0x8000 and <=0x8000)
-            return;
+            return true;
+        return IsAssignableFrom(expr.type);
+    }
 
-        if (!IsAssignableFrom(expr.type))
+    public void CheckAssignableFrom(AstExpression expr) {
+        if (!IsAssignableFrom(expr))
             Log.Error(expr.location, $"Type {expr.type} is not assignable to {this}");
     }
 
@@ -242,7 +245,7 @@ class ClassType : Type {
 
     private readonly static List<ClassType> cache = [];
     private ClassType(GenericClassType generic, List<Type> typeArguments) 
-    : base(typeArguments.Count==0 ? generic.name : $"{generic.name}<{string.Join(", ", typeArguments)}>") 
+    : base(typeArguments.Count==0 ? $"{generic.name}" : $"{generic.name}<{string.Join(", ", typeArguments)}>") 
     {
         this.generic = generic;
         this.typeArguments = typeArguments;
@@ -255,7 +258,7 @@ class ClassType : Type {
             typeMap[generic.typeParameters[i]] = typeArguments[i];
     }
 
-    public static Type MakeClassType(GenericClassType generic, List<Type> typeArguments) {
+    public static ClassType MakeClassType(GenericClassType generic, List<Type> typeArguments) {
         foreach (ClassType t in cache)
             if (t.generic == generic && t.typeArguments.SequenceEqual(typeArguments))
                 return t;
@@ -291,7 +294,7 @@ class ClassType : Type {
         return generic.size;
     }
 
-    private void UpdateFieldsAndMethods() {
+    public void UpdateFieldsAndMethods() {
         // It is possible that some fields or methods have been added to the generic class
         // since the class type was created. So we need to update the fields and methods
         if (generic.fields.Count == fields.Count && generic.methods.Count == methods.Count) 

@@ -89,6 +89,8 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
             // allow T? = null checks
             if (leftType  is NullableType && rightType is NullType)   return;
             if (rightType is NullableType && leftType  is NullType)   return;
+            if (leftType is NullableType nlt && rightType.IsAssignableFrom(nlt.elementType)) return;
+            if (rightType is NullableType nrt && rightType.IsAssignableFrom(nrt.elementType)) return;
 
             // allow comparisons between type Pointer and any reference type
             if (leftType is PointerType && rightIsReferenceType)      return;

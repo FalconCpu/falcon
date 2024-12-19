@@ -95,8 +95,8 @@ always @(*) begin
                 next_error = error + num_diagonal;
             else
                 next_error = error + minus_num_straight;
-            end
-        next_write_enable = 1'b1;
+            next_write_enable = 1'b1;
+        end
     end
 end 
 

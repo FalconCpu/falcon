@@ -1,0 +1,9 @@
+# test that we get an exception when we try to load a misaligned pointer
+
+fun main() 
+    val a = (0x00000023:Array<Int>)   # misaligned
+    print("a[0] = %d\n", a[0])        # should throw an exception
+    print("Should not get here\n")
+
+@------------------
+

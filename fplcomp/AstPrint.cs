@@ -21,7 +21,7 @@ class AstPrint(Location location, List<AstExpression> args) : AstStatement(locat
         }
 
         // Check the first argument is a the format string
-        StringType.Instance.IsAssignableFrom(args[0].type);
+        StringType.Instance.IsAssignableFrom(args[0]);
 
         if (args.Count > 4)
             Log.Error(location, "Currently print only supports a max of 3 arguments");

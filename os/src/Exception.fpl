@@ -1,0 +1,14 @@
+
+const EXCEPTION_INSTRUCTION_ACCESS_FAULT = 1
+const EXCEPTION_ILLEGAAL_INSTRUCTION     = 2
+const EXCEPTION_BREAKPOINT               = 3
+const EXCEPTION_MISALIGNED_LOAD          = 4
+const EXCEPTION_LOAD_ACCESS_FAULT        = 5
+const EXCEPTION_MISALIGNED_STORE         = 6
+const EXCEPTION_STORE_ACCESS_FAULT       = 7
+const EXCEPTION_ENVIRONMENT_CALL         = 8
+
+fun ExceptionHandler(cause:Int, tcb:Array<Int>)
+    print("Exception %d\n", cause)
+    abort(cause)
+

@@ -17,8 +17,6 @@ def run_test(test_name: str):
     outname = f"testcase_outputs/{basename}.out"
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
-    stdlib = "  src/Memory.fpl ../fplcomp/stdlib/StringBuilder.fpl ../fplcomp/stdlib/List.fpl ../fplcomp/stdlib/String.fpl"
-    osfiles = " src/Hardware.fpl src/FileSystem.fpl src/keyboard.fpl src/graphics.fpl "
 
     # Split the source file into the executable and expected sections
     expected_output = []
@@ -33,7 +31,7 @@ def run_test(test_name: str):
             else:
                 src.write(line)
 
-    command = f"fplcomp.exe {stdlib} {osfiles} {srcname} > {outname}"
+    command = f"fplcomp.exe {srcname} > {outname}"
     err = os.system(command)
     if err!=0:
         print(f"%-30s {RED}FAIL-COMPILE{DEFAULT}"%basename)
