@@ -21,7 +21,8 @@ module vga_output (
 
     // Mouse
     input [9:0]         mouse_x,
-    input [9:0]         mouse_y
+    input [9:0]         mouse_y,
+    output [9:0]        vga_ypos
 );
 
 // Clock divider for 25MHz
@@ -66,6 +67,8 @@ reg [23:0] pixel_color;
 // Mouse cursor
 wire [9:0] sprite_x = h_count - mouse_x;
 wire [9:0] sprite_y = v_count - mouse_y;
+
+assign  vga_ypos = v_count;
 
 reg [15:0] mouse_image[15:0];
 initial begin

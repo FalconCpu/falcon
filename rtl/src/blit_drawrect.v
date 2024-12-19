@@ -3,21 +3,23 @@
 module blit_drawrect (
     input               clock,
     input               reset,
-    input               stall,
+    input               stall,      // Freeze the pipeline 
+    input               pause,      // Pause the pipeline
    
-    input               start,
-    input               reversed,
+    input               start,      // Start a new blit
+    input               reversed,   // Draw the rectangle reversed
     input [15:0]        width,
     input [15:0]        height,
-    input [15:0]        p1_x1,
+    input [15:0]        p1_x1,      // Coordinates on the destination
     input [15:0]        p1_y1,
-    input [15:0]        p1_x2,
+    input [15:0]        p1_x2,      // Coordinates on the source
     input [15:0]        p1_y2,
 
     output reg [15:0]   p2_rect_dest_x,
     output reg [15:0]   p2_rect_dest_y,
     output reg [15:0]   p2_rect_src_x,
     output reg [15:0]   p2_rect_src_y,
+    output reg          p2_write_enable,
     output reg          done
 );
 
@@ -28,16 +30,23 @@ reg [15:0]      next_p2_rect_dest_x;
 reg [15:0]      next_p2_rect_dest_y;
 reg [15:0]      next_p2_rect_src_x;
 reg [15:0]      next_p2_rect_src_y;
+reg             next_write_enable;
 
 always @(*) begin
     done = 1'b0;
     next_x = x;
     next_y = y;
+    next_write_enable = 1'b0;
+
     if (start==0) begin
         next_x = 16'h0;
         next_y = 16'h0;
+    end else if (pause) begin
+        next_x = x;
+        next_y = y;
     end else begin
-        next_x = next_x + 16'h1;
+        next_write_enable = 1'b1;           // Due to pipeline - this corresponds to writing the pixel currently at x,y
+        next_x = next_x + 1'b1; 
         if (next_x == width) begin
             next_x = 16'h0;
             next_y = next_y + 16'h1;
@@ -69,6 +78,7 @@ always @(posedge clock) begin
         p2_rect_dest_y <= next_p2_rect_dest_y;
         p2_rect_src_x  <= next_p2_rect_src_x;
         p2_rect_src_y  <= next_p2_rect_src_y;
+        p2_write_enable<= next_write_enable;
     end
 end
 endmodule

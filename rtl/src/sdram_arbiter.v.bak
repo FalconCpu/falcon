@@ -79,6 +79,9 @@ assign blitr_rdata    = blitr_valid ? sdram_rdata : 32'bx;
 assign blitr_ack      = sdram_ready && next_master==4'h4;
 
 assign sdram_master = this_master;
+
+initial 
+    debug = 256'hbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;
 reg prev_match;
 
 always @(*) begin
@@ -101,6 +104,14 @@ end
 reg match;
 always @(posedge clock) begin
     this_master <= next_master;
+
+    match = sdram_address == 26'h3F85798 && sdram_request;
+    if (match && !prev_match) begin
+        debug[191:0] <= debug[255:192];
+        debug[255:192] <= {sdram_master, 3'b0, sdram_write, sdram_byte_en, sdram_wdata};
+    end
+
+    prev_match <= match;
 
     if (reset || sdram_ready) begin
         sdram_request <= next_master != 4'b0;

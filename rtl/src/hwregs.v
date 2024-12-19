@@ -15,7 +15,19 @@
 // E000001C  MOUSE_Y        R    10 bit mouse y position
 // E0000020  MOUSE_BTN      R    3 bit mouse buttons
 // E0000024  KEYBOARD       R    Scan codes from the keyboard, -1 if no data
+// E0000028  VGA_YPOS       R    10 bit y position of the VGA display
 // E0000030  SIM_MODE       R    1 if in simulation mode, 0 if in hardware
+// E0000034
+// E0000038
+// E000003C
+// E0000040  DEBUG0         R
+// E0000044  DEBUG1         R
+// E0000048  DEBUG2         R
+// E000004C  DEBUG3         R
+// E0000050  DEBUG4         R
+// E0000054  DEBUG5         R
+// E0000058  DEBUG6         R
+// E000005C  DEBUG7         R
 // E0000080  BLIT_CMD       R/W  BLit command
 // E0000084  BLIT_ARG1      R/W  Blitter Arguments
 // E0000088  BLIT_ARG2      R/W  
@@ -49,6 +61,7 @@ module  hwregs(
     input [9:0]      mouse_x,
     input [9:0]      mouse_y,
     input [2:0]      mouse_buttons,
+    input [9:0]      vga_ypos,
 
     input [7:0]      keyboard_code,
     input            keyboard_strobe,
@@ -56,7 +69,8 @@ module  hwregs(
     // connections to the blitter
     output [103:0]     blit_cmd,        // Blitter command - see above for list of commands
     output reg         blit_start,
-    input [7:0]        blit_slots_free
+    input [7:0]        blit_slots_free,
+    input [255:0]      debug
 );
 
 reg uart_rx_read;                   // Set to indicate we have read a byte from the uart
@@ -145,6 +159,8 @@ always @(posedge clock) begin
                 end else
                     rdata <= -1;
                 end 
+                
+            16'h0028: rdata <= {22'h0, vga_ypos};
             
             16'h0030:  begin 
                 // Simulation mode flag. Reads as 1 in simulation, 0 in hardware
@@ -153,6 +169,15 @@ always @(posedge clock) begin
                 rdata <= 32'h1;
                 // synthesis translate_on
             end
+
+            16'h0040: rdata <= debug[31:0];
+            16'h0044: rdata <= debug[63:32];
+            16'h0048: rdata <= debug[95:64];
+            16'h004C: rdata <= debug[127:96];
+            16'h0050: rdata <= debug[159:128];
+            16'h0054: rdata <= debug[191:160];
+            16'h0058: rdata <= debug[223:192];
+            16'h005c: rdata <= debug[255:224];
 
             16'h0080: rdata <= blit_slots_free;
             16'h0084: rdata <= blit_arg1;

@@ -32,7 +32,7 @@ end
 
 always @(posedge clock) begin
     if (!stall) begin
-        wr_data   <= color[7:0];
+        wr_data   <= wr ? color[7:0] : 8'bx;
         wr_enable <= wr;
     end
 end

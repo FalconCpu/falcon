@@ -17,18 +17,16 @@ module blit_cmd(
     output reg [15:0] p1_height,
     output reg [7:0]  p1_char,
     output reg        p1_run_line,
-    output reg        p2_run_line,
     output reg        p1_run_rect,
-    output reg        p2_run_rect,
     output reg        p1_reversed,
     output reg        p1_textmode,
     output reg        p2_textmode,
+    output reg        p2_mem_read,
     output reg [7:0]  p1_font_bpc,
     output reg [15:0] p2_clip_x1,
     output reg [15:0] p2_clip_y1,
     output reg [15:0] p2_clip_x2,
     output reg [15:0] p2_clip_y2,
-    output reg        p3_mem_read,
     output reg [31:0] p1_src_addr,
     output reg [15:0] p2_src_bpr,
     output reg [25:0] p2_dest_addr,
@@ -37,7 +35,6 @@ module blit_cmd(
     output reg [8:0]  p4_bg_color,
     output reg [8:0]  p4_trans_color,
     output reg        p4_textmode,
-    output reg        p4_mem_read,
     output reg        p5_active,
 
     input             line_done,
@@ -95,7 +92,6 @@ reg        p0_textmode;
 reg        p3_textmode;
 reg        p0_mem_read;
 reg        p1_mem_read;
-reg        p2_mem_read;
 reg [15:0] p1_src_bpr;
 reg [25:0] p1_dest_addr;
 reg [15:0] p1_dest_bpr;
@@ -104,6 +100,7 @@ reg [8:0]  p0_bg_color,p1_bg_color,p2_bg_color,p3_bg_color;
 reg [8:0]  p1_trans_color;
 reg [8:0]  p2_trans_color;
 reg [8:0]  p3_trans_color;
+reg        p2_active;
 reg        p3_active;
 reg        p4_active;
 
@@ -276,12 +273,11 @@ always @(posedge clock) begin
         p1_font_bpc <= font_bpc;
         p1_char     <= p0_char;
         p1_run_line <= p0_run_line && !line_done;
-        p2_run_line <= p1_run_line && !line_done;
-        p1_run_rect <= p0_run_rect;
-        p2_run_rect <= p1_run_rect;
-        p3_active   <= (p2_run_line && !line_done) | (p2_run_rect) & !reset;
-        p4_active   <= p3_active & !reset;
-        p5_active   <= p4_active & !reset;
+        p1_run_rect <= p0_run_rect && !rect_done;
+        p2_active   <= p1_run_line | p1_run_rect;
+        p3_active   <= p2_active;
+        p4_active   <= p3_active;
+        p5_active   <= p4_active;
         p1_reversed <= p0_reversed;
         p1_textmode <= p0_textmode;
         p2_textmode <= p1_textmode;
@@ -295,9 +291,7 @@ always @(posedge clock) begin
         p2_dest_addr<= p1_dest_addr;
         p2_dest_bpr <= p1_dest_bpr;
         p1_mem_read <= p0_mem_read & !reset;
-        p2_mem_read <= p1_mem_read & !reset;
-        p3_mem_read <= p2_mem_read & !reset;
-        p4_mem_read <= p3_mem_read & !reset;
+        p2_mem_read <= p1_mem_read && !reset;
         p1_fg_color <= p0_fg_color;
         p2_fg_color <= p1_fg_color;
         p3_fg_color <= p2_fg_color;

@@ -46,6 +46,7 @@ const ERR_OUT_OF_BOUNDS = 0x1003
 class SystemVariables
     var memfree : Int            # Total free memory
     var freeList : FreeMemChunk? # Pointer to first free block
+    var screenImage : BitmapImage
 
 const startOfHeap  = 0x00001000
 const endOfHeap    = 0x03f70000    # 64Mb - Screen - Stack
@@ -170,17 +171,17 @@ fun malloc(size:Int, desc:String) -> Pointer
     chunkA.size = roundedSize
     chunkA.descriptor = desc
     chunkA.refcount = 1
-    # print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
+    print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
     return ((chunk:Int)+16:Pointer)
 
 # ######################################################
 #                     free
 # ######################################################
 fun free(ptr:Pointer) 
-    # print("Free %x\n",ptr)
     if ptr=null
         return
     val chunk = ((ptr:Int)-16:FreeMemChunk)
+    print("Free %x %d\n",ptr, chunk.size)
     if chunk.magic = MAGIC_ALLOCATED
         addChunkToFreeList((chunk:FreeMemChunk), chunk.size)
     elsif chunk.magic = MAGIC_FREE

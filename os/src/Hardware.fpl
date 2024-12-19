@@ -11,8 +11,21 @@ class HwRegs
     var mouse_y   : Int #  R    10 bit mouse y position
     var mouse_btn : Int #  R    3 bit mouse buttons
     var keyboard  : Int #  R    Scan codes from the keyboard, -1 if no data
+    val vga_ypos  : Int #  R    10 bit vga y position
+    val reserved0 : Int
     var sim_mode  : Int #  R    1 if in simulation mode, 0 if in hardware
- 
+    val reserved1 : Int
+    val reserved2 : Int
+    val reserved3 : Int
+    val debug0    : Int
+    val debug1    : Int
+    val debug2    : Int
+    val debug3    : Int
+    val debug4    : Int
+    val debug5    : Int
+    val debug6    : Int
+    val debug7    : Int
+
 fun uartTransmitByte(byte : Char)
     # wait for there to be room in the fifo
     while hwRegs.uart_tx = 0

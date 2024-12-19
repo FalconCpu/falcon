@@ -12,6 +12,7 @@ extern int* data_mem;  // data memory
 static FILE* reg_log;  // log register values to this file
 static FILE* uart_log;
 extern FILE* trace_file;    
+static FILE* blit_log;
 
 // ================================================
 //                  exception registers
@@ -124,14 +125,94 @@ static int branch_op(int op, int a, int b) {
     }
 }
 
+// ================================================
+//                  blitter
+// ================================================
+
+#define ARGX(A) (A & 0xffff)
+#define ARGY(A) ((A >> 16) & 0xffff)
+
+#define BLIT_CMD_SET_DEST_ADDR      0x01  //address:Int, bytesPerRow:Short
+#define BLIT_CMD_SET_SRC_ADDR       0x02  //address:Int, bytesPerRow:Short
+#define BLIT_CMD_FILL_RECT          0x03  //width:Short, height:Short,x1:Short, y1:Short,  color:Short
+#define BLIT_CMD_COPY_RECT          0x04  //width:Short, height:Short, destX:Short, destY:Short, srcX:Short, srcY:Short 
+#define BLIT_CMD_COPY_RECT_REVERSED 0x05  //width:Short, height:Short, destX:Short, destY:Short, srcX:Short, srcY:Short
+#define BLIT_CMD_SET_CLIP_RECT      0x06  //x1:Short, y1:Short, x2:Short, y2:Short
+#define BLIT_CMD_SET_TRANS_COLOR    0x07  //color:Short
+#define BLIT_CMD_SET_FONT           0x08  //fontAddr:Int, fontWidth:Short, fontHeight:Short, fontBpr:Short, fontBpc:Short
+#define BLIT_CMD_DRAW_CHAR          0x09  //char:Short, _:Short, x:Short, y:Short, color:Short, bgColor:Short
+#define BLIT_CMD_DRAW_LINE          0x0A  //x1:Short, y1:Short, x2:Short, y2:Short, color:Short
+
+static int blit_dest = 0;
+static int blit_dest_bpr = 0;
+static int blit_src = 0;
+static int blit_src_bpr = 0;
+static int blit_font;
+static int blit_font_width;
+static int blit_font_height;
+
+static void blit_op(int op, int a1, int a2, int a3) {
+    switch(op) {
+        case BLIT_CMD_SET_DEST_ADDR:
+            blit_dest = a1;
+            blit_dest_bpr = ARGX(a2);
+            //fprintf(blit_log, "blit dest %x %d\n", blit_dest, blit_dest_bpr);
+            break;
+
+        case BLIT_CMD_SET_SRC_ADDR:
+            blit_src = a1;
+            blit_src_bpr = ARGX(a2);
+            //fprintf(blit_log, "blit src %x %d\n", blit_src, blit_src_bpr);
+            break;
+
+        case BLIT_CMD_FILL_RECT:
+            fprintf(blit_log, "fill rect X=%d Y=%d WIDTH=%d HEIGHT=%d COLOR=%d\n", ARGX(a2), ARGY(a2), ARGX(a1), ARGY(a1), ARGX(a3));
+            break;
+
+        case BLIT_CMD_COPY_RECT:
+            fprintf(blit_log, "copy rect WIDTH=%d HEIGHT=%d DESTX=%d DESTY=%d SRCX=%d SRCY=%d FROM=%x TO=%x\n", ARGX(a1), ARGY(a1), ARGX(a2), ARGY(a2), ARGX(a3), ARGY(a3), blit_src, blit_dest);
+            break;
+
+        case BLIT_CMD_COPY_RECT_REVERSED:
+            fprintf(blit_log, "copy rev  WIDTH=%d HEIGHT=%d DESTX=%d DESTY=%d SRCX=%d SRCY=%d FROM=%x TO=%x\n", ARGX(a1), ARGY(a1), ARGX(a2), ARGY(a2), ARGX(a3), ARGY(a3), blit_src, blit_dest);
+            break;
+
+        case BLIT_CMD_SET_CLIP_RECT:
+            fprintf(blit_log, "clip rect X1=%d Y1=%d X2=%d Y2=%d\n", ARGX(a1), ARGY(a1), ARGX(a2), ARGY(a2));
+            break;
+
+        case BLIT_CMD_SET_TRANS_COLOR:
+            fprintf(blit_log, "trans color %d\n", ARGX(a3));
+            break;
+
+        case BLIT_CMD_SET_FONT:
+            fprintf(blit_log, "font %x %d %d %d %d\n", a1, ARGX(a2), ARGY(a2), ARGX(a3), ARGY(a3));
+            break;
+
+        case BLIT_CMD_DRAW_CHAR:
+            fprintf(blit_log, "draw char X=%d Y=%d CHAR=%d COLOR=%d BGCOL=%d\n", ARGX(a1), ARGX(a2), ARGY(a2), ARGX(a3), ARGY(a3));
+            break;
+
+        case BLIT_CMD_DRAW_LINE:
+            fprintf(blit_log, "draw line X1=%d Y1=%d X2=%d Y2=%d COLOR=%d\n", ARGX(a1), ARGY(a1), ARGX(a2), ARGY(a2), ARGX(a3));
+            break;
+
+        default:
+            fprintf(blit_log, "unknown blit op %d\n", op);
+    }
+}
+
 
 
 // ================================================
 //                  write_hwregs
 // ================================================
 
-static void write_hwregs(unsigned int addr, int value) {
-    switch(addr) {
+static int blit1,blit2,blit3;
+
+static void write_hwregs(unsigned int addr, int value, int mask) {
+
+    switch(addr & 0xFFFFFFFC) {
         case 0xE0000000:
             // fprintf(uart_log, "7-Segment = %06x\n", value&0xffffff);
             // printf("7-Segment = %06x\n", value&0xffffff);
@@ -147,6 +228,22 @@ static void write_hwregs(unsigned int addr, int value) {
             printf("%c", value);
             break;
 
+        case 0xE0000080:
+            blit_op(value, blit1, blit2, blit3);
+            break;
+
+        case 0xE0000084:
+            blit1 = (blit1 & ~mask) | (value & mask);
+            break;
+
+        case 0xE0000088:
+            blit2 = (blit2 & ~mask) | (value & mask);
+            break;
+
+        case 0xE000008C:
+            blit3 = (blit3 & ~mask) | (value & mask);
+            break;
+
         default:
             printf("write_hwregs(%08x, %08x)\n", addr, value);
         break;
@@ -158,12 +255,27 @@ static void write_hwregs(unsigned int addr, int value) {
 // ================================================
 
 static int read_hwregs(unsigned int addr) {
-    switch(addr) {
+    switch(addr & 0xFFFFFFFC) {
         case 0xE0000010:   // UART TX
             return 0x3ff;  // Report the space in the fifo - fake it to always be empty
 
         case 0xE0000030:   // Simulation flag
             return 1;      // Returns 1 in simulations, zero on real hardware
+
+        case 0xE0000028:   // VGA_Y pos
+            return 480;
+
+        case 0xE0000080:    // Fake the blitter queue - say there is always space
+            return 255;
+
+        case 0xE0000084:
+            return blit1;
+
+        case 0xE0000088:
+            return blit2;
+
+        case 0xE000008C:
+            return blit3;
 
         default:
             printf("read_hwregs(%08x)\n", addr);
@@ -203,7 +315,7 @@ static void write_memory(unsigned int addr, int value, int mask) {
         if (trace_file)
             fprintf(trace_file, "[%08x] = %08x", addr, data_mem[a]);
     } else if (addr>=0xE0000000 && addr<0xE0001000) {
-        write_hwregs(addr, value);
+        write_hwregs(addr, value, mask);
         if (trace_file)
             fprintf(trace_file, "[%08x] = %08x", addr, value);
     } else if (addr>=0xffff0000) {
@@ -376,6 +488,7 @@ void execute() {
     int timeout = 100000;
     reg_log = fopen("sim_reg.log", "w");
     uart_log = fopen("sim_uart.log", "wb");
+    blit_log = fopen("sim_blit.log", "wb");
 
     while (timeout>0 && pc!=0) {
         exception = 0;

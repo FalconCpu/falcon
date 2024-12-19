@@ -113,8 +113,8 @@ module tb;
 //always #5  clk = ! clk ;
 
 initial begin
-    $dumpvars(5);
-    #150000;
+    $dumpvars(5);   // was 5
+    #2500000;
     $finish;
 end
 

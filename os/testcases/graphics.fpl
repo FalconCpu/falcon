@@ -3,6 +3,7 @@ fun main()
     initializeGraphics()
     fillRect(100,200,300,250,5)
     drawLine(100,200,300,250,50)
+    drawLine(100,250,300,200,51)
     drawChar(100,150,'A',50)
     drawString(100,300,"Hello World!",15)
 

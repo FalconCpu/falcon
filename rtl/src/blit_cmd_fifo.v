@@ -21,19 +21,19 @@ module blit_cmd_fifo (
     assign cmd_valid = rd_ptr != prev_wr_ptr;
 
 always @(posedge clock) begin
+    prev_wr_ptr <= wr_ptr;
     if (blit_start) begin
         fifo[wr_ptr] <= blit_cmd;
-        wr_ptr <= wr_ptr + 1'b1;
+        wr_ptr = wr_ptr + 1'b1;
     end
        
-    cmd <= fifo[rd_ptr];
     if (cmd_next && cmd_valid)
-        rd_ptr <= rd_ptr + 1'b1;
+        rd_ptr = rd_ptr + 1'b1;
+    cmd <= fifo[rd_ptr];
 
     if (reset) begin
-        wr_ptr <= 0;
-        rd_ptr <= 0;
+        wr_ptr = 0;
+        rd_ptr = 0;
     end 
-    prev_wr_ptr <= wr_ptr;
 end
 endmodule

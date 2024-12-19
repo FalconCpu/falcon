@@ -83,9 +83,7 @@ wire [7:0]       p1_char;
 wire [7:0]       p1_font_bpc;
 wire             p1_textmode;
 wire             p1_run_line;
-wire             p2_run_line;
 wire             p1_run_rect;
-wire             p2_run_rect;
 wire             p1_reversed;
 wire             p2_textmode;
 wire             p4_textmode;
@@ -94,6 +92,7 @@ wire [31:0]      p2_src_addr;
 wire [15:0]      p2_src_bpr;
 wire [25:0]      p2_dest_addr;
 wire [15:0]      p2_dest_bpr;
+wire             p2_mem_read;
 wire             p3_mem_read;
 wire             p4_mem_read;
 wire [8:0]       p4_fg_color;
@@ -111,11 +110,13 @@ wire [15:0]   p2_rect_dest_x;
 wire [15:0]   p2_rect_dest_y;
 wire [15:0]   p2_rect_src_x;
 wire [15:0]   p2_rect_src_y;
+wire          p2_rect_write_enable;
 wire          rect_done;
 
 // From line engine
 wire [15:0]   p2_line_x;
 wire [15:0]   p2_line_y;
+wire          p2_line_write_enable;
 wire          line_done;
 
 // from address generator
@@ -127,12 +128,12 @@ reg         p4_write_en;
 
 // from data cache
 wire [7:0]  p4_src_data;
-wire        read_stall, write_stall;
 reg  [25:0] p4_dest_addr;
 reg  [25:0] p5_dest_addr;
 reg  [2:0]  p4_src_bit;
 wire [15:0] pattern_address;
 wire [31:0] pattern_data;
+wire        stall;
 
 
 // from color unit
@@ -145,13 +146,12 @@ wire [31:0] p6_data;
 wire [3:0]  p6_byte_en;
 wire        p6_write;
 
+wire        fifo_nearly_full;
+
 assign debug_led[0] = p5_active;
 assign debug_led[1] = stall;
 
 
-
-// general
-wire stall = (read_stall || write_stall) & !reset;
 
 // ==================================================
 //                 Command Fifo
@@ -188,12 +188,11 @@ blit_cmd  blit_cmd_inst (
     .p1_char(p1_char),
     .p1_font_bpc(p1_font_bpc),
     .p1_run_line(p1_run_line),
-    .p2_run_line(p2_run_line),
     .p1_run_rect(p1_run_rect),
-    .p2_run_rect(p2_run_rect),
     .p1_reversed(p1_reversed),
     .p1_textmode(p1_textmode),
     .p2_textmode(p2_textmode),
+    .p2_mem_read(p2_mem_read),
     .p4_textmode(p4_textmode),
     .p1_src_addr(p1_src_addr),
     .p2_src_bpr(p2_src_bpr),
@@ -203,8 +202,6 @@ blit_cmd  blit_cmd_inst (
     .p2_clip_y1(p2_clip_y1),
     .p2_clip_x2(p2_clip_x2),
     .p2_clip_y2(p2_clip_y2),
-    .p3_mem_read(p3_mem_read),
-    .p4_mem_read(p4_mem_read),
     .p4_fg_color(p4_fg_color),
     .p4_bg_color(p4_bg_color),
     .p4_trans_color(p4_trans_color),
@@ -222,6 +219,7 @@ blit_cmd  blit_cmd_inst (
     .clock(clock),
     .reset(reset),
     .stall(stall),
+    .pause(fifo_nearly_full),
     .start(p1_run_rect),
     .reversed(p1_reversed),
     .width(p1_width),
@@ -234,6 +232,7 @@ blit_cmd  blit_cmd_inst (
     .p2_rect_dest_y(p2_rect_dest_y),
     .p2_rect_src_x(p2_rect_src_x),
     .p2_rect_src_y(p2_rect_src_y),
+    .p2_write_enable(p2_rect_write_enable),
     .done(rect_done)
   );
 
@@ -244,6 +243,7 @@ blit_cmd  blit_cmd_inst (
 blit_drawline  blit_drawline_inst (
     .clock(clock),
     .stall(stall),
+    .pause(fifo_nearly_full),
     .x1(p1_x1),
     .y1(p1_y1),
     .x2(p1_x2),
@@ -251,6 +251,7 @@ blit_drawline  blit_drawline_inst (
     .start(p1_run_line),
     .x(p2_line_x),
     .y(p2_line_y),
+    .write_enable(p2_line_write_enable),
     .done(line_done)
   );
 
@@ -285,14 +286,16 @@ blit_drawline  blit_drawline_inst (
     .p2_rect_src_y(p2_rect_src_y),
     .p2_line_x(p2_line_x),
     .p2_line_y(p2_line_y),
-    .p2_run_line(p2_run_line),
-    .p2_run_rect(p2_run_rect),
+    .p2_rect_write_enable(p2_rect_write_enable),
+    .p2_line_write_enable(p2_line_write_enable),
     .p2_textmode(p2_textmode),
+    .p2_mem_read(p2_mem_read),
     .p2_src_addr(p2_src_addr),
     .p2_src_bpr(p2_src_bpr),
     .p2_dest_addr(p2_dest_addr),
     .p2_dest_bpr(p2_dest_bpr),
     .p3_src_addr(p3_src_addr),
+    .p3_mem_read(p3_mem_read),
     .p3_dest_addr(p3_dest_addr),
     .p3_src_bit(p3_src_bit),
     .p3_write_en(p3_write_en)
@@ -308,7 +311,8 @@ blit_cache  blit_cache_inst (
     .read_address(p3_src_addr),
     .read_request(p3_mem_read),
     .read_data(p4_src_data),
-    .read_stall(read_stall),
+    .read_valid(p4_mem_read),
+    .read_stall(stall),
     .mem_address(blitr_address),
     .mem_request(blitr_request),
     .mem_data(blitr_rdata),
@@ -369,7 +373,7 @@ blit_combine  blit_combine_inst (
     .wr_byte_en(p6_byte_en),
     .wr_data(p6_data),
     .wr_valid(p6_write & !stall),
-    .wr_full(write_stall),
+    .wr_full(fifo_nearly_full),
     .rd_address(blitw_address),
     .rd_byte_en(blitw_byte_en),
     .rd_data(blitw_wdata),

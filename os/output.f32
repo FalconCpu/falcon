@@ -185,92 +185,106 @@ stw $1, $3[8]
 ret
 
 /malloc:
-sub $sp, 24
+sub $sp, 28
 stw $9, $sp[0]
 stw $10, $sp[4]
 stw $11, $sp[8]
 stw $12, $sp[12]
 stw $13, $sp[16]
-stw $30, $sp[20]
-ld $9, $2
-bne $1, 0, @1
+stw $14, $sp[20]
+stw $30, $sp[24]
+ld $9, $1
+ld $10, $2
+bne $9, 0, @1
 ld $8, 0
 jmp @ret
 @1:
-add $1, $1, 31
+add $1, $9, 31
 sub $2, 0, 16
-and $10, $1, $2
-ld $12, 256
-ldw $11, $12[4]
+and $11, $1, $2
+ld $13, 256
+ldw $12, $13[4]
 ld $8, 0
-ld $13, $8
+ld $14, $8
 jmp @7
 @5:
-ld $13, $11
-ldw $11, $11[8]
+ld $14, $12
+ldw $12, $12[8]
 @7:
 ld $8, 0
-beq $11, $8, @6
-ldw $1, $11[4]
-blt $1, $10, @5
+beq $12, $8, @6
+ldw $1, $12[4]
+blt $1, $11, @5
 @6:
 ld $8, 0
-bne $11, $8, @9
+bne $12, $8, @9
 ld $1, 4096
 jsr /abort
 @9:
 ld $8, 0
-bne $13, $8, @17
-ldw $1, $11[8]
-stw $1, $12[4]
+bne $14, $8, @17
+ldw $1, $12[8]
+stw $1, $13[4]
 jmp @13
 @17:
-ldw $1, $11[8]
-stw $1, $13[8]
-ldw $1, $13[0]
+ldw $1, $12[8]
+stw $1, $14[8]
+ldw $1, $14[0]
 ld $2, 815157357
 beq $1, $2, @19
 ld $1, 4097
 jsr /abort
 @19:
 @13:
-add $1, $11, $10
-ldw $2, $11[4]
-sub $2, $2, $10
+add $1, $12, $11
+ldw $2, $12[4]
+sub $2, $2, $11
 jsr /addChunkToFreeList
-ld $1, $11
+ld $1, $12
 ld $2, 600496568
 stw $2, $1[0]
-stw $10, $1[4]
-stw $9, $1[8]
+stw $11, $1[4]
+stw $10, $1[8]
 ld $2, 1
 stw $2, $1[12]
-add $8, $11, 16
+ld $1, _object5
+add $2, $12, 16
+ld $3, $9
+ld $4, $10
+jsr /print
+add $8, $12, 16
 @ret:
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $11, $sp[8]
 ldw $12, $sp[12]
 ldw $13, $sp[16]
-ldw $30, $sp[20]
-add $sp, 24
+ldw $14, $sp[20]
+ldw $30, $sp[24]
+add $sp, 28
 ret
 
 /free:
-sub $sp, 4
-stw $30, $sp[0]
-ld $2, 0
-beq $1, $2, @ret
-sub $1, $1, 16
-ldw $2, $1[0]
-ld $3, 600496568
-beq $2, $3, @7
-ldw $1, $1[0]
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $2, $1
+ld $1, 0
+beq $2, $1, @ret
+sub $9, $2, 16
+ld $1, _object6
+ldw $3, $9[4]
+jsr /print
+ldw $1, $9[0]
+ld $2, 600496568
+beq $1, $2, @7
+ldw $1, $9[0]
 ld $2, 815157357
 beq $1, $2, @9
 jmp @11
 @7:
-ldw $2, $1[4]
+ld $1, $9
+ldw $2, $9[4]
 jsr /addChunkToFreeList
 jmp @5
 @9:
@@ -282,8 +296,9 @@ ld $1, 4097
 jsr /abort
 @5:
 @ret:
-ldw $30, $sp[0]
-add $sp, 4
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
 ret
 
 /StringBuilder:
@@ -298,7 +313,7 @@ ld $1, 0
 stw $1, $9[4]
 ldw $10, $9[0]
 add $1, $10, 4
-ld $2, _object7
+ld $2, _object11
 jsr /malloc
 add $1, $8, 4
 stw $10, $1[-4]
@@ -322,7 +337,7 @@ bge $1, $11, @1
 stw $11, $9[0]
 ldw $10, $9[8]
 add $1, $11, 4
-ld $2, _object7
+ld $2, _object11
 jsr /malloc
 add $1, $8, 4
 stw $11, $1[-4]
@@ -419,7 +434,7 @@ stw $30, $sp[16]
 ld $10, $2
 ld $11, $3
 ld $1, 12
-ld $2, _object8
+ld $2, _object12
 jsr /malloc
 ld $9, $8
 ld $1, $9
@@ -467,7 +482,7 @@ stw $12, $sp[12]
 stw $30, $sp[16]
 ld $11, $2
 ld $1, 12
-ld $2, _object8
+ld $2, _object12
 jsr /malloc
 ld $9, $8
 ld $1, $9
@@ -481,7 +496,7 @@ sub $11, 0, $11
 ld $12, 16
 ld $1, 16
 add $1, $1, 4
-ld $2, _object9
+ld $2, _object13
 jsr /malloc
 add $10, $8, 4
 stw $12, $10[-4]
@@ -908,7 +923,7 @@ stw $1, $9[4]
 ldw $10, $9[0]
 lsl $1, $10, 2
 add $1, $1, 4
-ld $2, _object10
+ld $2, _object14
 jsr /malloc
 add $1, $8, 4
 stw $10, $1[-4]
@@ -936,7 +951,7 @@ ldw $1, $9[0]
 lsl $12, $1, 1
 lsl $1, $12, 2
 add $1, $1, 4
-ld $2, _object10
+ld $2, _object14
 jsr /malloc
 add $1, $8, 4
 stw $12, $1[-4]
@@ -1095,7 +1110,7 @@ add $1, $1, 1
 @2:
 blt $1, $10, @1
 add $1, $11, 4
-ld $2, _object7
+ld $2, _object11
 jsr /malloc
 add $12, $8, 4
 stw $11, $12[-4]
@@ -1217,7 +1232,7 @@ ld $8, 0
 jmp @ret
 @1:
 add $1, $9, 4
-ld $2, _object7
+ld $2, _object11
 jsr /malloc
 add $12, $8, 4
 stw $9, $12[-4]
@@ -1247,7 +1262,7 @@ stw $30, $sp[24]
 ld $9, $1
 ld $12, $2
 ld $1, 12
-ld $2, _object11
+ld $2, _object15
 jsr /malloc
 ld $10, $8
 ld $1, $10
@@ -1651,28 +1666,28 @@ ldb $1, $1[8]
 bne $1, 0, @41
 jmp @43
 @35:
-ld $1, _object6
+ld $1, _object8
 lsl $2, $2, 2
 add $2, $2, 1
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @38:
-ld $1, _object6
+ld $1, _object8
 lsl $2, $2, 2
 add $2, $2, 3
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @41:
-ld $1, _object6
+ld $1, _object8
 lsl $2, $2, 2
 add $2, $2, 2
 add $1, $1, $2
 ldb $8, $1[0]
 jmp @ret
 @43:
-ld $1, _object6
+ld $1, _object8
 lsl $2, $2, 2
 add $1, $1, $2
 ldb $8, $1[0]
@@ -1705,7 +1720,141 @@ ret
 /Blitter_Pointer:
 ret
 
+/BitmapImage:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
+ld $9, $1
+stw $2, $9[0]
+stw $3, $9[4]
+ld $1, 0
+beq $4, $1, @5
+stw $4, $9[8]
+jmp @1
+@5:
+ldw $1, $9[0]
+ldw $2, $9[4]
+mul $10, $1, $2
+add $1, $10, 4
+ld $2, _object13
+jsr /malloc
+add $1, $8, 4
+stw $10, $1[-4]
+stw $1, $9[8]
+@1:
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/BitmapImage/copyFrom:
+ld $5, -536870784
+ld $6, -536870784
+jmp @3
+@1:
+@3:
+ldw $7, $6[0]
+ld $8, 5
+blt $7, $8, @1
+ldw $7, $1[8]
+stw $7, $5[4]
+ldw $7, $1[0]
+sth $7, $5[8]
+ld $7, 1
+stw $7, $5[0]
+ldw $7, $2[8]
+stw $7, $5[4]
+ldw $2, $2[0]
+sth $2, $5[8]
+ld $2, 2
+stw $2, $5[0]
+ldw $2, $1[0]
+sth $2, $6[4]
+ldw $1, $1[4]
+sth $1, $6[6]
+ld $1, 0
+sth $1, $6[8]
+ld $1, 0
+sth $1, $6[10]
+sth $3, $6[12]
+sth $4, $6[14]
+ld $1, 4
+stw $1, $5[0]
+ld $1, 66584576
+stw $1, $5[4]
+ld $1, 640
+sth $1, $5[8]
+ld $7, 1
+stw $7, $5[0]
+ld $2, 2
+stw $2, $5[0]
+ret
+
+/BitmapImage/copyTo:
+ld $5, -536870784
+ld $6, -536870784
+jmp @3
+@1:
+@3:
+ldw $7, $6[0]
+ld $8, 5
+blt $7, $8, @1
+ldw $7, $2[8]
+stw $7, $5[4]
+ldw $2, $2[0]
+sth $2, $5[8]
+ld $2, 1
+stw $2, $5[0]
+ldw $2, $1[8]
+stw $2, $5[4]
+ldw $2, $1[0]
+sth $2, $5[8]
+ld $2, 2
+stw $2, $5[0]
+ldw $2, $1[0]
+sth $2, $6[4]
+ldw $1, $1[4]
+sth $1, $6[6]
+sth $3, $6[8]
+sth $4, $6[10]
+ld $1, 0
+sth $1, $6[12]
+ld $1, 0
+sth $1, $6[14]
+ld $1, 4
+stw $1, $5[0]
+ld $1, 66584576
+stw $1, $5[4]
+ld $1, 640
+sth $1, $5[8]
+ld $2, 1
+stw $2, $5[0]
+ld $2, 2
+stw $2, $5[0]
+ret
+
+/BitmapImage/delete:
+sub $sp, 4
+stw $30, $sp[0]
+ldw $1, $1[8]
+sub $1, $1, 4
+ldw $2, $1[-4]
+sub $2, $2, 1
+stw $2, $1[-4]
+bne $2, 0, @1
+jsr /free
+@1:
+ldw $30, $sp[0]
+add $sp, 4
+ret
+
 /initializeGraphics:
+sub $sp, 12
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $30, $sp[8]
 ld $1, -536870784
 ld $2, 66584576
 stw $2, $1[4]
@@ -1742,6 +1891,26 @@ ld $2, 12
 sth $2, $1[14]
 ld $2, 8
 stw $2, $1[0]
+ld $9, 256
+ld $1, 12
+ld $2, _object16
+jsr /malloc
+ld $10, $8
+ld $4, 66584576
+ld $1, $10
+ld $2, 640
+ld $3, 480
+jsr /BitmapImage
+stw $10, $9[8]
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $30, $sp[8]
+add $sp, 12
+ret
+
+/getScreenImage:
+ld $1, 256
+ldw $8, $1[8]
 ret
 
 /drawPixel:
@@ -1964,157 +2133,222 @@ stw $1, $2[0]
 @1:
 ret
 
+/copyRectangle:
+ld $1, -536870784
+ld $2, 66584576
+stw $2, $1[4]
+ld $2, 640
+sth $2, $1[8]
+ld $2, 1
+stw $2, $1[0]
+ld $2, 2
+stw $2, $1[0]
+ret
+
+/setTransparencyColor:
+ld $2, -536870784
+sth $1, $2[4]
+jmp @3
+@1:
+@3:
+ldw $1, $2[0]
+beq $1, 0, @1
+ld $1, 7
+stw $1, $2[0]
+ret
+
+/drawBackground:
+sub $sp, 20
+stw $9, $sp[0]
+stw $10, $sp[4]
+stw $11, $sp[8]
+stw $12, $sp[12]
+stw $30, $sp[16]
+ld $1, 0
+ld $2, 0
+ld $3, 640
+ld $4, 480
+ld $5, 0
+jsr /fillRect
+ld $9, 0
+ld $10, 23
+jmp @2
+@1:
+ld $11, 0
+ld $12, 24
+jmp @4
+@3:
+mul $1, $11, 30
+mul $2, $9, 20
+mul $3, $11, 30
+add $3, $3, 18
+mul $4, $9, 20
+add $4, $4, 18
+ld $5, 17
+mul $6, $11, 30
+mul $7, $9, 20
+add $6, $6, $7
+divs $6, $6, 30
+add $5, $5, $6
+jsr /fillRect
+add $11, $11, 1
+@4:
+bge $12, $11, @3
+add $9, $9, 1
+@2:
+bge $10, $9, @1
+ldw $9, $sp[0]
+ldw $10, $sp[4]
+ldw $11, $sp[8]
+ldw $12, $sp[12]
+ldw $30, $sp[16]
+add $sp, 20
+ret
+
 /main:
-sub $sp, 28
+sub $sp, 40
 stw $9, $sp[0]
 stw $10, $sp[4]
 stw $11, $sp[8]
 stw $12, $sp[12]
 stw $13, $sp[16]
 stw $14, $sp[20]
-stw $30, $sp[24]
+stw $15, $sp[24]
+stw $16, $sp[28]
+stw $17, $sp[32]
+stw $30, $sp[36]
 jsr /initializeGraphics
-ld $1, 100
-ld $2, 200
-ld $3, 300
-ld $4, 250
-ld $5, 5
-jsr /fillRect
-ld $1, 100
-ld $2, 200
-ld $3, 300
-ld $4, 250
-ld $5, 50
-jsr /drawLine
-ld $1, 100
-ld $2, 150
-ld $3, 65
-ld $4, 50
-jsr /drawChar
-ld $3, _object5
-ld $1, 100
-ld $2, 300
-ld $4, 15
-jsr /drawString
-ld $10, 32
-ld $9, 127
+ld $1, 32
+lsl $9, $1, 5
+add $1, $9, 4
+ld $2, _object13
+jsr /malloc
+add $14, $8, 4
+stw $9, $14[-4]
+ld $1, 0
+ld $2, 32
+lsl $2, $2, 5
+sub $2, $2, 1
 jmp @2
 @1:
-ld $1, 100
-and $2, $10, 31
-lsl $2, $2, 3
-add $1, $1, $2
-ld $2, 400
-ld $3, 12
-asr $4, $10, 5
-mul $3, $3, $4
-add $2, $2, $3
-ld $3, $10
-ld $4, $10
-jsr /drawChar
-add $10, $10, 1
-@2:
-blt $10, $9, @1
-ld $9, 0
-ld $10, 5
-jmp @4
-@3:
-ld $11, 0
-ld $12, 5
-jmp @6
-@5:
-ld $13, 0
-ld $14, 5
-jmp @8
-@7:
-mul $1, $9, 6
-add $1, $1, $11
-mul $1, $1, 17
-mul $2, $13, 17
-add $2, $2, 17
-add $3, $1, 15
-add $4, $2, 15
-ld $5, 16
-mul $6, $9, 36
-add $5, $5, $6
-mul $6, $11, 6
-add $5, $5, $6
-add $5, $5, $13
-jsr /fillRect
-add $13, $13, 1
-@8:
-bge $14, $13, @7
-add $11, $11, 1
-@6:
-bge $12, $11, @5
-add $9, $9, 1
+ld $3, _object9
+add $3, $3, $1
+ldb $3, $3[0]
+bne $3, 0, @4
+ld $3, 0
+jmp @5
 @4:
-bge $10, $9, @3
-ld $9, 0
-ld $10, 23
-jmp @10
-@9:
-mul $1, $9, 17
+add $3, $3, 155
+@5:
+add $4, $14, $1
+stb $3, $4[0]
+add $1, $1, 1
+@2:
+bge $2, $1, @1
+ld $1, 28
+ld $2, _object17
+jsr /malloc
+add $1, $8, 4
 ld $2, 6
-mul $2, $2, 17
-add $2, $2, 17
-add $3, $1, 15
-add $4, $2, 15
-ld $5, 232
-add $5, $5, $9
-jsr /fillRect
-add $9, $9, 1
-@10:
-bge $10, $9, @9
-ld $9, 0
-ld $10, 11
-jmp @12
-@11:
-add $1, $9, 24
-mul $1, $1, 17
-ld $2, 6
-mul $2, $2, 17
-add $2, $2, 17
-add $3, $1, 15
-add $4, $2, 15
-ld $5, $9
-jsr /fillRect
-add $9, $9, 1
-@12:
-bge $10, $9, @11
-ld $9, 0
-ld $10, 10
-jmp @14
-@13:
-ld $11, 0
-ld $12, 15
-jmp @16
-@15:
-ld $1, 1
-jsr /scrollScreen
-add $11, $11, 1
-@16:
-bge $12, $11, @15
-ld $11, 0
-ld $12, 15
-jmp @18
-@17:
+stw $2, $1[-4]
+ld $2, _object10
+ld $3, 24
+jsr /memcpy
+ld $9, 100
+ld $10, 50
+ld $11, 5
+ld $12, 3
+jsr /drawBackground
+ld $1, 12
+ld $2, _object16
+jsr /malloc
+ld $13, $8
+ld $1, $13
+ld $2, 31
+ld $3, 31
+ld $4, $14
+jsr /BitmapImage
+ld $1, 12
+ld $2, _object16
+jsr /malloc
+ld $14, $8
+ld $4, 0
+ld $1, $14
+ld $2, 32
+ld $3, 32
+jsr /BitmapImage
+jsr /getScreenImage
+ld $15, $8
+ld $16, 1
+ld $17, 2000
+jmp @7
+@6:
+sub $3, $9, 15
+sub $4, $10, 15
+ld $1, $14
+ld $2, $15
+jsr /BitmapImage/copyFrom
+ld $1, 0
+jsr /setTransparencyColor
+sub $3, $9, 15
+sub $4, $10, 15
+ld $1, $13
+ld $2, $15
+jsr /BitmapImage/copyTo
 sub $1, 0, 1
-jsr /scrollScreen
-add $11, $11, 1
-@18:
-bge $12, $11, @17
-add $9, $9, 1
+jsr /setTransparencyColor
+ld $1, -536870912
+jmp @10
+@8:
+@10:
+ldw $2, $1[40]
+ld $3, 480
+beq $2, $3, @8
+jmp @13
+@11:
+@13:
+ldw $2, $1[40]
+ld $3, 480
+bne $2, $3, @11
+sub $3, $9, 15
+sub $4, $10, 15
+ld $1, $14
+ld $2, $15
+jsr /BitmapImage/copyTo
+add $9, $9, $11
+add $10, $10, $12
+ld $1, 625
+blt $9, $1, @14
+sub $11, 0, 5
 @14:
-bge $10, $9, @13
+ld $1, 12
+blt $1, $9, @18
+ld $11, 5
+@18:
+ld $1, 468
+bge $1, $10, @22
+sub $12, 0, 3
+@22:
+ld $1, 12
+bge $10, $1, @26
+ld $12, 3
+@26:
+add $16, $16, 1
+@7:
+bge $17, $16, @6
+ld $1, _object7
+jsr /print
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $11, $sp[8]
 ldw $12, $sp[12]
 ldw $13, $sp[16]
 ldw $14, $sp[20]
-ldw $30, $sp[24]
-add $sp, 28
+ldw $15, $sp[24]
+ldw $16, $sp[28]
+ldw $17, $sp[32]
+ldw $30, $sp[36]
+add $sp, 40
 ret
 dcw 11
 _object0:
@@ -2143,14 +2377,24 @@ dcw 0x6E776F6E
 dcw 0x67616D20
 dcw 0x25206369
 dcw 0x00000A78
-dcw 12
+dcw 16
 _object5:
-dcw 0x6C6C6548
-dcw 0x6F57206F
-dcw 0x21646C72
+dcw 0x6C6C614D
+dcw 0x2520636F
+dcw 0x64252078
+dcw 0x0A732520
 dcw 0x00000000
-dcw 1024
+dcw 11
 _object6:
+dcw 0x65657246
+dcw 0x20782520
+dcw 0x000A6425
+dcw 5
+_object7:
+dcw 0x656E6F44
+dcw 0x0000000A
+dcw 1024
+_object8:
 dcb 0,0,0,0
 dcb -19,-19,-19,-19
 dcb 0,0,0,0
@@ -2407,29 +2651,290 @@ dcb -25,-25,-25,-25
 dcb -9,-9,-9,-9
 dcb 0,0,0,0
 dcb 0,0,0,0
+dcw 961
+_object9:
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,95,95,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,95,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 95,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 96,95,95,95
+dcb 95,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,95,95,95
+dcb 95,95,95,96
+dcb 96,96,96,96
+dcb 96,96,96,96
+dcb 95,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 96,96,96,96
+dcb 96,96,96,96
+dcb 96,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 0,95,95,95
+dcb 95,95,96,96
+dcb 96,96,96,96
+dcb 96,97,96,96
+dcb 96,96,96,96
+dcb 96,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 97,97,97,97
+dcb 97,97,97,97
+dcb 97,96,96,96
+dcb 96,95,95,95
+dcb 95,0,0,0
+dcb 0,0,95,95
+dcb 95,95,96,96
+dcb 96,96,97,97
+dcb 97,97,97,97
+dcb 97,97,97,97
+dcb 97,96,96,96
+dcb 96,95,95,95
+dcb 95,0,0,0
+dcb 0,95,95,95
+dcb 96,96,96,96
+dcb 97,97,97,97
+dcb 97,97,98,97
+dcb 97,97,97,97
+dcb 97,96,96,96
+dcb 96,95,95,95
+dcb 0,0,0,95
+dcb 95,95,95,96
+dcb 96,96,97,97
+dcb 97,97,98,98
+dcb 98,98,98,98
+dcb 98,97,97,97
+dcb 97,96,96,96
+dcb 95,95,95,95
+dcb 0,0,95,95
+dcb 95,96,96,96
+dcb 97,97,97,97
+dcb 98,98,98,98
+dcb 98,98,98,98
+dcb 98,97,97,97
+dcb 97,96,96,96
+dcb 95,95,95,0
+dcb 0,95,95,95
+dcb 96,96,96,97
+dcb 97,97,98,98
+dcb 98,98,98,99
+dcb 98,98,98,98
+dcb 98,97,97,97
+dcb 96,96,96,95
+dcb 95,95,0,0
+dcb 95,95,95,96
+dcb 96,96,97,97
+dcb 97,98,98,98
+dcb 99,99,99,99
+dcb 99,98,98,98
+dcb 97,97,97,96
+dcb 96,96,95,95
+dcb 95,0,0,95
+dcb 95,95,96,96
+dcb 96,97,97,97
+dcb 98,98,98,99
+dcb 99,99,99,99
+dcb 98,98,98,97
+dcb 97,97,96,96
+dcb 96,95,95,95
+dcb 0,95,95,95
+dcb 96,96,96,97
+dcb 97,97,98,98
+dcb 98,99,99,99
+dcb 99,99,99,99
+dcb 98,98,98,97
+dcb 97,97,96,96
+dcb 96,95,95,95
+dcb 0,95,95,95
+dcb 96,96,96,97
+dcb 97,97,98,98
+dcb 98,99,99,99
+dcb 99,99,98,98
+dcb 98,97,97,97
+dcb 96,96,96,95
+dcb 95,95,0,0
+dcb 95,95,95,96
+dcb 96,96,97,97
+dcb 97,98,98,98
+dcb 99,99,99,99
+dcb 99,98,98,98
+dcb 97,97,97,96
+dcb 96,96,95,95
+dcb 95,0,0,95
+dcb 95,95,96,96
+dcb 96,97,97,97
+dcb 98,98,98,98
+dcb 98,99,98,98
+dcb 98,98,98,97
+dcb 97,97,96,96
+dcb 96,95,95,95
+dcb 0,0,95,95
+dcb 95,96,96,96
+dcb 97,97,97,97
+dcb 98,98,98,98
+dcb 98,98,98,98
+dcb 98,97,97,97
+dcb 97,96,96,96
+dcb 95,95,95,0
+dcb 0,95,95,95
+dcb 95,96,96,96
+dcb 97,97,97,97
+dcb 98,98,98,98
+dcb 98,98,98,97
+dcb 97,97,97,96
+dcb 96,96,95,95
+dcb 95,95,0,0
+dcb 0,95,95,95
+dcb 96,96,96,96
+dcb 97,97,97,97
+dcb 97,97,98,97
+dcb 97,97,97,97
+dcb 97,96,96,96
+dcb 96,95,95,95
+dcb 0,0,0,0
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 97,97,97,97
+dcb 97,97,97,97
+dcb 97,97,97,96
+dcb 96,96,96,95
+dcb 95,95,95,0
+dcb 0,0,0,0
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 97,97,97,97
+dcb 97,97,97,97
+dcb 97,96,96,96
+dcb 96,95,95,95
+dcb 95,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 96,96,96,97
+dcb 96,96,96,96
+dcb 96,96,96,95
+dcb 95,95,95,95
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 96,96,96,96
+dcb 96,96,96,96
+dcb 96,96,96,96
+dcb 96,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 95,96,96,96
+dcb 96,96,96,96
+dcb 96,96,95,95
+dcb 95,95,95,95
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 96,95,95,95
+dcb 95,95,95,95
+dcb 95,95,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 95,95,95,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,95,95,95
+dcb 95,95,95,95
+dcb 95,95,95,95
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,95,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0,0,0,0
+dcb 0
 dcw 6
-_object7:
+_object10:
+dcw 0x0000002D
+dcw 0x0000002E
+dcw 0x0000002F
+dcw 0x00000030
+dcw 0x00000031
+dcw 0x00000032
+dcw 6
+_object11:
 dcw 0x69727453
 dcw 0x0000676E
 dcw 13
-_object8:
+_object12:
 dcw 0x69727453
 dcw 0x7542676E
 dcw 0x65646C69
 dcw 0x00000072
 dcw 11
-_object9:
+_object13:
 dcw 0x61727241
 dcw 0x68433C79
 dcw 0x003E7261
 dcw 8
-_object10:
+_object14:
 dcw 0x61727241
 dcw 0x3E543C79
 dcw 0x00000000
 dcw 12
-_object11:
+_object15:
 dcw 0x7473694C
 dcw 0x7274533C
 dcw 0x3E676E69
 dcw 0x00000000
+dcw 11
+_object16:
+dcw 0x6D746942
+dcw 0x6D497061
+dcw 0x00656761
+dcw 10
+_object17:
+dcw 0x61727241
+dcw 0x6E493C79
+dcw 0x00003E74

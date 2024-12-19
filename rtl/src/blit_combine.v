@@ -19,8 +19,6 @@ reg [31:0] next_data;
 reg [25:0] next_addr;
 reg [3:0]  next_byte_en;
 
-
-
 always @(*) begin
     out_write    = 1'b0;
     next_addr    = out_addr;
@@ -32,7 +30,7 @@ always @(*) begin
         out_write    = (out_byte_en!=4'h0);
         next_byte_en = 4'h0;
         next_addr    = 26'h0;
-        next_data    = 32'hx;
+        next_data    = 32'bx;
 
     end else if (in_en) begin
         if (in_addr[25:2]!=out_addr[25:2]) begin

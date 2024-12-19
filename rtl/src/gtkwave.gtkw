@@ -1,54 +1,121 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat Dec 14 13:09:05 2024
+[*] Wed Dec 18 18:26:26 2024
 [*]
-[dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
-[dumpfile_mtime] "Sat Dec 14 13:07:33 2024"
-[dumpfile_size] 35567310
+[dumpfile] "C:\Users\simon\falcon\rtl\src\dump.vcd"
 [savefile] "C:\Users\simon\falcon\rtl\src\gtkwave.gtkw"
-[timestart] 113790000
+[timestart] 1413142600
 [size] 1920 1129
 [pos] -1 -1
-*-22.368736 131710000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] Falcon_tb.
-[treeopen] Falcon_tb.Falcon_inst.
-[treeopen] Falcon_tb.Falcon_inst.blitter_inst.
-[treeopen] Falcon_tb.Falcon_inst.cpu_inst.
-[sst_width] 315
-[signals_width] 220
+*-14.380966 1413194200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.Falcon_inst.
+[sst_width] 303
+[signals_width] 262
 [sst_expanded] 1
 [sst_vpaned_height] 339
+@28
+tb.Falcon_inst.hwregs_inst.blit_start
+tb.Falcon_inst.blitter_inst.blit_cmd_inst.p0_cmd_valid
+tb.Falcon_inst.blitter_inst.stall
 @22
-Falcon_tb.Falcon_inst.blitter_inst.p0_cmd[7:0]
-Falcon_tb.Falcon_inst.blitter_inst.p0_height[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.next_font_height[4:0]
-Falcon_tb.Falcon_inst.blitter_inst.next_font_width[15:0]
+tb.Falcon_inst.blitter_inst.blit_cmd_inst.cmd[7:0]
 @200
 -
+-RECTANGLE
 @22
-Falcon_tb.Falcon_inst.blitter_inst.p1_cmd[7:0]
+tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_rect_dest_x[15:0]
+tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_rect_dest_y[15:0]
 @28
-Falcon_tb.Falcon_inst.blitter_inst.p1_run
+tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_write_enable
+@200
+-
+-ADDRESS
 @22
-Falcon_tb.Falcon_inst.blitter_inst.p1_width[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.p1_height[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.p1_x[15:0]
-Falcon_tb.Falcon_inst.blitter_inst.p1_y[15:0]
+tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_dest_addr[25:0]
+tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_src_addr[31:0]
+@28
+tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_write_en
+tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_mem_read
+tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p2_line_write_enable
+@200
+-
+-CACHE
+@28
+tb.Falcon_inst.blitter_inst.blit_cache_inst.read_request
+@22
+tb.Falcon_inst.blitter_inst.blit_cache_inst.read_address[31:0]
+tb.Falcon_inst.blitter_inst.blit_cache_inst.mem_data[31:0]
+@28
+tb.Falcon_inst.blitter_inst.blit_cache_inst.mem_valid
+@22
+tb.Falcon_inst.blitter_inst.blit_cache_inst.read_data[7:0]
+@28
+tb.Falcon_inst.blitter_inst.blit_cache_inst.read_valid
+@200
+-
+-COLOR
+@22
+tb.Falcon_inst.blitter_inst.blit_color_inst.wr_data[7:0]
+@28
+tb.Falcon_inst.blitter_inst.blit_color_inst.wr_enable
+@200
+-
+-COMBINE
+@22
+tb.Falcon_inst.blitter_inst.blit_combine_inst.in_addr[25:0]
+tb.Falcon_inst.blitter_inst.blit_combine_inst.in_data[7:0]
+@28
+tb.Falcon_inst.blitter_inst.blit_combine_inst.in_en
+@200
+-
+@c00022
+tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+@28
+(0)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+(1)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+(2)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+(3)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+@1401200
+-group_end
+@22
+tb.Falcon_inst.DRAM_ADDR[12:0]
+@28
+tb.Falcon_inst.DRAM_RAS_N
+tb.Falcon_inst.DRAM_CAS_N
+tb.Falcon_inst.DRAM_WE_N
+@22
+tb.Falcon_inst.DRAM_DQ[15:0]
+@28
+tb.Falcon_inst.sdram_controller_inst.sdram_ready
+@22
+tb.Falcon_inst.sdram_controller_inst.sdram_valid[3:0]
+@28
+tb.Falcon_inst.sdram_controller_inst.sdram_request
+@2029
+^1 C:\Users\simon\falcon\rtl\src\sdram_controller_state.txt
+tb.Falcon_inst.sdram_controller_inst.this_state[2:0]
 @200
 -
 @28
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_request
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blitter_cache_inst.read_address[25:0]
-Falcon_tb.Falcon_inst.blitter_inst.p3_data[8:0]
-Falcon_tb.Falcon_inst.blitter_inst.p3i_sdram_data[7:0]
-Falcon_tb.Falcon_inst.blitter_inst.p3i_color[8:0]
-@200
--
-@28
-Falcon_tb.Falcon_inst.blitter_inst.blitw_request
-@22
-Falcon_tb.Falcon_inst.blitter_inst.blitw_address[25:0]
-Falcon_tb.Falcon_inst.blitter_inst.blitw_wdata[31:0]
+tb.Falcon_inst.sdram_arbiter_inst.blitr_request
+tb.Falcon_inst.sdram_arbiter_inst.vga_request
+tb.Falcon_inst.sdram_arbiter_inst.dcache_request
+tb.Falcon_inst.sdram_arbiter_inst.blitw_request
+tb.Falcon_inst.sdram_arbiter_inst.blitw_ack
 [pattern_trace] 1
 [pattern_trace] 0
+!100000@@
+?00
+@29
+(3)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+?00
+(2)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+?00
+(1)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+?00
+(0)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+?"2
+@800023
+tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+!!

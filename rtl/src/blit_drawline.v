@@ -3,6 +3,7 @@
 module blit_drawline(
     input                  clock,
     input                  stall,
+    input                  pause,
 
     input signed [15:0]    x1,
     input signed [15:0]    y1,
@@ -12,6 +13,7 @@ module blit_drawline(
 
     output reg [15:0]      x,
     output reg [15:0]      y,
+    output reg             write_enable,
     output reg             done
 );
 
@@ -27,12 +29,14 @@ reg signed [15:0] error, next_error;
 reg signed [15:0] num_diagonal, next_num_diagonal;
 reg signed [15:0] minus_num_straight, next_minus_num_straight;
 reg [15:0]        next_x, next_y;
+reg               next_write_enable;
 
 always @(*) begin
     done       = 1'b0;
     next_x     = 16'hx;
     next_y     = 16'hx;
     next_error = 16'hx;
+    next_write_enable = 1'b0;
 
     // The control logic will always set up x1, y1, x2, y2 at least one cycle before the start
     // signal is asserted. This gives us time to calculate the slope before we need to draw.
@@ -67,9 +71,14 @@ always @(*) begin
         next_error = {minus_num_straight[15],minus_num_straight[15:1]};
         next_x     = x1;
         next_y     = y1;
+        next_write_enable = 1'b1;
     end else begin
         // Main body of the loop
-        if ((x==x2) && (y==y2)) begin
+        if (pause) begin
+            next_error = error;
+            next_x     = x;
+            next_y     = y;
+        end else if ((x==x2) && (y==y2)) begin
             done = 1'b1;
         end else begin
             if (steep || error>=0)
@@ -86,7 +95,8 @@ always @(*) begin
                 next_error = error + num_diagonal;
             else
                 next_error = error + minus_num_straight;
-        end
+            end
+        next_write_enable = 1'b1;
     end
 end 
 
@@ -101,6 +111,7 @@ always @(posedge clock) begin
         x            <= next_x;
         y            <= next_y;
         prev_start   <= start;
+        write_enable <= next_write_enable;
     end 
 end
 

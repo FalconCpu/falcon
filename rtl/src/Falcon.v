@@ -160,13 +160,14 @@ wire               sdram_burst;
 wire [9:0]         led_regs;
 wire [9:0]         led_status;
 
+assign led_status[9:2] = led_regs[9:2];
 assign LEDR = SW[0] ? led_regs : led_status;
-
 
 
 // Signals from the VGA
 wire               vga_request;
 wire  [25:0]       vga_address;
+wire  [9:0]        vga_ypos;
 
 // Signals from the sdram_controller
 wire [31:0]        sdram_rdata;
@@ -197,6 +198,7 @@ wire [31:0]   patmemr_data;
 
 
 wire [31:0]        debug_pc;
+wire [255:0]       debug = 256'h0;
 
 //=======================================================
 //  Structural coding
@@ -301,6 +303,7 @@ hwregs  hwregs_inst (
     .uart_tx_complete(uart_tx_complete),
     .mouse_x(mouse_x),
     .mouse_y(mouse_y),
+    .vga_ypos(vga_ypos),
     .mouse_buttons(mouse_buttons),
     .keyboard_code(keyboard_code),
     .keyboard_strobe(keyboard_strobe),
@@ -382,7 +385,7 @@ sdram_arbiter  sdram_arbiter_inst (
     .sdram_burst(sdram_burst),
     .sdram_complete(sdram_complete),
     .sdram_ready(sdram_ready)
-  );
+ );
 
 sdram_controller  sdram_controller_inst (
     .clock(clock),
@@ -426,7 +429,8 @@ sdram_controller  sdram_controller_inst (
     .vga_ack(vga_ack),
     .vga_complete(vga_complete),
     .mouse_x(mouse_x),
-    .mouse_y(mouse_y)
+    .mouse_y(mouse_y),
+    .vga_ypos(vga_ypos)
   );
 
   assign VGA_BLANK_N = 1'b1;

@@ -17,7 +17,7 @@ def run_test(test_name: str):
     outname = f"testcase_outputs/{basename}.out"
     expname = f"testcase_outputs/{basename}.exp"
     inname = f"testcases/{test_name}"
-    stdlib = "  ../fplcomp/stdlib/Memory.fpl ../fplcomp/stdlib/StringBuilder.fpl ../fplcomp/stdlib/List.fpl ../fplcomp/stdlib/String.fpl"
+    stdlib = "  src/Memory.fpl ../fplcomp/stdlib/StringBuilder.fpl ../fplcomp/stdlib/List.fpl ../fplcomp/stdlib/String.fpl"
     osfiles = " src/Hardware.fpl src/FileSystem.fpl src/keyboard.fpl src/graphics.fpl "
 
     # Split the source file into the executable and expected sections
@@ -35,23 +35,25 @@ def run_test(test_name: str):
 
     command = f"fplcomp.exe {stdlib} {osfiles} {srcname} > {outname}"
     err = os.system(command)
+    if err!=0:
+        print(f"%-30s {RED}FAIL-COMPILE{DEFAULT}"%basename)
+        return 0
 
-    if err==0:
-        asmcommand = f"f32asm.exe src/start.f32 output.f32 "
-        err = os.system(asmcommand)
-        if err!=0:
-            print(f"%-30s {RED}FAIL-ASM{DEFAULT}"%basename)
-            return 0
+    asmcommand = f"f32asm.exe src/start.f32 output.f32 "
+    err = os.system(asmcommand)
+    if err!=0:
+        print(f"%-30s {RED}FAIL-ASM{DEFAULT}"%basename)
+        return 0
 
-        simcommand = f"f32sim.exe asm.hex > {outname}"
-        err = os.system(simcommand)
-        if err!=0:
-            print(f"%-30s {RED}FAIL-SIM{DEFAULT}"%basename)
-            return 0
+    simcommand = f"f32sim.exe asm.hex > {outname}"
+    err = os.system(simcommand)
+    if err!=0:
+        print(f"%-30s {RED}FAIL-SIM{DEFAULT}"%basename)
+        return 0
 
     with open(outname) as f:
         compiler_output = [line.rstrip() for line in f.readlines()]
-
+        
     if compiler_output == expected_output:
         print(f"%-30s {GREEN}PASS{DEFAULT}"%basename)
         return 1

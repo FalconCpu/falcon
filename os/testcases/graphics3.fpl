@@ -1,0 +1,75 @@
+
+fun drawBackground()
+    fillRect(0,0,640,480,0)
+    # Draw a colorful background pattern
+    # for y=0 to 22 
+    #     for x=0 to 24
+    #         fillRect(x*30, y*20, x*30+18, y*20+18, 1+(x*30+y*20)/30)
+    # Draw some text
+    #drawString(20, 20, "Bouncing Ball Demo", 15)
+
+
+
+
+fun main()
+    initializeGraphics()
+        
+    # Animate a bouncing ball
+    val colors = new Array<Int>{45, 46, 47, 48, 49, 50}
+    var ballX = 100
+    var ballY = 50
+    var dx = 5
+    var dy = 3
+
+
+    # drawBackground()
+
+    val backingStore = new BitmapImage(32,32)
+    val screenImage = getScreenImage()  
+    print("running")
+
+    for j = 11 to 12
+
+        # draw the ball
+        backingStore.copyFrom(screenImage, ballX-15, ballY-15)
+        fillRect(ballX-15, ballY-15, ballX+15, ballY+15, colors[2])
+
+        # val hwRegs = (0xE0000000:HwRegs)
+        # while hwRegs.vga_ypos = 480
+        #     val wait=1
+        # while hwRegs.vga_ypos != 480
+        #     val wait=1
+
+        # undraw old ball
+        backingStore.copyTo(screenImage, ballX-15, ballY-15)
+        ballX = j+30
+
+        # # Update position
+        # ballX = ballX + dx
+        # ballY = ballY + dy
+         
+        # # Bounce off edges
+        # if ballX >= 624
+        #     dx = -5
+        # if ballX <= 15
+        #     dx = 5
+        # if ballY > 465
+        #     dy = -3
+        # if ballY < 15
+        #     dy = 3
+
+    print("Debug\n")
+    val hwRegs = (0xE0000000:HwRegs)
+    print("%x %x\n", hwRegs.debug0, hwRegs.debug1)
+    print("%x %x\n", hwRegs.debug2, hwRegs.debug3)
+    print("%x %x\n", hwRegs.debug4, hwRegs.debug5)
+    print("%x %x\n", hwRegs.debug6, hwRegs.debug7)
+    print("\nMem mismatch")
+    for i = 0 to 76000
+        val screen = (0x3F80000:Array<Int>)
+        val z = screen[i]
+        if (z!=0)
+            print("%x = %x\n", 0x3F80000+4*i, z)
+    print("Done\n")
+
+@------

@@ -10,8 +10,10 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
         identifier.Print(indent + 1);
     }
 
-    private FieldSymbol UndefinedField() {
-        Log.Error(location, $"No field named {identifier.name} in class {left.type}");
+    private FieldSymbol UndefinedField(ClassType classType) {
+        Log.Error(location, $"No field named {identifier.name} in class {classType}");
+        string s = string.Join(",",classType.fields.Select(f=>f.name));
+        Log.Error(location, "Available fields are:"+s);
         return new FieldSymbol(identifier.name, ErrorType.Instance, true);
     }
 
@@ -26,7 +28,7 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
 
 
         if (leftType is ClassType classType) {
-            field = classType.GetField(identifier.name) ?? UndefinedField();
+            field = classType.GetField(identifier.name) ?? UndefinedField(classType);
             SetType(field.type);
         } else if ((leftType is StringType || leftType is ArrayType) && identifier.name=="length") {
             field = StdLib.lengthField;

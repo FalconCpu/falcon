@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 
@@ -50,7 +51,7 @@ void* my_malloc(size_t size);
 #define NUM_SECTORS 8192
 
 static unsigned char* diskImage;
-
+int line_number = 0;
 
 
 // values for the type field

@@ -10,12 +10,11 @@ class Blitter
 
 class Blitter_Pointer
     var   cmd         : Int    # 32 bit command register
-    var   address     : Pointer
+    var   address     : Array<Char>
     var   x2          : Short
     var   y2          : Short
     var   x3          : Short
     var   y3          : Short
-
 
 const BLIT_CMD_SET_DEST_ADDR      = 1  # address:Int, bytesPerRow:Short
 const BLIT_CMD_SET_SRC_ADDR       = 2  # address:Int, bytesPerRow:Short
@@ -28,10 +27,87 @@ const BLIT_CMD_SET_FONT           = 8  # fontAddr:Int, fontWidth:Short, fontHeig
 const BLIT_CMD_DRAW_CHAR          = 9  # char:Short, _:Short, x:Short, y:Short, color:Short, bgColor:Short
 const BLIT_CMD_DRAW_LINE          =10  # x1:Short, y1:Short, x2:Short, y2:Short, color:Short
 
+
+class BitmapImage(val width:Int, val height:Int, data: Array<Char>?)
+    var   address : Array<Char>
+    if data!=null 
+        address = (data:Array<Char>)
+    else 
+        address = new Array<Char>(width*height)
+
+    fun copyFrom(fromImage:BitmapImage, x:Int, y:Int)
+        val blitterP = (0xE0000080:Blitter_Pointer)
+        val blitter = (0xE0000080:Blitter)
+
+        while blitter.cmd < 5
+            val wait = 1
+
+        # set destination buffer
+        blitterP.address = address
+        blitterP.x2  = (width:Short)
+        blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
+
+        # set source buffer
+        blitterP.address = fromImage.address
+        blitterP.x2  = (fromImage.width:Short)
+        blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
+
+        # do the blit
+        blitter.x1 = (width:Short)
+        blitter.y1 = (height:Short)
+        blitter.x2 = (0:Short)
+        blitter.y2 = (0:Short)
+        blitter.x3 = (x:Short)
+        blitter.y3 = (y:Short)
+        blitterP.cmd = BLIT_CMD_COPY_RECT
+
+        # restore the source and destination buffers
+        blitterP.address = (0x3f80000:Array<Char>)
+        blitterP.x2  = 640
+        blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
+        blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
+
+    fun copyTo(toImage:BitmapImage, x:Int, y:Int)
+        val blitterP = (0xE0000080:Blitter_Pointer)
+        val blitter = (0xE0000080:Blitter)
+
+        # TODO: Check for overflow
+
+        while blitter.cmd < 5
+            val wait = 1
+
+        # set destination buffer
+        blitterP.address = toImage.address
+        blitterP.x2  = (toImage.width:Short)
+        blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
+
+        # set source buffer
+        blitterP.address = address
+        blitterP.x2  = (width:Short)
+        blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
+
+        # do the blit
+        blitter.x1 = (width:Short)
+        blitter.y1 = (height:Short)
+        blitter.x2 = (x:Short)
+        blitter.y2 = (y:Short)
+        blitter.x3 = (0:Short)
+        blitter.y3 = (0:Short)
+        blitterP.cmd = BLIT_CMD_COPY_RECT
+
+        # restore the source and destination buffers
+        blitterP.address = (0x3f80000:Array<Char>)
+        blitterP.x2  = 640
+        blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
+        blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
+
+    fun delete()
+        delete address
+
 fun initializeGraphics() 
     # Initialize the source and destination addresses to be the screen
     val blitterP = (0xE0000080:Blitter_Pointer)
-    blitterP.address = (0x3f80000:Pointer)
+    blitterP.address = (0x3f80000:Array<Char>)
     blitterP.x2  = 640
     blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
     blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
@@ -49,7 +125,7 @@ fun initializeGraphics()
     blitter.cmd = BLIT_CMD_SET_TRANS_COLOR
 
     # set the font - the pattern memory gets initialized by the font.hex file - so wa can just set the address
-    val fontAddr = (0xE1000000:Pointer)
+    val fontAddr = (0xE1000000:Array<Char>)
     blitterP.address = fontAddr
     blitterP.x2 = 8
     blitterP.y2 = 12
@@ -57,6 +133,14 @@ fun initializeGraphics()
     blitterP.y3 = 12
     blitterP.cmd = BLIT_CMD_SET_FONT
 
+    # create a rastport for the screen
+    val sysvars = (0x00000100:SystemVariables)
+    val rp = new BitmapImage(640,480, (0x3f80000:Array<Char>) )
+    sysvars.screenImage = rp
+
+fun getScreenImage()->BitmapImage
+    val sysvars = (0x00000100:SystemVariables)
+    return sysvars.screenImage
 
 fun drawPixel(x:Int, y:Int, color:Int)  
     if x<0 or x>=640 or y<0 or y>=480
@@ -166,3 +250,20 @@ fun scrollScreen(amount:Int)
         while blitter.cmd = 0
             val wait = 1
         blitter.cmd = BLIT_CMD_FILL_RECT
+
+fun copyRectangle(src:BitmapImage, dst:BitmapImage, x:Int, y:Int, width:Int, height:Int)
+    val blitterP = (0xE0000080:Blitter_Pointer)
+    blitterP.address = (0x3f80000:Array<Char>)
+    blitterP.x2  = 640
+    blitterP.cmd = BLIT_CMD_SET_DEST_ADDR
+    blitterP.cmd = BLIT_CMD_SET_SRC_ADDR
+
+    val blitter = (0xE0000080:Blitter)
+
+fun setTransparencyColor(color:Int)
+    val blitter = (0xE0000080:Blitter)
+    blitter.x1 = (color:Short)
+    while blitter.cmd = 0
+        val wait = 1
+    blitter.cmd = BLIT_CMD_SET_TRANS_COLOR
+

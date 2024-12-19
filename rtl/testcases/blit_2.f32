@@ -51,7 +51,7 @@ ld $2, BLIT_SET_SRC_ADDR
 stw $2, $1[BLIT_CMD]
 
 # now draw a set of rectangles
-ld $10, 255                    # $10 = counter of rectangles
+ld $10, 1                    # $10 = counter of rectangles
 
 wait_for_blitter:
 ld $3, 1

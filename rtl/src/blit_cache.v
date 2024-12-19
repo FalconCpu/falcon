@@ -11,6 +11,7 @@ module blit_cache (
     input      [31:0]    read_address,
     input                read_request,
     output     [7:0]     read_data,
+    output reg           read_valid,
     output               read_stall,
 
     // Memory interface (other signals tied off - so we can only read burst from SDRAM))
@@ -33,61 +34,88 @@ reg [1:0]  prev_addr_lsb;
 reg [31:0] cache_data;
 wire [31:0] rd;
 reg [2:0]  write_ptr;
-reg        prev_stall;
 
 wire main_memory = read_address[31:26]== 7'h0;
 wire patern_memory = read_address[31:16] == 16'hE100;
-reg  prev_main_memory;
 reg  prev_patern_memory;
-assign pattern_address = patern_memory ? read_address : 16'hx;
+reg  [1:0] fetch_state;
+parameter IDLE    = 2'b00,
+          REQUEST = 2'b01,
+          LOADING = 2'b10;
+
+
+assign pattern_address = patern_memory ? read_address[15:0] : 16'hx;
 
 assign rd = prev_patern_memory ? pattern_data : cache_data;
 
-assign read_data = (prev_addr_lsb == 2'b00) ? rd[7:0]   :
+assign read_data = (!read_valid)            ? 8'hbx     :
+                   (prev_addr_lsb == 2'b00) ? rd[7:0]   :
                    (prev_addr_lsb == 2'b01) ? rd[15:8]  :
                    (prev_addr_lsb == 2'b10) ? rd[23:16] :
                    (prev_addr_lsb == 2'b11) ? rd[31:24] : 8'hx;
 
-wire tag_match = cache_valid[read_address[4:2]] && cache_address[25:5] == read_address[25:5];
+wire [2:0] f = read_address[4:2];
+wire cv = cache_valid[f];
+wire address_match = cache_address[25:5] == read_address[25:5];
+
+
+wire tag_match = cv && address_match;
 assign read_stall = !reset && read_request && main_memory && !tag_match;
 
 always @(posedge clock) begin
-    prev_stall <= read_stall;
     if (!read_stall) begin
-        cache_data <= data[read_address[4:2]];
         prev_addr_lsb <= read_address[1:0];
-        prev_main_memory <= main_memory;
         prev_patern_memory <= patern_memory;
+        cache_data <= data[read_address[4:2]];
+        read_valid <= !reset && read_request;
     end
 
-    if (read_request && main_memory && !tag_match && !prev_stall) begin
-        mem_request <= 1'b1;
-        mem_address <= {read_address[25:5], 5'b00000};
-        cache_address <= read_address[25:5];
-        cache_valid <= 8'b0;
-        write_ptr <= 3'h0;
-    end
+    case(fetch_state) 
+        IDLE: begin
+            if (read_stall) begin
+                mem_request <= 1'b1;
+                mem_address <= {read_address[25:5], 5'b00000};
+                cache_address <= read_address[25:5];
+                cache_valid <= 8'b0;
+                write_ptr <= 3'h0;
+                fetch_state <= REQUEST;
+            end
+        end
+        
+        REQUEST: begin
+            if (mem_ack) begin
+                mem_request <= 1'b0;
+                fetch_state <= LOADING;
+            end
+        end
 
-    if (mem_ack) begin
-        mem_request <= 1'b0;
-    end
+        LOADING: begin
+            if (mem_valid) begin
+                data[write_ptr] <= mem_data;
+                cache_valid[write_ptr] <= 1'b1;
+                write_ptr <= write_ptr + 1'b1;
+            end
 
-    if (mem_valid) begin
-        data[write_ptr] <= mem_data;
-        cache_valid[write_ptr] <= 1'b1;
-        write_ptr <= write_ptr + 1'b1;
-    end
+            if (mem_complete) begin
+                fetch_state <= IDLE;
+            end
+        end
+    endcase
 
-//     if (mem_complete) begin
-//         cache_valid <= 1'b1;
-//         cache_address <= mem_address[25:5];
-//     end
+    // ASSERTS
+    if (mem_complete && fetch_state!=LOADING)
+        $display("ERROR: mem_complete when not loading");
+    if (mem_valid && fetch_state!=LOADING)
+        $display("ERROR: mem_valid when not loading");
+    if (mem_ack && fetch_state!=REQUEST)
+        $display("ERROR: mem_ack when not request");
 
     if (reset) begin
         cache_valid <= 0;
         cache_address <= 0;
         mem_request <= 0;
         write_ptr <= 3'h0;
+        fetch_state <= IDLE;
     end
 end
 
