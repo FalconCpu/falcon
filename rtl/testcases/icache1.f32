@@ -1,0 +1,53 @@
+# Test executing code from sdram
+
+ADDR_IN_SDRAM = 0x1234
+SEVEN_SEG_DISPLAY = 0x00
+UART_TX = 0x10
+
+main:
+    ld $1, prog
+    ld $2, ADDR_IN_SDRAM
+    ld $3, 54
+
+memcpy:
+    ldw $4,$1[0]
+    stw $4,$2[0]
+    add $1,4
+    add $2,4
+    sub $3,1
+    bne $3, 0, memcpy
+
+    ld $10, ADDR_IN_SDRAM
+    jmp $10[0]
+
+
+
+prog:
+    ld $1, 0xE0000000
+    ld $2, 'H'
+    stw $2, $1[UART_TX]
+    ld $2, 'e'
+    stw $2, $1[UART_TX]
+    ld $2, 'l'
+    stw $2, $1[UART_TX]
+    stw $2, $1[UART_TX]
+    ld $2, 'o'
+    stw $2, $1[UART_TX]
+    ld $2, ' '
+    stw $2, $1[UART_TX]
+    ld $2, 'w'
+    stw $2, $1[UART_TX]
+    ld $2, 'o'
+    stw $2, $1[UART_TX]
+    ld $2, 'r'
+    stw $2, $1[UART_TX]
+    ld $2, 'l'
+    stw $2, $1[UART_TX]
+    ld $2, 'd'
+    stw $2, $1[UART_TX]
+    ld $2, '!'
+    stw $2, $1[UART_TX]
+    ld $2, '\n'
+    stw $2, $1[UART_TX]
+    ld $4,0
+    jmp $4

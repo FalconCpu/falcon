@@ -45,6 +45,15 @@ module sdram_arbiter(
     output          blitr_valid,
     output          blitr_complete,
 
+    // ICACHE = instruction cache 5 (read only)
+    input           icache_request,
+    input  [25:0]   icache_address,
+    output [31:0]   icache_rdata,
+    output          icache_ack,
+    output          icache_valid,
+    output          icache_complete,
+
+
     // SDRAM slave
     output reg          sdram_request,
     output reg          sdram_write,
@@ -78,6 +87,11 @@ assign blitr_complete = sdram_complete == 3'h4;
 assign blitr_rdata    = blitr_valid ? sdram_rdata : 32'bx;
 assign blitr_ack      = sdram_ready && next_master==4'h4;
 
+assign icache_valid    = sdram_valid == 3'h5;
+assign icache_complete = sdram_complete == 3'h5;
+assign icache_rdata    = sdram_valid ? sdram_rdata : 32'bx;
+assign icache_ack      = sdram_ready && next_master==4'h5;
+
 assign sdram_master = this_master;
 reg prev_match;
 
@@ -92,6 +106,8 @@ always @(*) begin
             next_master = 4'd3;
         else if (blitr_request)
             next_master = 4'd4;
+        else if (icache_request)
+            next_master = 4'd5;
         else
             next_master = 4'b0;
     end else
@@ -132,6 +148,14 @@ always @(posedge clock) begin
             4'h4: begin  // Blitter always does burst reads
                 sdram_write   <= 1'b0;
                 sdram_address <= blitr_address;
+                sdram_wdata   <= 26'bx;
+                sdram_byte_en <= 4'b0;
+                sdram_burst   <= 1'h1;
+            end
+
+            4'h5: begin  // ICache always does burst reads
+                sdram_write   <= 1'b0;
+                sdram_address <= icache_address;
                 sdram_wdata   <= 26'bx;
                 sdram_byte_en <= 4'b0;
                 sdram_burst   <= 1'h1;

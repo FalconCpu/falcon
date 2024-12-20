@@ -14,19 +14,29 @@ module cpu(
     input               cpu_mem_busy,   // Memory bus is busy
     input               cpu_valid,      // rdata is valid
 
-    output [31:0]       instr_addr,
-    input  [31:0]       instr_data,
-    output [31:0]       debug_pc
+    output [15:0]       imem_addr,
+    input  [31:0]       imem_data,
+    output [31:0]       debug_pc,
+
+    output              icache_request,     // request to the memory system
+    output [25:0]       icache_address,     // Address to read from
+    input  [31:0]       icache_rdata,       // data read from sdram
+    input               icache_ack,         // transaction is acknowledged 
+    input               icache_valid,       // data is valid
+    input               icache_complete     // transaction is complete
 );
 
 // Signals from pc 
 wire [31:0] p1_pc;
 wire [31:0] p2_pc;
 wire [31:0] p3_pc;
+wire [31:0] p4_pc;
 
 // Signals from icache
 wire [31:0] p2_instr;
 wire        p2_ack;
+wire        p2_instr_valid;
+wire        p2_inst_invalid_address; // TODO
 
 // Signals from decoder
 wire [4:0]    p2_reg_a;
@@ -56,7 +66,6 @@ wire          p3_jump;
 wire [31:0]   p3_jump_target;
 wire          stall;
 
-assign instr_addr = p1_pc;
 assign debug_pc = p2_pc;
 
 cpu_pc  cpu_pc_inst (
@@ -64,20 +73,40 @@ cpu_pc  cpu_pc_inst (
     .reset(reset),
     .stall(stall),
     .p2_pipeline_bubble(p2_pipeline_bubble),
+    .p2_instr_valid(p2_instr_valid),
     .p3_jump(p3_jump),
     .p3_jump_target(p3_jump_target),
     .p1_pc(p1_pc),
     .p2_pc(p2_pc),
     .p3_pc(p3_pc),
-    .instr_data(instr_data),
-    .instr_data_out(p2_instr_data)
+    .p4_pc(p4_pc)
   );
+
+  cpu_icache  cpu_icache_inst (
+    .clock(clock),
+    .reset(reset),
+    .stall(stall || p2_pipeline_bubble),
+    .inst_address(p1_pc),
+    .inst_rdata(p2_instr_data),
+    .inst_valid(p2_instr_valid),
+    .inst_invalid_address(p2_inst_invalid_address),
+    .imem_address(imem_addr),
+    .imem_rdata(imem_data),
+    .icache_request(icache_request),
+    .icache_address(icache_address),
+    .icache_rdata(icache_rdata),
+    .icache_ack(icache_ack),
+    .icache_valid(icache_valid),
+    .icache_complete(icache_complete)
+  );
+
 
 cpu_decoder  cpu_decoder_inst (
     .clock(clock),
     .reset(reset),
     .stall(stall),
     .p2_instr(p2_instr_data),
+    .p2_instr_valid(p2_instr_valid),
     .p2_reg_a(p2_reg_a),
     .p2_reg_b(p2_reg_b),
     .p2_bypass_a3(p2_bypass_a3),
@@ -118,6 +147,7 @@ cpu_alu  cpu_alu_inst (
     .stall(stall),
     .p2_pc(p2_pc),
     .p3_pc(p3_pc),
+    .p4_pc(p4_pc),
     .p3_op(p3_op),
     .p4_op(p4_op),
     .p3_data_a(p3_data_a),

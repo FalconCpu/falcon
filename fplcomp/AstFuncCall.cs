@@ -134,17 +134,16 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
                 Symbol funcPtrSym = mem.CodeGenRvalue(func);
                 CodeGenIndirectCall(func, funcPtrSym);
             }
-        } else {
-            Symbol leftSym = left.CodeGenRvalue(func);
-            if (leftSym is FunctionSymbol fs) {
-                if (fs.function.methodOf != null) {
-                    // We have the form  m(args...)   where m is a method
-                    CodeGenCall(func, fs, func.thisSymbol);
-                } else {
-                    // We have a simple function call  funcname(args...)
-                    CodeGenCall(func, fs, null);
-                }
+        } else if (left is AstIdentifier id && id.symbol is FunctionSymbol fs) {
+            if (fs.function.methodOf != null) {
+                // We have the form  m(args...)   where m is a method
+                CodeGenCall(func, fs, func.thisSymbol);
+            } else {
+                // We have a simple function call  funcname(args...)
+                CodeGenCall(func, fs, null);
             }
+        } else {
+            throw new NotImplementedException("Call to function expression");
         }
 
         // Collect the return value

@@ -8,7 +8,90 @@ const EXCEPTION_MISALIGNED_STORE         = 6
 const EXCEPTION_STORE_ACCESS_FAULT       = 7
 const EXCEPTION_ENVIRONMENT_CALL         = 8
 
-fun ExceptionHandler(cause:Int, tcb:Array<Int>)
-    print("Exception %d\n", cause)
+class TaskControlBlock
+    var pc    : Int
+    var reg1  : Int
+    var reg2  : Int
+    var reg3  : Int
+    var reg4  : Int
+    var reg5  : Int
+    var reg6  : Int
+    var reg7  : Int
+    var reg8  : Int
+    var reg9  : Int
+    var reg10 : Int
+    var reg11 : Int
+    var reg12 : Int
+    var reg13 : Int
+    var reg14 : Int
+    var reg15 : Int
+    var reg16 : Int
+    var reg17 : Int
+    var reg18 : Int
+    var reg19 : Int
+    var reg20 : Int
+    var reg21 : Int
+    var reg22 : Int
+    var reg23 : Int
+    var reg24 : Int
+    var reg25 : Int
+    var reg26 : Int
+    var reg27 : Int
+    var reg28 : Int
+    var reg29 : Int
+    var reg30 : Int
+    var regSp : Int
+
+
+fun Boot() 
+    # set up the memory allocation system
+    initializeMemorySystem()   
+
+    # turn off the seven segment display and LEDs 
+    # (just in case the bootloader left them on)
+    val hwRegs = (0xE0000000:HwRegs)
+    hwRegs.seven_seg = 0
+    hwRegs.ledr = 0
+
+    # Create a task - currently this is the user code
+    val tcb = new Tcb()
+    tcb.pc = (main:Int)             # set the entry point as 
+    tcb[0] = (main:Int)             # Set the entry point
+    tcb[31] = 0x3F80000             # Set the stack pointer
+    tcb[30] = (Success:Int)         # Set the return address
+    ResumeTask(tcb)
+
+
+
+fun dumpRegisters(tcb:Array<Int>)
+    for reg = 0 to 31
+        if reg=0
+            print("PC")
+        else
+            print("%d",reg)
+            if (reg<10)
+                print(" ")
+        print("=%x ",tcb[reg])
+        if reg%8=7
+            print("\n")
+    
+
+fun ExceptionHandler(cause:Int, data:Int, tcb:Array<Int>)
+    val name : String
+    when cause
+        EXCEPTION_INSTRUCTION_ACCESS_FAULT -> name = "Instruction Access Fault"
+        EXCEPTION_ILLEGAAL_INSTRUCTION     -> name = "Illegal instruction"
+        EXCEPTION_BREAKPOINT               -> name = "Breakpoint"
+        EXCEPTION_MISALIGNED_LOAD          -> name = "Misaligned load"
+        EXCEPTION_LOAD_ACCESS_FAULT        -> name = "Load access fault"
+        EXCEPTION_MISALIGNED_STORE         -> name = "Misaligned store"
+        EXCEPTION_STORE_ACCESS_FAULT       -> name = "Store access fault"
+        EXCEPTION_ENVIRONMENT_CALL         -> name = "Environment call"
+        else                               -> name = "Unknown exception"
+    print("Exception: %s   ADDR=%x\n", name, data)
+
+    dumpRegisters(tcb)
     abort(cause)
+
+
 

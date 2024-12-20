@@ -93,12 +93,14 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
                 return variableSymbol;
 
             case FunctionSymbol functionSymbol:
-                return functionSymbol;
+                Symbol ret = func.NewTemp(type);
+                func.Add(new InstrLea(ret, functionSymbol));
+                return ret;
 
             case FieldSymbol fieldSymbol:
                 if (func.thisSymbol==null) throw new ArgumentException("Cannot find 'this' symbol");
                 CheckThisHas(func.thisSymbol, fieldSymbol);
-                Symbol ret = func.NewTemp(type);
+                ret = func.NewTemp(type);
                 func.Add(new InstrLoadField(type.GetSize(), ret, func.thisSymbol, fieldSymbol));
                 return ret;
 

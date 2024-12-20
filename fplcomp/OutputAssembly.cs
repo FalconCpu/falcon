@@ -26,6 +26,8 @@ class OutputAssembly(StreamWriter filehandle) {
             case InstrLea lea:
                 if (lea.value is ConstObjectSymbol sls)
                     WriteLine($"ld {lea.dest.name}, {sls.name}");
+                else if (lea.value is FunctionSymbol fs)
+                    WriteLine($"ld {lea.dest.name}, /{fs.name}");
                 else
                     throw new ArgumentException("lea: value is not a ConstObjectSymbol");
                 break;

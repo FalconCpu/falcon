@@ -114,7 +114,7 @@ module tb;
 
 initial begin
     $dumpvars(5);   // was 5
-    #2500000;
+    #25000;
     $finish;
 end
 

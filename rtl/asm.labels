@@ -1,6 +1,3 @@
-ffff0100 wait_for_blitter3
-ffff00b0 wait_for_blitter2
-ffff00ac scrollLoop
-ffff00a4 delay
-ffff0048 wait_for_blitter
-ffff0000 start
+ffff0010 memcpy
+ffff0034 prog
+ffff0000 main

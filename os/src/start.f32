@@ -49,19 +49,10 @@ ExceptionAddress: jmp ExceptionHandler
 
 Boot:
     ld $sp, 0x04000000            # Initialize the stack pointer
-
-    ld $1, HWREG_BASE
-    stw 0, $1[HWREG_7SEG]         # Turn off the 7-segment display
-    stw 0, $1[HWREG_LED]          # Turn off the LED's
-
-    jsr /initializeMemorySystem
-
-    jsr /_start                    # Call the entry point of the user program
-    ld $1, $8                     # if it returns a value then exit with that value
-    jmp _success
+    jmp /Boot                     # jump into the fpl boot code
 
 # ############################################################
-#                        _success
+#                        /Success
 # ############################################################
 # The program has completed. In simulation we do a jump to address 0
 # This fires a trap in the simulator which causes the program to stop
@@ -69,7 +60,7 @@ Boot:
 #
 # Input: $1 = error code
 
-_success:
+/Success:
     ld $2, HWREG_BASE
     stw $1, $2[HWREG_7SEG]        # Display the error code on the 7-segment display
     ldw $1, $2[HWREG_SIMULATION]  # Check if we are running on FPGA or in a simulation
@@ -162,6 +153,7 @@ _success:
 
 ExceptionHandler:
     cfg $29, !escratch, $29     # Get the task control block into $29
+    ld $1,$1                    # need to allow the pipeline to flush
     stw $1, $29[4]              # save all the registers into the tcb
     stw $2, $29[8]
     stw $3, $29[12]
@@ -199,8 +191,55 @@ ExceptionHandler:
     cfg $1, !epc                  # Get the exception PC
     stw $1, $29[0]                # Store the exception PC into the tcb
     cfg $1, !ecause               # Get the exception cause as argument1
-    ld $2, $29                    # pass the tcb as argument 2
+    cfg $2, !edata
+    ld $3, $29                    # pass the tcb as argument 2
     jmp /ExceptionHandler
+
+# ############################################################
+#                         ResumeTask
+# ############################################################
+# Run a task from a task control block
+# Input: $1 = task control block
+
+/ResumeTask:
+    ld  $29, $1                     # Load the task control block
+    ldw $1, $29[0]                  # Get the PC from the task control block
+    cfg !epc, $1                    # Set the exception PC
+    ldw $1,  $29[116]               # get the task's $29
+    cfg !escratch, $1               # Set the scratch register to the task's $29 
+    ldw $1,  $29[4]                 # Load the task's $1
+    ldw $2,  $29[8] 
+    ldw $3,  $29[12]
+    ldw $4,  $29[16]
+    ldw $5,  $29[20]
+    ldw $6,  $29[24]
+    ldw $7,  $29[28]
+    ldw $8,  $29[32]
+    ldw $9,  $29[36]
+    ldw $10, $29[40]
+    ldw $11, $29[44]
+    ldw $12, $29[48]
+    ldw $13, $29[52]
+    ldw $14, $29[56]
+    ldw $15, $29[60]
+    ldw $16, $29[64]
+    ldw $17, $29[68]
+    ldw $18, $29[72]
+    ldw $19, $29[76]
+    ldw $20, $29[80]
+    ldw $21, $29[84]
+    ldw $22, $29[88]
+    ldw $23, $29[92]
+    ldw $24, $29[96]
+    ldw $25, $29[100]
+    ldw $26, $29[104]
+    ldw $27, $29[108]
+    ldw $28, $29[112]
+    ldw $30, $29[120]
+    ldw $sp, $29[124]
+    cfg $29, !escratch, $29         # Swap the scratch register back to the task's $29
+                                    # Which leaves the tcb in !escratch
+    rte                             # Return to the task
 
 # ############################################################
 #                         print

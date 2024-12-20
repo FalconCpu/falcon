@@ -16,6 +16,7 @@ class inheritance
 virtual functions
 public/private
 For loops  => find a more generic structure
+initializer for Array<String>
 
 
 

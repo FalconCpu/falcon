@@ -138,7 +138,7 @@ class Program {
         parseArgs(args);
 
         // Run the compilation
-        for(int phase=1; phase<stopAt; phase++) {
+        for(int phase=1; phase<=stopAt; phase++) {
             switch(phase) {
                 case PHASE_PARSE: 
                     RunParser();  
@@ -158,6 +158,9 @@ class Program {
                         func.RunBackend();
                     break;
 
+                case PHASE_ALL:
+                    break;
+
                 default:
                     Log.Error($"Unknown phase {phase}");
                     break;
@@ -170,10 +173,15 @@ class Program {
         }
 
         // Output the result for the phase we stopped at
+        if (stopAt!=PHASE_ALL)
+            Console.WriteLine($"Stopped at phase {stopAt}");
         switch(stopAt) {
             case PHASE_PARSE:     topLevel.Print(0);    break;
             case PHASE_TYPECHECK: topLevel.Print(0);    break;
-            case PHASE_CODEGEN:   topLevel.PrintCode(); break;
+            case PHASE_CODEGEN:   
+                foreach(AstFunction func in AstFunction.allFunctions)
+                    func.PrintCode();
+                    break;
             case PHASE_BACKEND:   topLevel.PrintCode(); break;
             case PHASE_ALL:       GenerateAssembly();   break;
             default: Log.Error($"Unknown phase {stopAt}"); break;

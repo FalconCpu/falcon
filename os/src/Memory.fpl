@@ -172,7 +172,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     chunkA.size = roundedSize
     chunkA.descriptor = desc
     chunkA.refcount = 1
-    print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
+    # print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
     return ((chunk:Int)+16:Pointer)
 
 # ######################################################
@@ -182,7 +182,7 @@ fun free(ptr:Pointer)
     if ptr=null
         return
     val chunk = ((ptr:Int)-16:FreeMemChunk)
-    print("Free %x %d\n",ptr, chunk.size)
+    # print("Free %x %d\n",ptr, chunk.size)
     if chunk.magic = MAGIC_ALLOCATED
         addChunkToFreeList((chunk:FreeMemChunk), chunk.size)
     elsif chunk.magic = MAGIC_FREE

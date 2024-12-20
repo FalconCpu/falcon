@@ -8,6 +8,7 @@ module cpu_decoder(
 
     // connections from the icache
     input [31:0]        p2_instr,
+    input               p2_instr_valid,
 
     // connections to the datamux
     output     [4:0]    p2_reg_a,
@@ -56,7 +57,7 @@ always @(*) begin
     p2_is_latent = 0;
     p2_pipeline_bubble = 0;
 
-    if (p3_jump) begin 
+    if (p3_jump || !p2_instr_valid || reset) begin 
         p2_op         = 0;
         p2_a_is_reg   = 1'bx;
         p2_b_is_reg   = 1'bx;
@@ -172,7 +173,7 @@ always @(*) begin
             p2_a_is_reg   = 1;
             p2_b_is_reg   = 0;
             p2_b_is_const = 1;
-            p2_reg_d      = p2_d;
+            p2_reg_d      = p2_d;           // TODO - Ensure D=0 for RTE
             p2_const      = {{19{p2_c[7]}}, p2_c, p2_b};
             p2_is_latent  = 0;
         end

@@ -7,6 +7,7 @@ module cpu_alu(
     output              stall,
     input [31:0]        p2_pc,
     input [31:0]        p3_pc,
+    input [31:0]        p4_pc,
 
     // connections from the decoder
     input [8:0]         p3_op,
@@ -45,6 +46,7 @@ reg [1:0] p3_addr_lsb, p4_addr_lsb;
 reg  p3_is_mem;
 reg p4_is_mem;
 reg [31:0] p4_in;
+reg [31:0] p4_cpu_address;
 
 reg [31:0] this_epc ,     next_epc;
 reg [3:0]  this_ecause ,  next_ecause;
@@ -65,11 +67,12 @@ wire [31:0] p4_remainder;
 reg         p3_divide_sign, p4_divide_sign;
 wire        p4_divide_done;
 reg         p3_divide_start, p4_divide_start;
+reg         raise_exception;
 
 
 
 assign cpu_request = p3_is_mem && !stall;
-assign stall = ((p4_is_mem && !cpu_valid) || (p4_divide_start && !p4_divide_done)) && !reset;
+assign stall = ((p4_is_mem && !cpu_valid) || (p4_divide_start && !p4_divide_done)) && !raise_exception && !reset;
 
 always @(*) begin
     // default values
@@ -91,8 +94,11 @@ always @(*) begin
     next_edata = this_edata;
     next_estatus = this_estatus;
     next_escratch = this_escratch;
-    next_status = this_status, p4_misaligned_store;;
-    p3_misaligned_load = 1'b0, p4_misaligned_load;;
+    next_status = this_status;
+    p3_misaligned_store = 1'b0;
+    p3_misaligned_load = 1'b0;
+    raise_exception = 1'b0;
+
     // config registers
     case(p3_data_b[12:0])
         13'd0: cfg_read = 32'h00000001;
@@ -184,13 +190,20 @@ always @(*) begin
             cpu_write = 1'b0;
         end  
 
-        `INST_LDH: begin, p4_misaligned_store; 
-            p3_misaligned_load = mem_addr[0],, p4_misaligned_load; p4_misaligned_store;;
-        end // TODO: Check align
+        `INST_LDH: begin
+            p3_is_mem = 1'b1;
+            cpu_address = mem_addr;
+            cpu_write = 1'b0;
+            p3_misaligned_load = mem_addr[0];
+    
+        end
 
-        `INST_LDW: begin, p4_misaligned_store; 
-            p3_misaligned_load = mem_addr[1:0, p4_misaligned_load;] != 2'b00, p4_misaligned_store;;
-        end // TODO: Check align
+        `INST_LDW: begin
+            p3_is_mem = 1'b1;
+            cpu_address = mem_addr;
+            cpu_write = 1'b0;
+            p3_misaligned_load = mem_addr[1:0] != 2'b00;
+        end
 
         `INST_STB: begin 
             p3_is_mem = 1'b1;
@@ -293,6 +306,11 @@ always @(*) begin
         `INST_CFGW:
             p3_out = cfg_read;
 
+        `INST_RTE: begin
+            p3_jump = 1'b1;
+            p3_jump_target = this_epc;
+            next_status = this_estatus;
+        end
         default: 
             p3_out = 32'bx;
 
@@ -335,17 +353,19 @@ always @(*) begin
     if (p4_misaligned_load) begin
         next_epc = p4_pc;        
         next_edata = p4_cpu_address;
-        next_estatus = this_status;
         next_ecause = `CAUSE_MISALIGNED_LOAD;
-        p3_jump = 1'b1;
-        p3_jump_target = 32'hFFFF0004;
-    end else if (p3_misaligned_store) begin
-        next_epc = p3_pc;
-        next_edata = cpu_address;
-        next_estatus = this_status;
+        raise_exception = 1'b1;
+    end else if (p4_misaligned_store) begin
+        next_epc = p4_pc;
+        next_edata = p4_cpu_address;
         next_ecause = `CAUSE_MISALIGNED_STORE;
+        raise_exception = 1'b1;
+    end
+
+    if (raise_exception) begin
         p3_jump = 1'b1;
         p3_jump_target = 32'hFFFF0004;
+        next_estatus = this_status;
     end
 end
 

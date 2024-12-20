@@ -208,8 +208,10 @@ char *disassemble_line(int op, int pc) {
                 sprintf(line, "cfg %s,%s", reg_name[d], cfg_name[b]);
             else if (i==1)
                 sprintf(line, "cfg %s, %s, %s", reg_name[d], cfg_name[b], reg_name[a]);
+            else if (i==2 && a==0 && b==0 && c==0)
+                sprintf(line, "rte");
             else
-                sprintf(line, "undefined cfg");
+                sprintf(line, "undefined cfg %d",i);
                 break;
         default: sprintf(line, "undefined"); break;
     }

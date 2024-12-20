@@ -1,121 +1,100 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Wed Dec 18 18:26:26 2024
+[*] Fri Dec 20 14:09:51 2024
 [*]
-[dumpfile] "C:\Users\simon\falcon\rtl\src\dump.vcd"
+[dumpfile] "C:\Users\simon\falcon\rtl\dump.vcd"
+[dumpfile_mtime] "Fri Dec 20 14:05:33 2024"
+[dumpfile_size] 1134307
 [savefile] "C:\Users\simon\falcon\rtl\src\gtkwave.gtkw"
-[timestart] 1413142600
+[timestart] 4761700
 [size] 1920 1129
 [pos] -1 -1
-*-14.380966 1413194200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.778549 5140000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [treeopen] tb.Falcon_inst.
+[treeopen] tb.Falcon_inst.cpu_inst.
 [sst_width] 303
 [signals_width] 262
 [sst_expanded] 1
 [sst_vpaned_height] 339
-@28
-tb.Falcon_inst.hwregs_inst.blit_start
-tb.Falcon_inst.blitter_inst.blit_cmd_inst.p0_cmd_valid
-tb.Falcon_inst.blitter_inst.stall
 @22
-tb.Falcon_inst.blitter_inst.blit_cmd_inst.cmd[7:0]
+tb.Falcon_inst.cpu_inst.cpu_address[31:0]
+tb.Falcon_inst.cpu_inst.cpu_pc_inst.p1_pc[31:0]
+tb.Falcon_inst.cpu_inst.cpu_pc_inst.p3_jump_target[31:0]
+@28
+tb.Falcon_inst.cpu_inst.cpu_pc_inst.p3_jump
 @200
 -
--RECTANGLE
-@22
-tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_rect_dest_x[15:0]
-tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_rect_dest_y[15:0]
 @28
-tb.Falcon_inst.blitter_inst.blit_drawrect_inst.p2_write_enable
+tb.Falcon_inst.cpu_inst.cpu_pc_inst.reset
+tb.Falcon_inst.cpu_inst.stall
+tb.Falcon_inst.cpu_inst.cpu_alu_inst.raise_exception
 @200
 -
--ADDRESS
-@22
-tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_dest_addr[25:0]
-tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_src_addr[31:0]
+-CPU _BUS
 @28
-tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_write_en
-tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p3_mem_read
-tb.Falcon_inst.blitter_inst.blit_addrgen_inst.p2_line_write_enable
+tb.Falcon_inst.cpu_inst.cpu_request
+@22
+tb.Falcon_inst.cpu_inst.cpu_address[31:0]
+@28
+tb.Falcon_inst.cpu_inst.cpu_write
+tb.Falcon_inst.cpu_inst.cpu_valid
+@22
+tb.Falcon_inst.cpu_inst.cpu_wdata[31:0]
+tb.Falcon_inst.cpu_inst.cpu_rdata[31:0]
 @200
 -
--CACHE
+-DECODER
+@2022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_instr[31:0]
 @28
-tb.Falcon_inst.blitter_inst.blit_cache_inst.read_request
-@22
-tb.Falcon_inst.blitter_inst.blit_cache_inst.read_address[31:0]
-tb.Falcon_inst.blitter_inst.blit_cache_inst.mem_data[31:0]
+tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_pipeline_bubble
+@c02022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
 @28
-tb.Falcon_inst.blitter_inst.blit_cache_inst.mem_valid
-@22
-tb.Falcon_inst.blitter_inst.blit_cache_inst.read_data[7:0]
-@28
-tb.Falcon_inst.blitter_inst.blit_cache_inst.read_valid
-@200
--
--COLOR
-@22
-tb.Falcon_inst.blitter_inst.blit_color_inst.wr_data[7:0]
-@28
-tb.Falcon_inst.blitter_inst.blit_color_inst.wr_enable
-@200
--
--COMBINE
-@22
-tb.Falcon_inst.blitter_inst.blit_combine_inst.in_addr[25:0]
-tb.Falcon_inst.blitter_inst.blit_combine_inst.in_data[7:0]
-@28
-tb.Falcon_inst.blitter_inst.blit_combine_inst.in_en
-@200
--
-@c00022
-tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-@28
-(0)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-(1)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-(2)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-(3)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
+(0)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(1)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(2)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(3)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(4)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(5)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(6)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(7)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
+(8)tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_op[8:0]
 @1401200
 -group_end
+@24
+tb.Falcon_inst.cpu_inst.cpu_decoder_inst.p2_reg_d[4:0]
+@200
+-
+-ALU
+@2022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+tb.Falcon_inst.cpu_inst.cpu_alu_inst.p3_op[8:0]
 @22
-tb.Falcon_inst.DRAM_ADDR[12:0]
-@28
-tb.Falcon_inst.DRAM_RAS_N
-tb.Falcon_inst.DRAM_CAS_N
-tb.Falcon_inst.DRAM_WE_N
+tb.Falcon_inst.cpu_inst.cpu_alu_inst.p2_pc[31:0]
+@2022
+^1 C:\Users\simon\falcon\rtl\src\instr.txt
+tb.Falcon_inst.cpu_inst.cpu_alu_inst.p4_op[8:0]
+@200
+-
+-ICACHE
 @22
-tb.Falcon_inst.DRAM_DQ[15:0]
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.inst_address[31:0]
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.inst_rdata[31:0]
 @28
-tb.Falcon_inst.sdram_controller_inst.sdram_ready
-@22
-tb.Falcon_inst.sdram_controller_inst.sdram_valid[3:0]
-@28
-tb.Falcon_inst.sdram_controller_inst.sdram_request
-@2029
-^1 C:\Users\simon\falcon\rtl\src\sdram_controller_state.txt
-tb.Falcon_inst.sdram_controller_inst.this_state[2:0]
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.inst_valid
 @200
 -
 @28
-tb.Falcon_inst.sdram_arbiter_inst.blitr_request
-tb.Falcon_inst.sdram_arbiter_inst.vga_request
-tb.Falcon_inst.sdram_arbiter_inst.dcache_request
-tb.Falcon_inst.sdram_arbiter_inst.blitw_request
-tb.Falcon_inst.sdram_arbiter_inst.blitw_ack
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.icache_request
+@22
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.fetch_address[31:0]
+@23
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.icache_rdata[31:0]
+@28
+tb.Falcon_inst.cpu_inst.cpu_icache_inst.icache_request
 [pattern_trace] 1
 [pattern_trace] 0
-!100000@@
-?00
-@29
-(3)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-?00
-(2)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-?00
-(1)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-?00
-(0)tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-?"2
-@800023
-tb.Falcon_inst.sdram_controller_inst.sdram_master[3:0]
-!!

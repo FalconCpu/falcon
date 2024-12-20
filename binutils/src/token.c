@@ -105,6 +105,7 @@ static struct Token predefined_tokens[] = {
     { 'S', 0, "stw", 2 , 0},
 
     { 'C', 0, "cfg",      0, 0},
+    { 'Z', 0, "rte",      0, 0},
     { '!', 0, "!version", 0, 0},
     { '!', 0, "!epc",     1, 0},
     { '!', 0, "!ecause",  2, 0},

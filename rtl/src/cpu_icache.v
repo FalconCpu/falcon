@@ -38,8 +38,7 @@ module cpu_icache(
 // B = Byte number     2 bits
 
 reg [31:0]  cache_ram[0:4095];
-reg [17:0]  tag_ram[0:511];
-reg [511:0] valid_ram = 512'h0;
+reg [18:0]  tag_ram[0:511];           // Bit [18]=Valid, [17:0]=Tag
 
 reg this_imem, next_imem;              // Is the address in the instruction memory
 reg this_cacheable, next_cacheable;    // Is the address in cachable range
@@ -47,8 +46,7 @@ reg this_stalled;                      // The CPU is stalled
 
 
 reg [31:0] this_data;             // Data fetched from the cache
-reg [17:0] this_tag;              // Tag of the cache line
-reg        this_valid;            // Is the cache line valid
+reg [18:0] this_tag;              // Tag of the cache line
 reg [31:0] this_address;          // Address of data we are outputting
 
 reg [31:0] fetch_address;         // Address of the next instruction to fetch
@@ -60,17 +58,18 @@ reg [31:0] stall_data; // If the cpu is stalled, this is the instruction we are 
 reg        stall_valid;// Data was valid when the CPU was stalled   
 
 
-reg [1:0] this_state, next_state;
-parameter STATE_IDLE    = 2'b00;
-parameter STATE_REQUEST = 2'b01;
-parameter STATE_FETCH   = 2'b10;
-parameter STATE_WAIT    = 2'b11;
+reg [2:0] this_state, next_state;
+parameter STATE_IDLE    = 3'b000;
+parameter STATE_REQUEST = 3'b001;
+parameter STATE_FETCH   = 3'b010;
+parameter STATE_WAIT    = 3'b011;
+parameter STATE_RESET   = 3'b100;
 
 assign imem_address = inst_address[15:0];
 
 always @(*) begin
-    cache_hit  = this_cacheable && this_valid && (this_tag == this_address[31:14]);
-    cache_miss = this_cacheable && !this_valid;
+    cache_hit  = this_cacheable && this_tag[18] && (this_tag[17:0] == this_address[31:14]);
+    cache_miss = this_cacheable && !cache_hit;
 
     // State machine to fetch instructions from the memory
     next_state = this_state;
@@ -78,29 +77,36 @@ always @(*) begin
     case (this_state) 
         STATE_IDLE: begin
             next_request = cache_miss;
-            icache_address = this_address;
+            icache_address = this_address[25:0];
             if (cache_miss)
                 next_state = STATE_REQUEST;
         end
 
         STATE_REQUEST: begin
             next_request = ! icache_ack;
-            icache_address = fetch_address;
+            icache_address = fetch_address[25:0];
             if (icache_ack)
                 next_state = STATE_FETCH;
         end
 
         STATE_FETCH: begin
             next_request = 1'b0;
-            icache_address = fetch_address;
+            icache_address = fetch_address[25:0];
             if (icache_complete)
                 next_state = STATE_WAIT;    // Allow time for the data to be written to the cache
         end
 
         STATE_WAIT: begin
             next_request = 1'b0;
-            icache_address = fetch_address;
+            icache_address = fetch_address[25:0];
             next_state = STATE_IDLE;
+        end
+
+        STATE_RESET: begin
+            next_request = 1'b0;
+            icache_address = 26'bx;
+            if (fetch_address==14'h3fe0)
+                next_state = STATE_IDLE;
         end
     endcase
 
@@ -122,14 +128,15 @@ always @(*) begin
         inst_rdata = 32'bx;
         inst_valid = 1'b0;
     end else begin
-        $display("Warning: instruction cache invalid state at address %x", inst_address);
+        $display("Warning: instruction cache invalid state at address %x time %d", inst_address,$time);
         inst_rdata = 32'bx;
         inst_valid = 1'b1;
     end
 
     if (reset) begin
-        next_state <= STATE_IDLE;
+        next_state <= STATE_RESET;
         next_request <= 1'b0;
+        icache_address <= 26'b0;
     end
 end 
 
@@ -153,21 +160,25 @@ always @(posedge clock) begin
     if (icache_valid)
         cache_ram[fetch_address[13:2]] = icache_rdata;
 
-    if (this_state==STATE_IDLE)
+    if (reset)
+        fetch_address <= 32'h0;
+    else if (this_state==STATE_RESET)
+        fetch_address <= fetch_address + 32'h20;  // stepm through every cache line
+    else if (this_state==STATE_IDLE)
         fetch_address <= icache_address;
     else if (icache_valid)
         fetch_address <= {fetch_address[31:5], addr_inc};
     
-    if (this_state==STATE_REQUEST) begin
-        valid_ram[fetch_address[13:5]] <= 1'b0;
-        tag_ram[fetch_address[13:5]] <= fetch_address[31:14];
-    end else if (icache_complete)
-        valid_ram[fetch_address[13:5]] <= 1'b1;
+    if (this_state==STATE_RESET)
+        tag_ram[fetch_address[13:5]] <= 18'h2xxxx;
+    else if (icache_complete)
+        tag_ram[fetch_address[13:5]] <= {1'b1,fetch_address[31:14]};
+    else if (this_state==STATE_REQUEST||this_state==STATE_FETCH)
+        tag_ram[fetch_address[13:5]] <= 18'h2xxxx;
 
     // fetch the instruction from the cache
     this_data      <= cache_ram[inst_address[13:2]];
     this_tag       <= tag_ram[inst_address[13:5]];
-    this_valid     <= valid_ram[inst_address[13:5]];
     this_address   <= inst_address;
     this_state     <= next_state;
     icache_request <= next_request;

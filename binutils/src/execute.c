@@ -474,6 +474,13 @@ static void execute_instruction(int instr) {
                             write_cfg(n13, reg[a]);
                         if (i==0 || i==1)
                             set_reg(d,tmp);
+                        if (i==2) {  // RTE
+                            pc = epc;
+                            status = estatus;
+                            if (trace_file)
+                                fprintf(trace_file, "-> %s", find_label(pc));                        
+                        }
+
                         break;
         default: break;
     }

@@ -91,7 +91,13 @@ wire  [3:0]        cpu_wstrb;
 wire  [31:0]       cpu_wdata;
 wire  [31:0]       cpu_rdata;
 wire               cpu_valid;
-wire  [31:0]       instr_addr;
+wire  [15:0]       instr_addr;
+wire               icache_request;
+wire  [25:0]       icache_address;
+wire  [31:0]       icache_rdata;
+wire               icache_ack;
+wire               icache_valid;
+wire               icache_complete;
 
 // Signals from the address decoder
 wire               dmem_request;
@@ -223,8 +229,6 @@ pll  pll_inst (
 cpu  cpu_inst (
     .clock(clock),
     .reset(reset),
-	  .instr_addr(instr_addr),
-	  .instr_data(instr_data),
     .cpu_request(cpu_request),
     .cpu_address(cpu_address),
     .cpu_write(cpu_write),
@@ -233,7 +237,15 @@ cpu  cpu_inst (
     .cpu_rdata(cpu_rdata),
     .cpu_valid(cpu_valid),
     .cpu_mem_busy(dcache_request),
-	  .debug_pc(debug_pc)
+	  .debug_pc(debug_pc),
+	  .imem_addr(instr_addr),
+	  .imem_data(instr_data),
+    .icache_request(icache_request),
+    .icache_address(icache_address),
+    .icache_rdata(icache_rdata),
+    .icache_ack(icache_ack),
+    .icache_valid(icache_valid),
+    .icache_complete(icache_complete) 
   );
 
 address_decoder  address_decoder_inst (
@@ -309,7 +321,8 @@ hwregs  hwregs_inst (
     .keyboard_strobe(keyboard_strobe),
     .blit_cmd(blit_cmd),
     .blit_start(blit_start),
-    .blit_slots_free(blit_slots_free)
+    .blit_slots_free(blit_slots_free),
+    .debug(256'h0)
 );
 
 reg prev_key;
@@ -374,6 +387,12 @@ sdram_arbiter  sdram_arbiter_inst (
     .blitr_valid(blitr_valid),
     .blitr_complete(blitr_complete),
     .blitr_ack(blitr_ack),
+    .icache_request(icache_request),
+    .icache_address(icache_address),
+    .icache_rdata(icache_rdata),
+    .icache_valid(icache_valid),
+    .icache_complete(icache_complete),
+    .icache_ack(icache_ack),
     .sdram_request(sdram_request),
     .sdram_write(sdram_write),
     .sdram_master(sdram_master),
