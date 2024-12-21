@@ -54,16 +54,17 @@ fun Boot()
     hwRegs.ledr = 0
 
     # Create a task - currently this is the user code
-    val tcb = new Tcb()
-    tcb.pc = (main:Int)             # set the entry point as 
-    tcb[0] = (main:Int)             # Set the entry point
-    tcb[31] = 0x3F80000             # Set the stack pointer
-    tcb[30] = (Success:Int)         # Set the return address
-    ResumeTask(tcb)
+    val tcb = new TaskControlBlock()  # allocate a new TCB structure
+    val stack = new Array<Int>(4096)  # allocate memory for the stack
+    tcb.pc = (_start:Int)             # set PC to the entry point of the program
+    tcb.regSp = (stack:Int)           # 
+    tcb[30] = (Success:Int)           # Set the code's return address
+    ResumeTask(tcb)                   # start the task
 
 
 
-fun dumpRegisters(tcb:Array<Int>)
+fun dumpRegisters(tcb:TaskControlBlock)
+    val asArray = (tcb : Array<Int>)  # treat the TCB as an array for display
     for reg = 0 to 31
         if reg=0
             print("PC")
@@ -88,8 +89,8 @@ fun ExceptionHandler(cause:Int, data:Int, tcb:Array<Int>)
         EXCEPTION_STORE_ACCESS_FAULT       -> name = "Store access fault"
         EXCEPTION_ENVIRONMENT_CALL         -> name = "Environment call"
         else                               -> name = "Unknown exception"
+    
     print("Exception: %s   ADDR=%x\n", name, data)
-
     dumpRegisters(tcb)
     abort(cause)
 

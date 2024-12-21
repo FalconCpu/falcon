@@ -25,8 +25,12 @@ class FreeMemChunk
 class AllocatedMemChunk
     var magic      : Int
     var size       : Int
-    var descriptor : String
+    var descriptor : TypeDescriptor
     var refcount   : Int
+
+class TypeDescriptor
+    var name : String
+    # virtual function table
 
 const MAGIC_FREE = 0x3096506D
 const MAGIC_ALLOCATED = 0x23CAD9B8
@@ -78,32 +82,13 @@ fun dumpMemorySystem()
             print("%x %x FREE\n", chunk, chunk.size)
         elsif chunk.magic = MAGIC_ALLOCATED
             val chunkA = (chunk:AllocatedMemChunk)
-            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
+            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor.name)
             if chunkA.refcount > 1
                 print(" (*%d)", chunkA.refcount)
             print("\n")
         else
             print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
         chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
-
-# ######################################################
-#                     dummpMemoryAllocations
-# ######################################################
-# Dump the memory system for debugging
-fun dummpMemoryAllocations()
-    val sysvars = (0x00000100:SystemVariables)
-    var chunk = (startOfHeap:FreeMemChunk)
-    while (chunk:Int) < (endOfHeap:Int)
-        if chunk.magic = MAGIC_ALLOCATED
-            val chunkA = (chunk:AllocatedMemChunk)
-            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
-            if chunkA.refcount > 1
-                print(" (*%d)", chunkA.refcount)
-            print("\n")
-        elsif chunk.magic != MAGIC_FREE
-            print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
-        chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
-
 
 # ######################################################
 #                 addChunkToFreeList
@@ -136,7 +121,7 @@ fun addChunkToFreeList(chunk:FreeMemChunk, size:Int)
 # ######################################################
 #                     malloc
 # ######################################################
-fun malloc(size:Int, desc:String) -> Pointer
+fun malloc(size:Int, desc:TypeDescriptor) -> Pointer
     if size = 0
         return null
     var roundedSize = ((size+31)&-16)   # Round up to multiple of 16, and add header

@@ -272,7 +272,8 @@ static string read_word() {
     clear_string_buffer();
     do {
         add_to_string_buffer(next_char());
-    } while (isalnum(lookahead) || lookahead=='_' || lookahead=='/');
+    } while (isalnum(lookahead) || lookahead=='_' || lookahead=='/' || lookahead=='@' || 
+             lookahead=='<' || lookahead=='>' || lookahead=='&' || lookahead=='|' || lookahead=='.');
 
     return string_buffer;
 }
@@ -429,7 +430,7 @@ static Token read_token() {
             ret = hash_find("$1");
         }
     
-    } else if (isalpha(lookahead) || lookahead=='_' || lookahead=='/') {
+    } else if (isalpha(lookahead) || lookahead=='_' || lookahead=='/' || lookahead=='&') {
         string text = read_word();
         ret = hash_find(text);
         if (ret==0) {

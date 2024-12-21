@@ -126,6 +126,15 @@ class Program {
         OutputAssembly output = new( new StreamWriter(outputFilename));
         foreach(AstFunction func in AstFunction.allFunctions)
             output.Output(func);
+
+        // Output the class descriptors
+        output.OutputClassDescriptor(StringType.Instance);
+        foreach(ClassType ct in ClassType.allClassTypes)
+            output.OutputClassDescriptor(ct);
+        foreach(ArrayType art in ArrayType.allArrayTypes)
+            output.OutputClassDescriptor(art);
+
+        // Output the constant objects
         foreach(ConstObjectSymbol cos in ConstObjectSymbol.allConstObjects)
             output.Output(cos);
         output.Close();

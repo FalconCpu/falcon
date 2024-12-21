@@ -1,0 +1,12 @@
+# simple test of virtual functions
+
+class Animal(val name:String)
+    virtual fun speak()
+        print("%s says I am an animal\n",name)
+
+fun main()
+    val a = new Animal("Pootle")
+    a.speak()
+
+@------------------
+Pootle says I am an animal

@@ -18,7 +18,7 @@ static void load_program(string filename) {
 
     char line[100];
     while (fgets(line, sizeof(line), file) != NULL)
-        program[program_size++] = strtol(line,0,16);
+        program[program_size++] = strtoul(line,0,16);
     fclose(file);
 }
 

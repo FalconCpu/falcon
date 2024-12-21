@@ -4,12 +4,12 @@ class AstClass : AstFunction {
     public ClassType instanceClassType;
 
     public AstClass(Location location, string name, List<AstIdentifier> astTypeParameters, List<AstParameter> astParams, AstBlock parent)
-    : base(location, name, astParams, null, parent) {
+    : base(location, name, astParams, null, [], parent) {
 
         // Build the type parameters
         List<TypeParameterType> typeParameters = [];
         foreach(AstIdentifier id in astTypeParameters) {
-            TypeParameterType typeParameter = new TypeParameterType(id.name);
+            TypeParameterType typeParameter = new TypeParameterType($"{name}.{id.name}");
             TypeSymbol ts = new(id.name, typeParameter);
             AddSymbol(id.location, ts);  // This implicitly checks for duplicates
             typeParameters.Add(typeParameter);

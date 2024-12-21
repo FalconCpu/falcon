@@ -1,18 +1,19 @@
 static class StdLib {
 
-    public static AstFunction print  = new(Location.unknown, "print", [], null , null);
-    public static AstFunction malloc = new(Location.unknown, "malloc", [], null , null);
-    public static AstFunction memcpy = new(Location.unknown, "memcpy", [], null , null);
-    public static AstFunction free   = new(Location.unknown, "free", [], null , null);
-    public static AstFunction abort  = new(Location.unknown, "abort", [], null , null);
-    public static AstFunction stringConcat  = new(Location.unknown, "stringConcat", [], null , null);
-    public static AstFunction strcmp   = new(Location.unknown, "strcmp", [], null , null);
-    public static AstFunction strequals= new(Location.unknown, "strequals", [], null , null);
-    public static AstFunction resumeTask = new(Location.unknown, "ResumeTask", [], null , null);
-    public static AstFunction success = new(Location.unknown, "Success", [], null , null);
+    public static AstFunction print  = new(Location.unknown, "print", [], null , [], null);
+    public static AstFunction malloc = new(Location.unknown, "malloc", [], null , [], null);
+    public static AstFunction memcpy = new(Location.unknown, "memcpy", [], null , [], null);
+    public static AstFunction free   = new(Location.unknown, "free", [], null , [], null);
+    public static AstFunction abort  = new(Location.unknown, "abort", [], null , [], null);
+    public static AstFunction stringConcat  = new(Location.unknown, "stringConcat", [], null , [], null);
+    public static AstFunction strcmp   = new(Location.unknown, "strcmp", [], null , [], null);
+    public static AstFunction strequals= new(Location.unknown, "strequals", [], null , [], null);
+    public static AstFunction resumeTask = new(Location.unknown, "ResumeTask", [], null , [], null);
+    public static AstFunction success = new(Location.unknown, "Success", [], null , [], null);
 
     public static readonly FieldSymbol rcField = new("refcount", IntType.Instance, true);
     public static readonly FieldSymbol lengthField = new("length", IntType.Instance, true);
+    public static readonly FieldSymbol objectTypeField = new("objectType", IntType.Instance, true);
 
     public static void AddSymbols(AstBlock scope) {
         // Print is currently handled as a special case in the type checker. So we don't need to add it to the symbol table.
@@ -49,5 +50,6 @@ static class StdLib {
 
         rcField.offset = -4;
         lengthField.offset = -4;
+        objectTypeField.offset = -8;
     }
 }

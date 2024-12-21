@@ -81,5 +81,8 @@ enum TokenKind {
     Print,
     Delete,
     When,
+    Virtual,
+    Public,
+    Private,
     Error
 }

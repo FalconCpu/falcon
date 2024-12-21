@@ -44,16 +44,18 @@ class ConstObjectAliasSymbol(string name, Symbol alias) : Symbol(name, alias.typ
 }
 
 // Used to represent a constant object (i.e. a string literal)
-class ConstObjectSymbol(string name, Type type, List<int> value) : Symbol(name, type) {
+class ConstObjectSymbol(string name, Type type, List<int> value, string? displayContents=null) : Symbol(name, type) {
     public List<int> value = value;
+    public string? displayContents = displayContents;
     
     public static readonly List<ConstObjectSymbol> allConstObjects = [];
     
-    public static ConstObjectSymbol Make(Type type, List<int> value) {
+    public static ConstObjectSymbol Make(Type type, List<int> value, string? displayContents=null) {
         foreach (var cos in allConstObjects)
             if (cos.type==type && cos.value.SequenceEqual(value))
                 return cos;
-        ConstObjectSymbol ret = new($"_object{allConstObjects.Count}", type, value);
+        string name = (type is StringType) ? $"&string{allConstObjects.Count}" : $"&object{allConstObjects.Count}";
+        ConstObjectSymbol ret = new(name, type, value, displayContents);
         allConstObjects.Add(ret);
         return ret;
     }
@@ -101,8 +103,8 @@ class RegisterSymbol(string name) : Symbol(name, UndefinedType.Instance)
         new RegisterSymbol("$26"),
         new RegisterSymbol("$27"),
         new RegisterSymbol("$28"),
-        new RegisterSymbol("$gp"),
-        new RegisterSymbol("$lr"),
+        new RegisterSymbol("$29"),
+        new RegisterSymbol("$30"),
         new RegisterSymbol("$sp"),
     ];
 

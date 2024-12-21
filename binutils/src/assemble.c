@@ -353,8 +353,9 @@ static void assemble_line(Token* line) {
     CASE("Jl")              { add_reference(line[1]); add_instr(fmt_j(KIND_JMP, 0, 0)); }
     CASE("J$[i]")           { add_instr(fmt_i(KIND_JMPR, 0, 0, V1, V3)); }
     CASE("J$")              { add_instr(fmt_i(KIND_JMPR, 0, 0, V1, 0)); }
-    CASE("jr,$[i]")         { add_instr(fmt_i(KIND_JMPR, 0, V1, V3, V5)); }
+    CASE("Jr,$[i]")         { add_instr(fmt_i(KIND_JMPR, 0, V1, V3, V5)); }
     CASE("jl")              { add_reference(line[1]); add_instr(fmt_j(KIND_JMP, 30, 0)); }  // jsr instruction
+    CASE("j$[i]")           { add_instr(fmt_i(KIND_JMPR, 0, 30, V1, V3));  }  // indirect jsr instruction
     CASE("k")               { add_instr(fmt_i(KIND_JMPR, 0, 0, 30, 0)); }       // ret instruction
     CASE("jr,l")            { add_reference(line[3]); add_instr(fmt_j(KIND_JMP, V1, 0)); }
     CASE("D$,l")            { add_reference(line[3]); add_instr(fmt_j(KIND_LDPC, V1, 0)); }

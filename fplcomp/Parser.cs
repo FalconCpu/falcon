@@ -1,4 +1,5 @@
 
+using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 
 class Parser(Lexer lexer)
@@ -381,13 +382,13 @@ class Parser(Lexer lexer)
         return parameters;
     }
 
-    private void ParseFunction(AstBlock block) {
+    private void ParseFunction(AstBlock block, List<TokenKind> qualifiers) {
         Token loc = Expect(TokenKind.Fun);
         Token name = Expect(TokenKind.Identifier, TokenKind.Delete);
         List<AstParameter> parameters = ParseParameterList();
         AstType? astReturnType = ParseOptReturnType();
         ExpectEol();
-        AstFunction ret = new(loc.location, name.text, parameters, astReturnType, block);
+        AstFunction ret = new(loc.location, name.text, parameters, astReturnType, qualifiers, block);
         block.Add(ret);
         ParseIndentedBlock(ret);
         CheckEnd(TokenKind.Fun);
@@ -630,6 +631,24 @@ class Parser(Lexer lexer)
         }
     }
 
+    private void ParseQualifier(AstBlock block) {
+        List<TokenKind> qualifiers = [];
+        while(lookahead.kind==TokenKind.Virtual || lookahead.kind==TokenKind.Private || lookahead.kind==TokenKind.Public) {
+            TokenKind kind = NextToken().kind;
+            if (qualifiers.Contains(kind))
+                Log.Error(lookahead.location, $"Duplicate qualifier {kind}");
+            qualifiers.Add(kind);
+        }
+
+        if (qualifiers.Contains(TokenKind.Public) && qualifiers.Contains(TokenKind.Private))
+            Log.Error(lookahead.location, "Cannot be both public and private");
+
+        if (lookahead.kind == TokenKind.Fun)
+            ParseFunction(block, qualifiers);
+        else
+            throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting fun");
+    }
+
     private void ParseStatement(AstBlock block) {
         try {
             switch(lookahead.kind) {
@@ -637,7 +656,7 @@ class Parser(Lexer lexer)
                 case TokenKind.Var: ParseDeclaration(block); break;
                 case TokenKind.While: ParseWhile(block); break;
                 case TokenKind.Repeat: ParseRepeat(block); break;
-                case TokenKind.Fun: ParseFunction(block); break;
+                case TokenKind.Fun: ParseFunction(block,[]); break;
                 case TokenKind.Indent: ParseUnexpectedIndent(block); break;
                 case TokenKind.If: ParseIf(block); break;
                 case TokenKind.Return: ParseReturn(block); break;
@@ -647,6 +666,7 @@ class Parser(Lexer lexer)
                 case TokenKind.Const: ParseConst(block); break;
                 case TokenKind.Delete: ParseDelete(block); break;
                 case TokenKind.When: ParseWhen(block); break;
+                case TokenKind.Virtual: ParseQualifier(block); break;
                 case TokenKind.Identifier:
                 case TokenKind.OpenB: parseAssign(block); break;
                 default: throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting a statement");
@@ -663,7 +683,10 @@ class Parser(Lexer lexer)
                 case TokenKind.Val: ParseDeclaration(block); break;
                 case TokenKind.Var: ParseDeclaration(block); break;
                 case TokenKind.Indent: ParseUnexpectedIndent(block); break;
-                case TokenKind.Fun: ParseFunction(block); break;
+                case TokenKind.Fun: ParseFunction(block,[]); break;
+                case TokenKind.Virtual: 
+                case TokenKind.Private: 
+                case TokenKind.Public: ParseQualifier(block); break;
                 case TokenKind.While: 
                 case TokenKind.Repeat: 
                 case TokenKind.If: 

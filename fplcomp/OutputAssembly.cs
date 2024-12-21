@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 class OutputAssembly(StreamWriter filehandle) {
     private readonly StreamWriter filehandle = filehandle;
 
@@ -7,6 +9,11 @@ class OutputAssembly(StreamWriter filehandle) {
 
     public void WriteLine(string s) {
         filehandle.WriteLine(s);
+    }
+
+    private string getTypeDescriptorName(Type type) {
+        string s = type.name.Replace(", ","|");
+        return $"/{s}@descriptor";
     }
 
     public void Output(Instr ins) {
@@ -28,8 +35,12 @@ class OutputAssembly(StreamWriter filehandle) {
                     WriteLine($"ld {lea.dest.name}, {sls.name}");
                 else if (lea.value is FunctionSymbol fs)
                     WriteLine($"ld {lea.dest.name}, /{fs.name}");
+                else if (lea.value is TypeSymbol ts) {
+                    WriteLine($"ld {lea.dest.name}, {getTypeDescriptorName(ts.type)}");
+                    ts.type.descriptorUsed = true;
+                }
                 else
-                    throw new ArgumentException("lea: value is not a ConstObjectSymbol");
+                    throw new ArgumentException($"lea: value is not a ConstObjectSymbol {lea.value.GetType()}");
                 break;
 
             case InstrAlu alu:
@@ -99,7 +110,7 @@ class OutputAssembly(StreamWriter filehandle) {
                 break;
 
             case InstrCallr callr:
-                WriteLine($"jsr {callr.function.name}");
+                WriteLine($"jmp $30, {callr.function.name}[0]");
                 break;
 
             case InstrEnd:
@@ -173,6 +184,11 @@ class OutputAssembly(StreamWriter filehandle) {
 
     public void Output(ConstObjectSymbol cos) {
         // Write the length field
+        if (cos.displayContents!=null) {
+            List<String> ds = cos.displayContents.Split('\n').Select(s => s.Trim()).ToList();
+            WriteLine($"# \"{ds[0]}\"");
+        } else 
+            WriteLine($"# ConstObject {cos.type}");
         WriteLine($"dcw {cos.value[0]}");
         WriteLine($"{cos.name}:");
 
@@ -185,6 +201,18 @@ class OutputAssembly(StreamWriter filehandle) {
 
         foreach(int d in cos.value[1..])
             WriteLine($"dcw 0x{d:X8}");
+    }
+
+    public void OutputClassDescriptor(Type type) {
+        if (type.descriptorUsed==false)
+            return;
+        WriteLine($"\n# ClassDescriptor {type}");
+        ConstObjectSymbol name = AstStringLit.GenSym(type.name);
+        WriteLine($"{getTypeDescriptorName(type)}:");
+        WriteLine($"dcw {name.name}");
+        if (type is ClassType ct)
+            foreach(FunctionSymbol virtualMethod in ct.virtualMethods)
+                WriteLine($"dcw {virtualMethod.function.qualifiedName}"); 
     }
 
     private void GenPostamble(AstFunction func) {

@@ -3,6 +3,7 @@ abstract class Type (string name) {
     public string name = name;
     public static readonly AstBlock predefindedScope = new AstTop().AddPredefinedSymbols();
     public static readonly Type undefined = UndefinedType.Instance;
+    public bool descriptorUsed = false;
 
     override public string ToString() {
         return name;
@@ -118,27 +119,29 @@ class ErrorType : Type {
 
 class ArrayType : Type {
     public Type elementType;
-    private readonly static List<ArrayType> cache = [];
+    public readonly static HashSet<ArrayType> allArrayTypes = [];
+    public readonly TypeSymbol typeSymbol;
     
     private ArrayType(Type elementType) : base($"Array<{elementType}>") {
         this.elementType = elementType;
+        typeSymbol = new TypeSymbol(name,this);
     }
 
     public static Type MakeArrayType(Type elementType) {
         if (elementType == ErrorType.Instance)
             return ErrorType.Instance;
-        foreach (ArrayType t in cache)
+        foreach (ArrayType t in allArrayTypes)
             if (t.elementType == elementType)
                 return t;
         ArrayType r = new(elementType);
-        cache.Add(r);
+        allArrayTypes.Add(r);
         return r;
     }
 }
 
 class VariadicType : Type {
     public Type elementType;
-    private readonly static List<VariadicType> cache = [];
+    private readonly static List<VariadicType> allClassTypes = [];
     
     private VariadicType(Type elementType) : base($"{elementType}...") {
         this.elementType = elementType;
@@ -147,11 +150,11 @@ class VariadicType : Type {
     public static Type MakeVariadicType(Type elementType) {
         if (elementType == ErrorType.Instance)
             return ErrorType.Instance;
-        foreach (VariadicType t in cache)
+        foreach (VariadicType t in allClassTypes)
             if (t.elementType == elementType)
                 return t;
         VariadicType r = new(elementType);
-        cache.Add(r);
+        allClassTypes.Add(r);
         return r;
     }
 }
@@ -162,7 +165,7 @@ class FunctionType : Type {
     public Type returnType;
     public List<Type> parameterTypes;
 
-    static readonly List<FunctionType> cache = [];
+    static readonly List<FunctionType> allClassTypes = [];
 
     // TODO - the code for generating names of variadic functions is not quite right -> is needs to be element of for the last element
     private FunctionType(Type returnType, List<Type> parameterTypes) 
@@ -172,7 +175,7 @@ class FunctionType : Type {
     }
 
     public static FunctionType MakeFunctionType(List<Type> parameterTypes, Type returnType) {
-        foreach (FunctionType t in cache)
+        foreach (FunctionType t in allClassTypes)
             if (t.returnType == returnType  && t.parameterTypes.SequenceEqual(parameterTypes))
                 return t;
         return new FunctionType(returnType, parameterTypes);
@@ -181,7 +184,7 @@ class FunctionType : Type {
 
 class NullableType : Type {
     public Type elementType;
-    private readonly static List<NullableType> cache = [];
+    private readonly static List<NullableType> allClassTypes = [];
 
     private NullableType(Type elementType) : base($"{elementType}?") {
         this.elementType = elementType;
@@ -190,11 +193,11 @@ class NullableType : Type {
     public static Type MakeNullableType(Type elementType) {
         if (elementType == ErrorType.Instance)
             return ErrorType.Instance;
-        foreach (NullableType t in cache)
+        foreach (NullableType t in allClassTypes)
             if (t.elementType == elementType)
                 return t;
         NullableType r = new(elementType);
-        cache.Add(r);
+        allClassTypes.Add(r);
         return r;
     }
 }
@@ -207,6 +210,7 @@ class GenericClassType: Type {
     public readonly AstClass constructor;
     public readonly List<FieldSymbol> fields = [];
     public readonly List<FunctionSymbol> methods = [];
+    public readonly List<FunctionSymbol> virtualMethods = [];
     public readonly List<TypeParameterType> typeParameters;
 
     public int size;
@@ -232,6 +236,10 @@ class GenericClassType: Type {
 
     public void AddMethod(FunctionSymbol func) {
         methods.Add(func);
+        if (func.function.qualifiers.Contains(TokenKind.Virtual)) {
+            virtualMethods.Add(func);
+            func.function.virtualMethodNumber = virtualMethods.Count;
+        }
     }
 }
 
@@ -242,14 +250,18 @@ class ClassType : Type {
 
     public readonly List<FieldSymbol> fields = [];
     public readonly List<FunctionSymbol> methods = [];
+    public readonly List<FunctionSymbol> virtualMethods = [];
+    public readonly TypeSymbol typeSymbol;
 
-    private readonly static List<ClassType> cache = [];
+    public readonly static List<ClassType> allClassTypes = [];
+
     private ClassType(GenericClassType generic, List<Type> typeArguments) 
     : base(typeArguments.Count==0 ? $"{generic.name}" : $"{generic.name}<{string.Join(", ", typeArguments)}>") 
     {
         this.generic = generic;
         this.typeArguments = typeArguments;
-        cache.Add(this);
+        this.typeSymbol = new TypeSymbol(name, this);
+        allClassTypes.Add(this);
 
         // Build the map to map the generic class types into concrete types
         if (typeArguments.Count != generic.typeParameters.Count)
@@ -259,7 +271,7 @@ class ClassType : Type {
     }
 
     public static ClassType MakeClassType(GenericClassType generic, List<Type> typeArguments) {
-        foreach (ClassType t in cache)
+        foreach (ClassType t in allClassTypes)
             if (t.generic == generic && t.typeArguments.SequenceEqual(typeArguments))
                 return t;
         return new ClassType(generic, typeArguments);
@@ -313,6 +325,10 @@ class ClassType : Type {
             FunctionSymbol genericMethod = generic.methods[index];
             FunctionSymbol mappedMethod = new FunctionSymbol(genericMethod.name, MapType(genericMethod.type), genericMethod.function);
             methods.Add(mappedMethod);
+            if (genericMethod.function.qualifiers.Contains(TokenKind.Virtual)) {
+                mappedMethod.function.virtualMethodNumber = genericMethod.function.virtualMethodNumber;
+                virtualMethods.Add(mappedMethod);
+            }
         }
 
     }

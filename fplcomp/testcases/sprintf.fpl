@@ -34,7 +34,6 @@ fun main()
     print("%s", sb.toString())  # Expected: "12345"
 
     delete sb
-    dummpMemoryAllocations()
 
 @--------------------------
 Integers

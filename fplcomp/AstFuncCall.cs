@@ -101,6 +101,20 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
         func.Add(new InstrAlui(RegisterSymbol.registers[destReg++], AluOp.ADD_I, RegisterSymbol.sp, 4));
     }
 
+    private void genCodeGenCall(AstFunction output, AstFunction func, int numParameters) {
+        if (func.virtualMethodNumber==-1) {
+            // Not a virtual call, so just call the function
+            output.Add(new InstrCall(func, numParameters, func.returnType));
+        } else {
+            // Virtual call, so we need to generate the vtable lookup code
+            // The callee's 'this' will be in register $1
+            Symbol tempSym = func.NewTemp(PointerType.Instance);
+            output.Add(new InstrLoadField(4, tempSym, RegisterSymbol.registers[1], StdLib.objectTypeField));
+            output.Add(new InstrLoadMem(4, RegisterSymbol.registers[30], tempSym, func.virtualMethodNumber*4));
+            output.Add(new InstrCallr(RegisterSymbol.registers[30], numParameters, func.returnType));
+        }
+    }
+
     private void CodeGenCall(AstFunction output, FunctionSymbol funcSym, Symbol? thisSym) {
         FunctionType funcType = (FunctionType)funcSym.type;
         List<Type> paramTypes = funcType.parameterTypes;
@@ -108,12 +122,12 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
         if (paramTypes.Count>0 && paramTypes.Last() is VariadicType vt) {
             // For variadic functions, we need to generate the arguments in a special way
             CodeGenArgsWithVariadic(output, thisSym, paramTypes.Count-1);
-            output.Add(new InstrCall(funcSym.function, numParameters, funcType.returnType));
+            genCodeGenCall(output, funcSym.function, numParameters);
             // And then clean up the stack
             output.Add(new InstrAlui(RegisterSymbol.sp, AluOp.ADD_I, RegisterSymbol.sp, 4*(args.Count-paramTypes.Count+2)));
         } else {
             CodeGenArgsNoVariadic(output, thisSym);
-            output.Add(new InstrCall(funcSym.function, numParameters, funcType.returnType));
+            genCodeGenCall(output, funcSym.function, numParameters);
         }
     }
 

@@ -229,7 +229,7 @@ void disassemble_program(int *program, int len) {
             if (t->value == org + pc)
                 printf("%08x:          %s:\n", t->value, t->text);
 
-        int i = program[pc/4];
+        unsigned int i = program[pc/4];
         printf("%08x: %08x %s\n", org+pc, i, disassemble_line(i, org + pc+4));
         pc += 4;
     }

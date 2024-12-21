@@ -27,7 +27,7 @@ class AstStringLit(Location location, string value) : AstExpression(location) {
             data.Add(v);
         }
 
-        return ConstObjectSymbol.Make(StringType.Instance, data);
+        return ConstObjectSymbol.Make(StringType.Instance, data, value);
     }
 
     // public static string EscapeString(string str) {

@@ -75,6 +75,9 @@ class Lexer (string fileName) {
         {"rc",     TokenKind.Rc},
         {"when" , TokenKind.When},
         {"delete", TokenKind.Delete},
+        {"virtual", TokenKind.Virtual},
+        {"public", TokenKind.Public},
+        {"private", TokenKind.Private},
         {"@-",    TokenKind.EndOfFile},
     };
 
@@ -109,7 +112,7 @@ class Lexer (string fileName) {
 
     private string ReadWord() {
         StringBuilder ret = new();
-        while (char.IsLetterOrDigit(lookahead) || lookahead == '_')
+        while (char.IsLetterOrDigit(lookahead) || lookahead == '_' )
             ret.Append(NextChar());
         return ret.ToString();
     }

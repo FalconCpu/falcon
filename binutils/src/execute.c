@@ -443,6 +443,7 @@ static void execute_instruction(int instr) {
     int n13  = (c<<5) | b;
     int n13s = (c<<5) | d;
     int n21 = (c<<13) | (i<<10) | (a<<5) | b;
+    int tmp;
 
     switch (k) {
         case KIND_ALU:  set_reg(d, alu_op(i, reg[a], reg[b], c));  break;
@@ -460,8 +461,9 @@ static void execute_instruction(int instr) {
                         if (trace_file)
                             fprintf(trace_file, "-> %s", find_label(pc));
                         break;
-        case KIND_JMPR: set_reg(d,pc);
+        case KIND_JMPR: tmp = pc;
                         pc = reg[a] + 4*n13; 
+                        set_reg(d,tmp);
                         if (trace_file)
                             fprintf(trace_file, "-> %s", find_label(pc));                        
                         break;

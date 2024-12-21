@@ -1,15 +1,15 @@
-using System.Runtime.CompilerServices;
 
-class AstFunction(Location location, string name, List<AstParameter> astParameters, AstType? astReturnType, AstBlock? parent) 
+class AstFunction(Location location, string name, List<AstParameter> astParameters, AstType? astReturnType, List<TokenKind> qualifiers, AstBlock? parent) 
 : AstBlock(location,parent) {
     public readonly string name = name;
     public readonly List<AstParameter> astParameters = astParameters;
     public readonly AstType? astReturnType = astReturnType;
+    public readonly List<TokenKind> qualifiers = qualifiers;
     public readonly GenericClassType? methodOf = (parent is AstClass classAst) ? classAst.classType : null;
     public readonly ClassType? instanceOf = (parent is AstClass classAst) ? classAst.instanceClassType : null;
     public readonly string qualifiedName = (parent==null || parent is AstTop) ? $"/{name}" : $"{((AstFunction)parent).qualifiedName}/{name}";
     public static readonly List<AstFunction> allFunctions = [];
-
+    public int virtualMethodNumber = -1; // populated when the function is added into a class
 
     // Filled in by the type checker
     public          List<Symbol> parameters = [];
@@ -74,6 +74,10 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
     }
 
     public override PathContext TypeCheck(AstBlock scope, PathContext _) {
+        // Make sure 'virtual' is only used on methods
+        if (qualifiers.Contains(TokenKind.Virtual) && methodOf==null)
+            Log.Error(location, "Virtual can only be used on methods");
+    
         // Type check the body
         PathContext pathContext = new ();
         foreach(AstStatement stmt in statements) {

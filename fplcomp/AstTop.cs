@@ -1,5 +1,8 @@
 
-class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
+class AstTop() : AstFunction(Location.unknown, "_start", [], null, [], null) {
+
+    public static readonly TypeSymbol stringTypeSymbol = new("String", StringType.Instance);
+    
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + "TOP");
         foreach (AstStatement statement in statements)
@@ -24,7 +27,7 @@ class AstTop() : AstFunction(Location.unknown, "_start", [], null, null) {
         AddSymbol(Location.unknown, new TypeSymbol("Bool", BoolType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Char", CharType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Short", ShortType.Instance));
-        AddSymbol(Location.unknown, new TypeSymbol("String", StringType.Instance));
+        AddSymbol(Location.unknown, stringTypeSymbol);
         AddSymbol(Location.unknown, new TypeSymbol("Real", RealType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Unit", UnitType.Instance));
         AddSymbol(Location.unknown, new TypeSymbol("Pointer", PointerType.Instance));
