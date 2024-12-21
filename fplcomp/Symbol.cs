@@ -61,6 +61,16 @@ class ConstObjectSymbol(string name, Type type, List<int> value, string? display
     }
 }
 
+// Used to represent a member access for smartcast tracking. 
+// Should not be used for anything else.
+
+class SmartcastMemberAccessSymbol(Symbol lhs, Symbol rhs) : Symbol("<smartcast>", rhs.type) {
+    public readonly Symbol lhs = lhs;
+    public readonly Symbol rhs = rhs;
+}
+
+
+
 class TempSymbol(string name, Type type) : Symbol(name, type) {
     public readonly bool hasKnownValue = false;
     public readonly int  value;

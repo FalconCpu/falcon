@@ -1,0 +1,13 @@
+# The compiler should allow access to nullable when marked with null suppression operator
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething(c:Cat?)
+    print("The cat is called %s and is %d years old\n",c!.name,c!.age)
+
+fun main()
+    var c:Cat? = new Cat("Fluffy",10)
+    doSomething(c)
+
+@---------------------------------------------
+The cat is called Fluffy and is 10 years old

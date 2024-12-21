@@ -1,0 +1,15 @@
+# The compiler should reject attempts to access fields of nullable types.
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething(c:Cat?)
+    print("The cat is called %s and is %d years old\n",c.name,c.age)
+
+fun main()
+    var c:Cat? = new Cat("Fluffy",10)
+    doSomething(c)
+
+@---------------------------------------------
+testcase_outputs/nullable1.fpl:6:56: Cannot access member name of nullable type Cat?
+testcase_outputs/nullable1.fpl:6:63: Cannot access member age of nullable type Cat?
+Failed with 2 errors

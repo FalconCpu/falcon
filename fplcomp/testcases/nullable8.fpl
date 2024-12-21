@@ -1,0 +1,16 @@
+# Check writes to a symbol can provide null information
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething() -> Cat?
+    return new Cat("Fluffy",10)
+
+
+
+fun main()
+    var c = doSomething()      # This was marked as nullable
+    print("c is called %s\n", c.name)  # this should flag an error
+
+@---------------------------------------------
+testcase_outputs/nullable8.fpl:12:31: Cannot access member name of nullable type Cat?
+Failed with 1 errors

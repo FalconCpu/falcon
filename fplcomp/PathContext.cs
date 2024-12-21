@@ -15,16 +15,34 @@ class PathContext() {
         possiblyUninitialized.Remove(symbol);
     }
 
-    public void Refine(Symbol symbol, Type type) {
-        refinedTypes[symbol] = type;
+    public void Refine(Symbol? symbol, Type type) {
+        if (symbol!=null) {
+            // Console.WriteLine($"Refining symbol {symbol.name} to type {type}");
+            refinedTypes[symbol] = type;
+        }
     }
 
     public void Unrefine(Symbol symbol) {
         refinedTypes.Remove(symbol);
+
+        // If we invalidate a symbol 'c' then also unrefine any member accesses to 'c'
+        var toRemove = refinedTypes.Keys.Where(it => it is SmartcastMemberAccessSymbol sms && sms.lhs==symbol);
+        foreach (var key in toRemove)
+            refinedTypes.Remove(key);
     }
 
     public void SetUnreachable() {
         unreachable = true;
+    }
+
+    public Type LookupType(Symbol symbol) {
+        Type ret;
+        if (refinedTypes.ContainsKey(symbol)) 
+            ret = refinedTypes[symbol];
+        else
+            ret = symbol.type;
+        // Console.WriteLine($"Looking up type for symbol {symbol.name} {ret}");
+        return ret;
     }
 
     // Static method to merge multiple PathContexts into one

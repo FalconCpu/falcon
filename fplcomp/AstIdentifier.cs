@@ -30,10 +30,12 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
             
         if (symbol is TypeSymbol)
             Log.Error(location, $"Cannot use type '{symbol}' as a variable");
-        SetType(symbol.type);
+
+        SetType(pathContext.LookupType(symbol));
     }
 
-
+    public override Symbol? GetSymbol() => symbol;
+    
     public override void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
         symbol =  Type.predefindedScope.GetSymbol(name) ??
                       scope.GetSymbol(name) ??

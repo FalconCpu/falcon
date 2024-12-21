@@ -56,10 +56,10 @@ fun Boot()
     # Create a task - currently this is the user code
     val tcb = new TaskControlBlock()  # allocate a new TCB structure
     val stack = new Array<Int>(4096)  # allocate memory for the stack
-    tcb.pc = (_start:Int)             # set PC to the entry point of the program
+    tcb.pc    = (_start:Int)          # set PC to the entry point of the program
     tcb.regSp = (stack:Int)           # 
-    tcb[30] = (Success:Int)           # Set the code's return address
-    ResumeTask(tcb)                   # start the task
+    tcb.reg30 = (Success:Int)         # Set the code's return address
+    ResumeTask((tcb:Array<Int>))      # start the task
 
 
 
@@ -72,12 +72,12 @@ fun dumpRegisters(tcb:TaskControlBlock)
             print("%d",reg)
             if (reg<10)
                 print(" ")
-        print("=%x ",tcb[reg])
+        print("=%x ",asArray[reg])
         if reg%8=7
             print("\n")
     
 
-fun ExceptionHandler(cause:Int, data:Int, tcb:Array<Int>)
+fun ExceptionHandler(cause:Int, data:Int, tcb:TaskControlBlock)
     val name : String
     when cause
         EXCEPTION_INSTRUCTION_ACCESS_FAULT -> name = "Instruction Access Fault"
@@ -93,6 +93,10 @@ fun ExceptionHandler(cause:Int, data:Int, tcb:Array<Int>)
     print("Exception: %s   ADDR=%x\n", name, data)
     dumpRegisters(tcb)
     abort(cause)
+
+fun fatal(msg:String)
+    print("FATAL: %s\n", msg)
+    abort(1)
 
 
 

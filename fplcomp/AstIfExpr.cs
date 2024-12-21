@@ -12,11 +12,12 @@ class AstIfExpr(Location location, AstExpression cond, AstExpression then, AstEx
     }
 
     public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
-        cond.TypeCheckRvalue(scope, pathContext);
-        then.TypeCheckRvalue(scope, pathContext);
-        els.TypeCheckRvalue(scope, pathContext);
+        Tuple<PathContext, PathContext> pc = cond.TypeCheckBool(scope, pathContext);
+        then.TypeCheckRvalue(scope, pc.Item1);
+        els.TypeCheckRvalue(scope, pc.Item2);
         BoolType.Instance.CheckAssignableFrom(cond);
-        then.type.CheckAssignableFrom(els);
+        if (! then.type.IsAssignableFrom(els))
+            Log.Error(location, $"then and else branches have differing types {then.type} and {els.type}");
         SetType(then.type);
     }
 

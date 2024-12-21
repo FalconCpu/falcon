@@ -230,7 +230,7 @@ class Lexer (string fileName) {
             text = ReadWord();
             kind = TokenKind.Integer;
         
-        } else if (char.IsLetter(lookahead)) {
+        } else if (char.IsLetter(lookahead) || lookahead == '_') {
             text = ReadWord();
             kind = predefined_tokens.GetValueOrDefault(text, TokenKind.Identifier);
 

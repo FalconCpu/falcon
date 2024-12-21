@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 
 class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpression right) : AstExpression(location) {
     private readonly TokenKind     kind = kind;
@@ -98,6 +97,82 @@ class AstBinop(Location location, TokenKind kind, AstExpression left, AstExpress
         }
 
         SetError( location, $"Invalid operation {kind} on types {left.type} and {right.type}");
+    }
+
+    private Tuple<PathContext,PathContext> TypeCheckBoolAnd(AstBlock scope, PathContext pathContext) {
+        // Handle the short circuit evaluation of 'and' and its implications for path contexts
+        Tuple<PathContext,PathContext> pcLeft = left.TypeCheckBool(scope, pathContext);
+        BoolType.Instance.CheckAssignableFrom(left);
+
+        Tuple<PathContext,PathContext> pcRight = right.TypeCheckBool(scope, pcLeft.Item1);
+        BoolType.Instance.CheckAssignableFrom(right, TokenKind.And);
+    
+        PathContext truePathContext = pcRight.Item1;
+        PathContext falsePathContext = PathContext.Merge([pcLeft.Item2, pcRight.Item2]);
+        Tuple<PathContext,PathContext> pcOut =  new(truePathContext, falsePathContext);
+        aluOp = AluOp.AND_B;
+        SetType(BoolType.Instance); 
+        return pcOut;
+    }
+
+    private Tuple<PathContext,PathContext> TypeCheckBoolOr(AstBlock scope, PathContext pathContext) {
+        // Handle the short circuit evaluation of 'and' and its implications for path contexts
+        Tuple<PathContext,PathContext> pcLeft = left.TypeCheckBool(scope, pathContext);
+        Tuple<PathContext,PathContext> pcRight = right.TypeCheckBool(scope, pcLeft.Item2);
+
+        BoolType.Instance.CheckAssignableFrom(left, TokenKind.Or);
+        BoolType.Instance.CheckAssignableFrom(right, TokenKind.Or);
+
+        PathContext falsePathContext = pcRight.Item2;
+        PathContext truePathContext = PathContext.Merge([pcLeft.Item1, pcRight.Item1]);
+        Tuple<PathContext,PathContext> pcOut =  new(truePathContext, falsePathContext);
+        aluOp = AluOp.OR_B;
+        SetType(BoolType.Instance); 
+        return pcOut;
+    }
+
+    public override Tuple<PathContext,PathContext> TypeCheckBool(AstBlock scope, PathContext pathContext) {
+        // Handle the short circuit evaluation of 'and' and 'or' as special cases
+        if (kind == TokenKind.And)
+            return TypeCheckBoolAnd(scope, pathContext);
+        else if (kind == TokenKind.Or)
+            return TypeCheckBoolOr(scope, pathContext);
+
+
+        TypeCheckRvalue(scope, pathContext);
+        BoolType.Instance.CheckAssignableFrom(this);
+        PathContext truePathContext = pathContext.Clone();
+        PathContext falsePathContext = pathContext.Clone();
+
+        // If we can learn anything about the nullability of variables form the comparison, tn add that to the path context
+        Symbol? leftSym = left.GetSymbol();
+        Symbol? rightSym = right.GetSymbol();
+        
+        if (kind == TokenKind.Eq && right.IsLiteralNull()) {
+            truePathContext.Refine(leftSym, NullType.Instance);
+            if (left.type is NullableType nt)
+                falsePathContext.Refine(leftSym, nt.elementType);
+        }
+
+        if (kind == TokenKind.Neq && right.IsLiteralNull()) {
+            falsePathContext.Refine(leftSym, NullType.Instance);
+            if (left.type is NullableType nt)
+                truePathContext.Refine(leftSym, nt.elementType);
+        }
+
+        if (kind == TokenKind.Eq && left.IsLiteralNull()) {
+            truePathContext.Refine(rightSym, NullType.Instance);
+            if (right.type is NullableType nt)
+                falsePathContext.Refine(rightSym, nt.elementType);
+        }
+
+        if (kind == TokenKind.Neq && left.IsLiteralNull()) {
+            falsePathContext.Refine(rightSym, NullType.Instance);
+            if (right.type is NullableType nt)
+                truePathContext.Refine(rightSym, nt.elementType);
+        }
+
+        return Tuple.Create(truePathContext, falsePathContext);
     }
 
     private Symbol GenCall(AstFunction func, AstFunction call, Symbol arg1, Symbol arg2) {

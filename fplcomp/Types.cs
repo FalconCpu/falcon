@@ -33,6 +33,12 @@ abstract class Type (string name) {
             Log.Error(expr.location, $"Type {expr.type} is not assignable to {this}");
     }
 
+    public void CheckAssignableFrom(AstExpression expr, TokenKind op) {
+        if (!IsAssignableFrom(expr))
+            Log.Error(expr.location, $"At operator {op} Got type {expr.type} when expecting {this}");
+    }
+
+
     public bool IsErrorType() {
         return this == ErrorType.Instance;
     }

@@ -137,6 +137,7 @@ fun malloc(size:Int, desc:TypeDescriptor) -> Pointer
     # If we didn't find a chunk, we're out of memory
     if chunk=null
         abort(ERR_OUT_OF_MEMORY)
+        return null   # never reached
 
     # unlink the chunk from the free list
     if prevChunk=null

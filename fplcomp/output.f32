@@ -139,13 +139,11 @@ stw $1, $3[8]
 ret
 
 /malloc:
-sub $sp, 24
+sub $sp, 16
 stw $9, $sp[0]
 stw $10, $sp[4]
 stw $11, $sp[8]
-stw $12, $sp[12]
-stw $13, $sp[16]
-stw $30, $sp[20]
+stw $30, $sp[12]
 ld $9, $2
 bne $1, 0, @1
 ld $8, 0
@@ -154,34 +152,36 @@ jmp @ret
 add $1, $1, 31
 sub $2, 0, 16
 and $10, $1, $2
-ld $12, 256
-ldw $11, $12[4]
+ld $1, 256
+ldw $11, $1[4]
 ld $8, 0
-ld $13, $8
+ld $2, $8
 jmp @7
 @5:
-ld $13, $11
+ld $2, $11
 ldw $11, $11[8]
 @7:
 ld $8, 0
 beq $11, $8, @6
-ldw $1, $11[4]
-blt $1, $10, @5
+ldw $3, $11[4]
+blt $3, $10, @5
 @6:
 ld $8, 0
 bne $11, $8, @9
 ld $1, 4096
 jsr /abort
+ld $8, 0
+jmp @ret
 @9:
 ld $8, 0
-bne $13, $8, @17
-ldw $1, $11[8]
-stw $1, $12[4]
+bne $2, $8, @17
+ldw $2, $11[8]
+stw $2, $1[4]
 jmp @13
 @17:
 ldw $1, $11[8]
-stw $1, $13[8]
-ldw $1, $13[0]
+stw $1, $2[8]
+ldw $1, $2[0]
 ld $2, 815157357
 beq $1, $2, @19
 ld $1, 4097
@@ -204,10 +204,8 @@ add $8, $11, 16
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $11, $sp[8]
-ldw $12, $sp[12]
-ldw $13, $sp[16]
-ldw $30, $sp[20]
-add $sp, 24
+ldw $30, $sp[12]
+add $sp, 16
 ret
 
 /free:
@@ -1261,36 +1259,45 @@ ldw $30, $sp[24]
 add $sp, 28
 ret
 
-/Animal:
+/Cat:
 stw $2, $1[0]
+stw $3, $1[4]
 ret
 
-/Animal/speak:
-sub $sp, 4
-stw $30, $sp[0]
-ld $3, &string5
-ldw $2, $1[0]
-ld $1, $3
-jsr /print
-ldw $30, $sp[0]
-add $sp, 4
+/doSomething:
+sub $sp, 8
+stw $9, $sp[0]
+stw $30, $sp[4]
+ld $1, 8
+ld $2, /Cat@descriptor
+jsr /malloc
+ld $9, $8
+ld $2, &string5
+ld $1, $9
+ld $3, 10
+jsr /Cat
+ld $8, $9
+ldw $9, $sp[0]
+ldw $30, $sp[4]
+add $sp, 8
 ret
 
 /main:
 sub $sp, 8
 stw $9, $sp[0]
 stw $30, $sp[4]
-ld $1, 4
-ld $2, /Animal@descriptor
+jsr /doSomething
+ld $1, 8
+ld $2, /Cat@descriptor
 jsr /malloc
 ld $9, $8
 ld $2, &string6
 ld $1, $9
-jsr /Animal
-ld $1, $9
-ldw $2, $1[-8]
-ldw $30, $2[4]
-jmp $30, $30[0]
+ld $3, 7
+jsr /Cat
+ld $1, &string7
+ldw $2, $9[0]
+jsr /print
 ldw $9, $sp[0]
 ldw $30, $sp[4]
 add $sp, 8
@@ -1298,28 +1305,27 @@ ret
 
 # ClassDescriptor String
 /String@descriptor:
-dcw &string7
+dcw &string8
 
 # ClassDescriptor StringBuilder
 /StringBuilder@descriptor:
-dcw &string8
-
-# ClassDescriptor Animal
-/Animal@descriptor:
 dcw &string9
-dcw /Animal/speak
+
+# ClassDescriptor Cat
+/Cat@descriptor:
+dcw &string10
 
 # ClassDescriptor List<String>
 /List<String>@descriptor:
-dcw &string10
+dcw &string11
 
 # ClassDescriptor Array<Char>
 /Array<Char>@descriptor:
-dcw &string11
+dcw &string12
 
 # ClassDescriptor Array<List.T>
 /Array<List.T>@descriptor:
-dcw &string12
+dcw &string13
 # "%x %x FREE"
 dcw 11
 &string0:
@@ -1352,53 +1358,54 @@ dcw 0x6E776F6E
 dcw 0x67616D20
 dcw 0x25206369
 dcw 0x00000A78
-# "%s says I am an animal"
-dcw 23
-&string5:
-dcw 0x73207325
-dcw 0x20737961
-dcw 0x6D612049
-dcw 0x206E6120
-dcw 0x6D696E61
-dcw 0x000A6C61
-# "Pootle"
+# "Fluffy"
 dcw 6
+&string5:
+dcw 0x66756C46
+dcw 0x00007966
+# "Mog"
+dcw 3
 &string6:
-dcw 0x746F6F50
-dcw 0x0000656C
+dcw 0x00676F4D
+# "c is called %s"
+dcw 15
+&string7:
+dcw 0x73692063
+dcw 0x6C616320
+dcw 0x2064656C
+dcw 0x000A7325
 # "String"
 dcw 6
-&string7:
+&string8:
 dcw 0x69727453
 dcw 0x0000676E
 # "StringBuilder"
 dcw 13
-&string8:
+&string9:
 dcw 0x69727453
 dcw 0x7542676E
 dcw 0x65646C69
 dcw 0x00000072
-# "Animal"
-dcw 6
-&string9:
-dcw 0x6D696E41
-dcw 0x00006C61
+# "Cat"
+dcw 3
+&string10:
+dcw 0x00746143
 # "List<String>"
 dcw 12
-&string10:
+&string11:
 dcw 0x7473694C
 dcw 0x7274533C
 dcw 0x3E676E69
 dcw 0x00000000
 # "Array<Char>"
 dcw 11
-&string11:
+&string12:
 dcw 0x61727241
 dcw 0x68433C79
 dcw 0x003E7261
 # "Array<List.T>"
 dcw 13
-&string12:
+&string13:
 dcw 0x61727241
 dcw 0x694C3C79
 dcw 0x542E7473

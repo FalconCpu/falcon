@@ -1,0 +1,16 @@
+# The compiler should allow access to nullable fields if guarded by an if, even on the else branch.
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething(c:Cat?)
+    if  c = null
+        print("The cat is null\n")
+    else
+        print("The cat is called %s and is %d years old\n",c.name,c.age)
+
+fun main()
+    var c:Cat? = new Cat("Fluffy",10)
+    doSomething(c)
+
+@---------------------------------------------
+The cat is called Fluffy and is 10 years old

@@ -1,0 +1,13 @@
+# Check inline if can act as a guard
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething(c:Cat?)
+    print("The cat is called %s\n", if c!=null then c.name else "unknown")
+
+fun main()
+    var c:Cat? = new Cat("Fluffy",10)
+    doSomething(c)
+
+@---------------------------------------------
+The cat is called Fluffy

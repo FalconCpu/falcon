@@ -1,0 +1,14 @@
+# Check writes to a symbol can provide null information
+
+class Cat(val name:String, val age:Int)
+
+fun doSomething() -> Cat?
+    return new Cat("Fluffy",10)
+
+fun main()
+    var c : Cat? = doSomething()      # This was marked as nullable
+    c = new Cat("Mog",7)
+    print("c is called %s\n", c.name)  # this should be OK as we have written to c
+
+@---------------------------------------------
+c is called Mog

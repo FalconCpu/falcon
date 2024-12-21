@@ -13,7 +13,7 @@ class AstIfClause(Location location, AstExpression? cond, AstBlock parent) : Ast
     public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
         // Returns the path context if the condition is false
         // Sets the path context of the true path in pathContextOut
-
+        
         Tuple<PathContext,PathContext> pc;
         if (cond != null)
             pc = cond.TypeCheckBool(scope, pathContext);

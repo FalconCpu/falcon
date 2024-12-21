@@ -20,9 +20,16 @@ class AstAssign(Location location, TokenKind op, AstExpression lhs, AstExpressio
 
         if (op!=TokenKind.Eq && lhs.type!=IntType.Instance)
             Log.Error(location, $"{op} only supported for integer operands");
-        
-        if (lhs is AstIdentifier identifier)
-            pathContext.Initialize(identifier.symbol);
+                
+        // Look to see if we can update anything on the path context as a result of this assignment
+        Symbol? lhsSym = lhs.GetSymbol();
+        if (lhsSym is not null) {
+            pathContext.Initialize(lhsSym);
+            pathContext.Unrefine(lhsSym);
+            if (lhs.type != rhs.type)
+                pathContext.Refine(lhsSym, rhs.type);
+
+        }
         return pathContext;
     }
 

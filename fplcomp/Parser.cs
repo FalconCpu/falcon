@@ -160,6 +160,11 @@ class Parser(Lexer lexer)
         return new AstMember(left.location, left, member);
     }
 
+    private AstNullSupress ParseNullSupress(AstExpression left) {
+        Expect(TokenKind.Emark);
+        return new AstNullSupress(left.location, left);
+    }
+
     private AstExpression ParsePostfix() {
         AstExpression ret = ParsePrimary();
         while(true) 
@@ -167,6 +172,7 @@ class Parser(Lexer lexer)
                 case TokenKind.OpenB: ret = ParseFuncCall(ret); break;
                 case TokenKind.OpenSq: ret = ParseIndex(ret); break;
                 case TokenKind.Dot: ret = ParseMember(ret); break;
+                case TokenKind.Emark: ret = ParseNullSupress(ret); break;
                 default: return ret;
             }   
     }
@@ -560,9 +566,13 @@ class Parser(Lexer lexer)
     private AstIfClause ParseIfClause(AstBlock block) {
         Token loc = NextToken();
         AstExpression cond = ParseExpression();
-        ExpectEol();
         AstIfClause ret = new(loc.location, cond, block);
-        ParseIndentedBlock(ret);
+        if (CanTake(TokenKind.Then)) {
+            ParseStatement(ret);
+        } else {
+            ExpectEol();
+            ParseIndentedBlock(ret);
+        }
         return ret;
     }
 
