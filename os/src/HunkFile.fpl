@@ -1,0 +1,74 @@
+###########################################################################
+#                              LoadHunk
+###########################################################################
+# Load a HUNK file from the disk
+
+class HunkFile(filehandle:File)
+    val hunkId = new List<Int>()        # type of each hunk
+    val hunkLength = new List<Int>()    # length
+    val hunkData = new List<Pointer>()  # payload
+    var error = read(filehandle)
+    const HUNK_MAGIC = 0xC0DEE4EC
+    const HUNK_EXEC  = 0xC0DE0001
+
+
+    # #########################################################
+    #                     read
+    # #########################################################
+    # reads a file and unpacks the hunks.
+    # returns True for success, False for failure and sets error
+
+    fun read(file:File) -> Int
+        val magic = file.readWord()
+        if magic != HUNK_MAGIC
+            return ERROR_DATA_CORRUPT
+
+        print("Magic number passed %x\n",magic)
+
+        val numHunks = file.readWord()
+        print("reading %d hunks\n", numHunks)
+
+        for i = 0 to < numHunks
+            val magic = file.readWord()
+            val len = file.readWord()
+            print("Reading hunk %x len=%d\n", magic, len)
+            val data = new Array<Char>(len)
+            val read = file.read(data,len)
+            if read!=len    
+                print("Hunk read %d bytes when expecting %d\n", len, read)
+                return ERROR_DATA_CORRUPT
+            hunkId.add(magic)
+            hunkLength.add(len)
+            hunkData.add((data:Pointer))
+        
+        # Should we have a check here for end of file?
+        return ERROR_NONE
+
+    # #########################################################
+    #                     dump
+    # #########################################################
+    # For debug - prints out a list of the hunks in a file
+
+    fun dump() 
+        print("The file contains %d hunks\n", hunkId.length)
+        for i= 0 to< hunkId.length
+            print("Hunk number %d. Kind=%x Length=%d\n", i, hunkId.get(i), hunkLength.get(i))
+            val data = (hunkData.get(i) : Array<Int>)
+            for j = 0 to hunkLength.get(i)/4
+                print("%x ",data[j])
+                if j%8=7
+                    print("\n")
+            print("\n")
+        
+
+    # #########################################################
+    #                     delete
+    # #########################################################
+    # cleanup the hunk file
+
+    fun delete() 
+        for hunk in hunkData    
+            delete hunk
+        delete hunkId
+        delete hunkLength
+        delete hunkData

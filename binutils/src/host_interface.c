@@ -27,6 +27,8 @@ static FILE* diskImageFile;
 #define FILESYSPKT_READDIR  0x46B2B1B0 
 #define FILESYSPKT_NEXTDIR  0x47B2B1B0 
 #define FILESYSPKT_CLOSEDIR 0x48B2B1B0 
+#define FILESYSPKT_SEEK     0x49B2B1B0 
+#define FILESYSPKT_TELL     0x4AB2B1B0 
 
 
 
@@ -386,6 +388,42 @@ static void handleCloseDir() {
 }
 
 /// -----------------------------------------------------------------
+///                    handleSeek
+/// -----------------------------------------------------------------
+
+static void handle_seek() {
+    FILE* fh = (FILE*)read_word_from_com_port();
+    int offset = read_word_from_com_port();
+    int whence = read_word_from_com_port();
+    int result = fseek(fh, offset, whence);
+
+    int packet[2];
+    if (result == 0) {
+        packet[0] = FILESYSPKT_DATA;
+        packet[1] = 0;
+    } else {
+        packet[0] = FILESYSPKT_ERROR;
+        packet[1] = errno;
+    }
+    send_buffer_to_com_port((char*)packet, 8);
+}
+
+/// -----------------------------------------------------------------
+///                    handleTell
+/// -----------------------------------------------------------------
+
+static void handle_tell() {
+    FILE* fh = (FILE*)read_word_from_com_port();
+    int result = ftell(fh);
+
+    int packet[2];
+    packet[0] = FILESYSPKT_DATA;
+    packet[1] = result;
+    send_buffer_to_com_port((char*)packet, 8);
+}
+
+
+/// -----------------------------------------------------------------
 ///                    command_mode
 /// -----------------------------------------------------------------
 /// When the FPGA sends an 0xB0 byte we enter command mode.
@@ -416,6 +454,8 @@ static void command_mode() {
         case FILESYSPKT_READDIR:    handleReadDirectory(); break;
         case FILESYSPKT_NEXTDIR:    handleNextDir();     break;
         case FILESYSPKT_CLOSEDIR:   handleCloseDir();    break;
+        case FILESYSPKT_SEEK:       handle_seek();       break;
+        case FILESYSPKT_TELL:       handle_tell();       break;
 
         default:
             print_host("Unknown command %x\n", c);

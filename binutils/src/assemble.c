@@ -454,22 +454,71 @@ void assemble_file(string filename) {
 }
 
 // ================================================
-//                  output_result
+//                  output_file_hex
 // ================================================
 
-void output_result(string filename) {
-    resolve_references();
-
-    FILE *fh = fopen(filename, "w");
-    if (fh==0) {
-        error("Can't open file '%s'", filename);
-        return;
-    }
-
+static void output_file_hex(FILE *fh) {
     int i;
     for(i=0; i<prog_count; i++)
         fprintf(fh,"%08x\n", prog[i]);
 
     fclose(fh);
     output_labels();
+}
+
+// ================================================
+//                  output_file_bin
+// ================================================
+
+static void output_file_bin(FILE *fh) {
+    fwrite(prog, 4, prog_count, fh);
+}
+
+// ================================================
+//                  output_hunk
+// ================================================
+
+// Magic numbers to identify a hunk file, and the hunks within.
+// I have deliberately chosen numbers that are unlikely to be misinterpreted from ASCII text.
+
+#define HUNK_MAGIC 0xC0DEE4EC       // Magic number. Looks a bit like CODEEXEC in hex. 
+#define HUNK_EXEC  0xC0DE0001
+
+static void output_hunk(FILE *fh) {
+    int header[4];
+    header[0] = HUNK_MAGIC;         // Magic number to identify this file
+    header[1] = 1;                  // Number of hunks in this file
+    header[2] = HUNK_EXEC;          // Type of hunk - executable
+    header[3] = prog_count*4;       // Size of hunk in bytes
+    fwrite(header, 4, 4, fh);
+    int wrote = fwrite(prog, 4, prog_count, fh);
+    if (wrote != prog_count)
+        fatal("Error writing hunk file");
+}
+
+
+
+
+
+// ================================================
+//                  output_result
+// ================================================
+
+void output_result(string filename, int format) {
+    resolve_references();
+
+    FILE *fh = fopen(filename, "wb");
+    if (fh==0) {
+        error("Can't open file '%s'", filename);
+        return;
+    }
+
+    switch(format) {
+        case FILE_FORMAT_BIN: output_file_bin(fh); break;
+        case FILE_FORMAT_HEX: output_file_hex(fh); break;
+        case FILE_FORMAT_HUNK: output_hunk(fh); break;
+        default: fatal("Unknown file format %d",format);
+    }
+    fclose(fh);
+
 }

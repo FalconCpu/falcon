@@ -98,11 +98,11 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         // For an array with an initializer list, we calculate the size based on the number of elements
         int elementSize = arrayType.elementType.GetSize();
         int size = elementSize * astArgs.Count;
-        func.Add( new InstrLdi(RegisterSymbol.registers[1], size+4));  // +4 for the size of the array
-        func.Add( new InstrLea(RegisterSymbol.registers[2], arrayType.typeSymbol));   // FIXME- needs a proper type symbol
+        func.Add( new InstrLdi(RegisterSymbol.registers[1], size));
+        func.Add( new InstrLea(RegisterSymbol.registers[2], arrayType.typeSymbol));
         func.Add( new InstrCall(StdLib.malloc, 2, IntType.Instance));
         Symbol ret = func.NewTemp(type);
-        func.Add( new InstrAlui(ret, AluOp.ADD_I, RegisterSymbol.registers[8], 4));
+        func.Add( new InstrMov(ret, RegisterSymbol.registers[8]));
         
         // Store the length into the array
         Symbol sizeSym = func.NewTemp(IntType.Instance);
@@ -130,14 +130,12 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         List<Symbol> args = astArgs.Select(it => it.CodeGenRvalue(func)).ToList();
         int elementSize = arrayType.elementType.GetSize();
         Symbol arraySize = func.NewTemp(IntType.Instance);
-        Symbol tmp1 = func.NewTemp(IntType.Instance);
-        func.Add( new InstrAlui(tmp1, AluOp.MUL_I, args[0], elementSize));
-        func.Add( new InstrAlui(arraySize, AluOp.ADD_I, tmp1, 4)); // Allow space for length field
+        func.Add( new InstrAlui(arraySize, AluOp.MUL_I, args[0], elementSize));
         func.Add( new InstrMov(RegisterSymbol.registers[1], arraySize));
         func.Add( new InstrLea(RegisterSymbol.registers[2], arrayType.typeSymbol));
         func.Add( new InstrCall(StdLib.malloc, 2, IntType.Instance));
         Symbol ret = func.NewTemp(type);
-        func.Add( new InstrAlui(ret, AluOp.ADD_I, RegisterSymbol.registers[8], 4));
+        func.Add( new InstrMov(ret, RegisterSymbol.registers[8]));
         func.Add( new InstrStoreField(4, args[0], ret, StdLib.lengthField));
         return ret;
     }
@@ -163,10 +161,10 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
     private Symbol CodeGenStringNoInitializeList(AstFunction func) {
         Symbol length = astArgs[0].CodeGenRvalue(func);
         Symbol ret = func.NewTemp(type);
-        func.Add(new InstrAlui(RegisterSymbol.registers[1], AluOp.ADD_I, length, 4)); // Allow for the length field
+        func.Add(new InstrMov(RegisterSymbol.registers[1], length)); 
         func.Add(new InstrLea(RegisterSymbol.registers[2], AstTop.stringTypeSymbol));
         func.Add(new InstrCall(StdLib.malloc, 2, PointerType.Instance));
-        func.Add(new InstrAlui(ret, AluOp.ADD_I, RegisterSymbol.registers[8], 4));
+        func.Add(new InstrMov(ret, RegisterSymbol.registers[8]));
         func.Add(new InstrStoreField(4, length, ret, StdLib.lengthField));
         return ret;
     }

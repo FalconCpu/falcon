@@ -42,10 +42,9 @@ stw $4, $1[4]
 ret
 
 /dumpMemorySystem:
-sub $sp, 12
+sub $sp, 8
 stw $9, $sp[0]
-stw $10, $sp[4]
-stw $30, $sp[8]
+stw $30, $sp[4]
 ld $9, 4096
 jmp @3
 @1:
@@ -63,25 +62,17 @@ ld $2, $9
 jsr /print
 jmp @4
 @8:
-ld $10, $9
+ld $2, $9
 ld $1, &string1
-ldw $3, $10[4]
-ldw $2, $10[8]
-ldw $4, $2[0]
-ld $2, $10
+ldw $3, $2[4]
+ldw $4, $2[8]
+ldw $4, $4[0]
 jsr /print
-ldw $1, $10[12]
-ld $2, 1
-bge $2, $1, @12
 ld $1, &string2
-ldw $2, $10[12]
-jsr /print
-@12:
-ld $1, &string3
 jsr /print
 jmp @4
 @10:
-ld $1, &string4
+ld $1, &string3
 ldw $3, $9[4]
 ldw $4, $9[0]
 ld $2, $9
@@ -93,9 +84,8 @@ add $9, $9, $1
 ld $1, 66519040
 blt $9, $1, @1
 ldw $9, $sp[0]
-ldw $10, $sp[4]
-ldw $30, $sp[8]
-add $sp, 12
+ldw $30, $sp[4]
+add $sp, 8
 ret
 
 /addChunkToFreeList:
@@ -197,8 +187,6 @@ ld $2, 600496568
 stw $2, $1[0]
 stw $10, $1[4]
 stw $9, $1[8]
-ld $2, 1
-stw $2, $1[12]
 add $8, $11, 16
 @ret:
 ldw $9, $sp[0]
@@ -249,12 +237,11 @@ stw $1, $9[0]
 ld $1, 0
 stw $1, $9[4]
 ldw $10, $9[0]
-add $1, $10, 4
+ld $1, $10
 ld $2, /String@descriptor
 jsr /malloc
-add $1, $8, 4
-stw $10, $1[-4]
-stw $1, $9[8]
+stw $10, $8[-4]
+stw $8, $9[8]
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $30, $sp[8]
@@ -273,12 +260,11 @@ ldw $1, $9[0]
 bge $1, $11, @1
 stw $11, $9[0]
 ldw $10, $9[8]
-add $1, $11, 4
+ld $1, $11
 ld $2, /String@descriptor
 jsr /malloc
-add $1, $8, 4
-stw $11, $1[-4]
-stw $1, $9[8]
+stw $11, $8[-4]
+stw $8, $9[8]
 ldw $1, $9[8]
 ldw $3, $9[0]
 ld $2, $10
@@ -430,13 +416,12 @@ ld $2, 45
 jsr /StringBuilder/append
 sub $11, 0, $11
 @1:
-ld $12, 16
+ld $10, 16
 ld $1, 16
-add $1, $1, 4
 ld $2, /Array<Char>@descriptor
 jsr /malloc
-add $10, $8, 4
-stw $12, $10[-4]
+stw $10, $8[-4]
+ld $10, $8
 ld $12, 0
 @5:
 mods $1, $11, 10
@@ -455,13 +440,8 @@ ld $1, $9
 jsr /StringBuilder/append
 @9:
 blt 0, $12, @7
-sub $1, $10, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @10
+ld $1, $10
 jsr /free
-@10:
 ldw $10, $9[8]
 ld $1, $9
 jsr /free
@@ -691,21 +671,23 @@ ld $1, 120
 beq $1, $19, @14
 ld $1, 100
 beq $1, $19, @15
-ld $1, 37
+ld $1, 99
 beq $1, $19, @16
-jmp @17
+ld $1, 37
+beq $1, $19, @17
+jmp @18
 @10:
 ld $1, 0
 ld $12, $1
 jmp @9
 @11:
-bne $17, 0, @22
+bne $17, 0, @23
 ld $1, 1
 ld $13, $1
-jmp @18
-@22:
+jmp @19
+@23:
 mul $17, $17, 10
-@18:
+@19:
 jmp @9
 @12:
 mul $1, $17, 10
@@ -740,11 +722,7 @@ jsr /StringBuilder/appendWithPad
 add $16, $16, 1
 ld $1, 0
 ld $18, $1
-sub $1, $19, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @9
+ld $1, $19
 jsr /free
 jmp @9
 @15:
@@ -762,21 +740,27 @@ jsr /StringBuilder/appendWithPad
 add $16, $16, 1
 ld $1, 0
 ld $18, $1
-sub $1, $19, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @9
+ld $1, $19
 jsr /free
 jmp @9
 @16:
+lsl $1, $16, 2
+add $1, $11, $1
+ldw $2, $1[0]
+ld $1, $9
+jsr /StringBuilder/append
+add $16, $16, 1
+ld $1, 0
+ld $18, $1
+jmp @9
+@17:
 ld $1, $9
 ld $2, 37
 jsr /StringBuilder/append
 ld $1, 0
 ld $18, $1
 jmp @9
-@17:
+@18:
 ld $1, $9
 ld $2, 37
 jsr /StringBuilder/append
@@ -796,15 +780,15 @@ ld $13, $1
 jmp @3
 @7:
 ld $1, 37
-bne $19, $1, @34
+bne $19, $1, @35
 ld $1, 1
 ld $18, $1
-jmp @30
-@34:
+jmp @31
+@35:
 ld $1, $9
 ld $2, $19
 jsr /StringBuilder/append
-@30:
+@31:
 @3:
 add $15, $15, 1
 @2:
@@ -836,13 +820,7 @@ ret
 sub $sp, 4
 stw $30, $sp[0]
 ldw $1, $1[8]
-sub $1, $1, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @1
 jsr /free
-@1:
 ldw $30, $sp[0]
 add $sp, 4
 ret
@@ -859,12 +837,10 @@ ld $1, 0
 stw $1, $9[4]
 ldw $10, $9[0]
 lsl $1, $10, 2
-add $1, $1, 4
 ld $2, /Array<List.T>@descriptor
 jsr /malloc
-add $1, $8, 4
-stw $10, $1[-4]
-stw $1, $9[8]
+stw $10, $8[-4]
+stw $8, $9[8]
 ldw $9, $sp[0]
 ldw $10, $sp[4]
 ldw $30, $sp[8]
@@ -887,12 +863,10 @@ ldw $11, $9[8]
 ldw $1, $9[0]
 lsl $12, $1, 1
 lsl $1, $12, 2
-add $1, $1, 4
 ld $2, /Array<List.T>@descriptor
 jsr /malloc
-add $1, $8, 4
-stw $12, $1[-4]
-stw $1, $9[8]
+stw $12, $8[-4]
+stw $8, $9[8]
 ld $1, 0
 ldw $2, $9[0]
 jmp @6
@@ -907,13 +881,8 @@ stw $3, $4[0]
 add $1, $1, 1
 @6:
 blt $1, $2, @5
-sub $1, $11, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @7
+ld $1, $11
 jsr /free
-@7:
 ldw $1, $9[0]
 lsl $1, $1, 1
 stw $1, $9[0]
@@ -1013,13 +982,7 @@ ret
 sub $sp, 4
 stw $30, $sp[0]
 ldw $1, $1[8]
-sub $1, $1, 4
-ldw $2, $1[-4]
-sub $2, $2, 1
-stw $2, $1[-4]
-bne $2, 0, @1
 jsr /free
-@1:
 ldw $30, $sp[0]
 add $sp, 4
 ret
@@ -1046,11 +1009,11 @@ add $11, $11, $2
 add $1, $1, 1
 @2:
 blt $1, $10, @1
-add $1, $11, 4
+ld $1, $11
 ld $2, /String@descriptor
 jsr /malloc
-add $12, $8, 4
-stw $11, $12[-4]
+stw $11, $8[-4]
+ld $12, $8
 ld $13, 0
 ld $11, 0
 jmp @4
@@ -1168,11 +1131,11 @@ jsr /abort
 ld $8, 0
 jmp @ret
 @1:
-add $1, $9, 4
+ld $1, $9
 ld $2, /String@descriptor
 jsr /malloc
-add $12, $8, 4
-stw $9, $12[-4]
+stw $9, $8[-4]
+ld $12, $8
 ld $1, $12
 add $2, $11, $10
 ld $3, $9
@@ -1259,73 +1222,84 @@ ldw $30, $sp[24]
 add $sp, 28
 ret
 
-/Cat:
-stw $2, $1[0]
-stw $3, $1[4]
-ret
-
-/doSomething:
+/printNumber:
 sub $sp, 8
 stw $9, $sp[0]
 stw $30, $sp[4]
-ld $1, 8
-ld $2, /Cat@descriptor
-jsr /malloc
-ld $9, $8
-ld $2, &string5
-ld $1, $9
-ld $3, 10
-jsr /Cat
-ld $8, $9
+ld $9, $1
+ld $1, &string4
+ld $2, $9
+jsr /strequals
+bne $8, 0, @2
+ld $1, &string6
+ld $2, $9
+jsr /strequals
+bne $8, 0, @3
+ld $1, &string7
+ld $2, $9
+jsr /strequals
+bne $8, 0, @4
+jmp @5
+@2:
+ld $1, &string5
+ld $2, 1
+jsr /print
+jmp @1
+@3:
+ld $1, &string5
+ld $2, 2
+jsr /print
+jmp @1
+@4:
+ld $1, &string5
+ld $2, 3
+jsr /print
+jmp @1
+@5:
+ld $1, &string8
+jsr /print
+@1:
 ldw $9, $sp[0]
 ldw $30, $sp[4]
 add $sp, 8
 ret
 
 /main:
-sub $sp, 8
-stw $9, $sp[0]
-stw $30, $sp[4]
-jsr /doSomething
-ld $1, 8
-ld $2, /Cat@descriptor
-jsr /malloc
-ld $9, $8
-ld $2, &string6
-ld $1, $9
-ld $3, 7
-jsr /Cat
+sub $sp, 4
+stw $30, $sp[0]
+ld $1, &string4
+jsr /printNumber
+ld $1, &string6
+jsr /printNumber
 ld $1, &string7
-ldw $2, $9[0]
-jsr /print
-ldw $9, $sp[0]
-ldw $30, $sp[4]
-add $sp, 8
+jsr /printNumber
+ld $1, &string9
+jsr /printNumber
+ld $1, &string10
+jsr /printNumber
+ldw $30, $sp[0]
+add $sp, 4
 ret
 
 # ClassDescriptor String
 /String@descriptor:
-dcw &string8
+dcw &string11
 
 # ClassDescriptor StringBuilder
 /StringBuilder@descriptor:
-dcw &string9
-
-# ClassDescriptor Cat
-/Cat@descriptor:
-dcw &string10
+dcw &string12
 
 # ClassDescriptor List<String>
 /List<String>@descriptor:
-dcw &string11
+dcw &string13
 
 # ClassDescriptor Array<Char>
 /Array<Char>@descriptor:
-dcw &string12
+dcw &string14
 
 # ClassDescriptor Array<List.T>
 /Array<List.T>@descriptor:
-dcw &string13
+dcw &string15
 # "%x %x FREE"
 dcw 11
 &string0:
@@ -1338,18 +1312,13 @@ dcw 8
 dcw 0x25207825
 dcw 0x73252078
 dcw 0x00000000
-# "(*%d)"
-dcw 6
-&string2:
-dcw 0x252A2820
-dcw 0x00002964
 # ""
 dcw 1
-&string3:
+&string2:
 dcw 0x0000000A
 # "%x %x ERROR: Unknown magic %x"
 dcw 30
-&string4:
+&string3:
 dcw 0x25207825
 dcw 0x52452078
 dcw 0x3A524F52
@@ -1358,54 +1327,67 @@ dcw 0x6E776F6E
 dcw 0x67616D20
 dcw 0x25206369
 dcw 0x00000A78
-# "Fluffy"
-dcw 6
+# "one"
+dcw 3
+&string4:
+dcw 0x00656E6F
+# "%d"
+dcw 3
 &string5:
-dcw 0x66756C46
-dcw 0x00007966
-# "Mog"
+dcw 0x000A6425
+# "two"
 dcw 3
 &string6:
-dcw 0x00676F4D
-# "c is called %s"
-dcw 15
+dcw 0x006F7774
+# "three"
+dcw 5
 &string7:
-dcw 0x73692063
-dcw 0x6C616320
-dcw 0x2064656C
-dcw 0x000A7325
+dcw 0x65726874
+dcw 0x00000065
+# "unknown"
+dcw 8
+&string8:
+dcw 0x6E6B6E75
+dcw 0x0A6E776F
+dcw 0x00000000
+# "four"
+dcw 4
+&string9:
+dcw 0x72756F66
+dcw 0x00000000
+# "five"
+dcw 4
+&string10:
+dcw 0x65766966
+dcw 0x00000000
 # "String"
 dcw 6
-&string8:
+&string11:
 dcw 0x69727453
 dcw 0x0000676E
 # "StringBuilder"
 dcw 13
-&string9:
+&string12:
 dcw 0x69727453
 dcw 0x7542676E
 dcw 0x65646C69
 dcw 0x00000072
-# "Cat"
-dcw 3
-&string10:
-dcw 0x00746143
 # "List<String>"
 dcw 12
-&string11:
+&string13:
 dcw 0x7473694C
 dcw 0x7274533C
 dcw 0x3E676E69
 dcw 0x00000000
 # "Array<Char>"
 dcw 11
-&string12:
+&string14:
 dcw 0x61727241
 dcw 0x68433C79
 dcw 0x003E7261
 # "Array<List.T>"
 dcw 13
-&string13:
+&string15:
 dcw 0x61727241
 dcw 0x694C3C79
 dcw 0x542E7473

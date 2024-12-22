@@ -1,0 +1,11 @@
+# test of indirect function calls
+
+fun doSomething(a:Int)->Unit
+    print("doSomething called\n")
+
+fun main()
+    val f = doSomething
+    f(4)
+
+@------------------
+doSomething called

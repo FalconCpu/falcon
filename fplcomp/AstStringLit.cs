@@ -29,18 +29,5 @@ class AstStringLit(Location location, string value) : AstExpression(location) {
 
         return ConstObjectSymbol.Make(StringType.Instance, data, value);
     }
-
-    // public static string EscapeString(string str) {
-    //     StringBuilder ret = new();
-    //     foreach(char c in str)
-    //         ret.Append(c switch {
-    //             '\n' => "\\n",
-    //             '\t' => "\\t",
-    //             '\r' => "\\r",
-    //             '\0' => "\\0",
-    //             _ => c,
-    //         });
-    //     return ret.ToString();
-    // }
 }
 

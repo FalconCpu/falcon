@@ -6,11 +6,19 @@
 class CommandLine(val terminal:Terminal)
     val fs = new FileSystem()
 
+    # ########################################################
+    #             Command : Clear
+    # ########################################################
+
     fun cmdClear(words:List<String>)
         if words.length=1
             terminal.clearScreen()
         else
             terminal.printString("Usage: clear\n")
+
+    # ########################################################
+    #             Command : Version
+    # ########################################################
 
     fun cmdVersion(words:List<String>)
         if words.length=1
@@ -18,10 +26,18 @@ class CommandLine(val terminal:Terminal)
         else
             terminal.printf("Usage: version\n")
 
+    # ########################################################
+    #             Command : Echo
+    # ########################################################
+
     fun cmdEcho(words:List<String>)
         for i=1 to <words.length
             terminal.printf("%s ",words.get(i))
         terminal.printf("\n")
+
+    # ########################################################
+    #             Command : Help
+    # ########################################################
 
     fun cmdHelp(words:List<String>)
         if words.length=1
@@ -31,7 +47,11 @@ class CommandLine(val terminal:Terminal)
             terminal.printf("  echo <text>\n")
             terminal.printf("  help\n")
             terminal.printf("  ls\n")
-            termianl.printf("  cat <filename>\n")
+            terminal.printf("  cat <filename>\n")
+
+    # ########################################################
+    #             Command : ls
+    # ########################################################
 
     fun cmdLs(words:List<String>)
         # TODO - handle arguments
@@ -39,11 +59,11 @@ class CommandLine(val terminal:Terminal)
             terminal.printf("Usage ls\n")
             return
 
-        
+        val filename = "*"
 
-        val dir = fs.openDirectory("*")
+        val dir = fs.openDirectory(filename)
         if dir=null
-            terminal.printf("Error - File '%s' not found or cannot be opened\n")
+            terminal.printf("Error - Cannot ls '%s' %s\n", filename, getErrorString(fs.error))
             return
         
         repeat
@@ -54,6 +74,10 @@ class CommandLine(val terminal:Terminal)
         until not dir.nextEntry()
         delete dir
 
+    # ########################################################
+    #             Command : Cat
+    # ########################################################
+
     fun cmdCat(words:List<String>)
         if words.length!=2
             terminal.printf("Usage: cat <filename>\n")
@@ -61,7 +85,7 @@ class CommandLine(val terminal:Terminal)
         
         val file = fs.openFile(words.get(1),'r')
         if file=null
-            terminal.printf("Error - file '%s' not found\n",  words.get(1))
+            terminal.printf("Cannot open file '%s' %s\n",  words.get(1), getErrorString(fs.error))
             return
         
         val buffer = new Array<Char>(1024)
@@ -73,6 +97,67 @@ class CommandLine(val terminal:Terminal)
         until bytesRead=0
         delete file
 
+    # ########################################################
+    #             command dumpmem
+    # ########################################################
+
+    fun hexToInt(string:String) -> Int
+        var ret = 0
+        for i = 0 to <string.length
+            print("Hex to Int %c %x\n", string[i], ret)
+            if string[i]>='0' and string[i]<='9'
+                ret = ret * 16 + (string[i]-'0')
+            elsif string[i]>='A' and string[i]<='F'
+                ret = ret * 16 + (string[i]-'A') + 10
+            elsif string[i]>='a' and string[i]<='f'
+                ret = ret * 16 + (string[i]-'a') + 10
+        return ret
+
+    fun cmdDumpmem(words:List<String>)
+        if words.length=1
+            dumpMemorySystem()
+            return
+        
+        val address = hexToInt(words.get(1))
+
+        terminal.printf("Memory at %x:\n",address)
+        val data = (address:Array<Int>)
+        val datab = (address:Array<Char>)
+        for r = 0 to <9
+            terminal.printf("%08x: ",address+16*r)
+            for i = 0 to <4
+                terminal.printf("%08x ",data[4*r+i])
+            terminal.printf("    ")
+            for i = 0 to <16
+                val b = datab[16*r+i]
+                terminal.printf("%c",if b<32 then '.' else b)
+            terminal.printf("\n")
+            
+
+
+    # ########################################################
+    #             Execute command from file
+    # ########################################################
+
+    fun exec(words:List<String>)
+        val file = fs.openFile(words.get(0),'r')
+        if file=null
+            terminal.printf("Cannot open file '%s' %s\n",  words.get(0), getErrorString(fs.error))
+            return
+
+        val hunks = new HunkFile(file)
+        if hunks.error != ERROR_NONE
+            terminal.printf("Cannot execute file '%s' %s\n", words.get(0), getErrorString(hunks.error))
+            delete hunks
+            delete file
+            return
+
+        # run the program
+        val program = (hunks.get(0) : ()->Unit)
+        program()
+            
+        delete hunks
+        delete file
 
     fun processCommand(command: String)
         val words = splitString(command,' ')
@@ -85,8 +170,8 @@ class CommandLine(val terminal:Terminal)
             "help" -> cmdHelp(words)
             "ls" -> cmdLs(words)
             "cat" -> cmdCat(words)
-            "dumpmem" -> dumpMemorySystem()
-            else -> terminal.printf("Unknown command: %s\n", words.get(0))
+            "dumpmem" -> cmdDumpmem(words)
+            else -> exec(words)
         for word in words
             delete word
         delete words

@@ -5,19 +5,30 @@
 #
 # Some of the error codes come from the Windows API.
 
-const ERROR_NONE = 0
+const ERROR_NONE           = 0
+const ERROR_INVALID_ARG    = 1
 const ERROR_FILE_NOT_FOUND = 2
-const ERROR_PERMISSION_DENIED = 13
+const ERROR_DATA_CORRUPT   = 3
+const ERROR_PROTOCOL       = 4
+const ERROR_TIMEOUT        = 5
+const ERROR_NOT_EXECUTABLE = 6
+const ERROR_PERMISSION_DENIED = 13      # from windows
 
-fun getErrorString(errorCode:Int):String
+
+
+fun getErrorString(errorCode:Int)->String
     when errorCode
         ERROR_NONE -> return "No error"
+        ERROR_INVALID_ARG -> return "Invalid argument"
+        ERROR_DATA_CORRUPT -> return "Data corrupt"
+        ERROR_PROTOCOL -> return "Protocol error"
+        ERROR_TIMEOUT -> return "Timeout"
         ERROR_FILE_NOT_FOUND -> return "File not found"
+        ERROR_NOT_EXECUTABLE -> return "not an executable file"
         ERROR_PERMISSION_DENIED -> return "Permission denied"
         else -> 
             val sb = new StringBuilder()
-            sb.append("Unknown error code ")
-            sb.append(errorCode)
+            sb.sprintf("Unknown error code %d",errorCode)
             return sb.toString()
 
 

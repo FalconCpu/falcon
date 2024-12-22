@@ -309,10 +309,29 @@ class Parser(Lexer lexer)
         return new AstTypeArray(loc.location, elementType);
     }
 
+    private AstType ParseTypeBracket() {
+        Token loc = Expect(TokenKind.OpenB);
+        List<AstType> elements = [];
+        if (lookahead.kind!=TokenKind.CloseB)
+        do {
+            elements.Add(ParseType());
+        }while (CanTake(TokenKind.Comma));
+
+        Expect(TokenKind.CloseB);
+        if (CanTake(TokenKind.Arrow)) {
+            AstType retType = ParseType();
+            return new AstTypeFunction(loc.location, elements, retType);
+        } else if (elements.Count==1)
+            return elements[0];
+        else
+            throw new ParseError(loc.location, "Tuples not yet supported");
+    }
+
     private AstType ParseType() {
         AstType ret = lookahead.kind switch {
             TokenKind.Identifier => ParseTypeIdentifier(),
             TokenKind.Array => ParseTypeArray(),
+            TokenKind.OpenB => ParseTypeBracket(),
             _ => throw new Exception($"Got '{lookahead.kind}' when expecting type"),
         };
 

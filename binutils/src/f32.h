@@ -17,6 +17,10 @@ typedef struct Reference Reference;
 
 #define FLAG_DEFINED   0x01
 
+#define FILE_FORMAT_HEX  0
+#define FILE_FORMAT_BIN  1
+#define FILE_FORMAT_HUNK 2
+
 // ----------------------------------------------------
 //                        token.c
 // ----------------------------------------------------
@@ -52,7 +56,7 @@ struct Reference {
 
 void initialize_assembler();
 void assemble_file(string filename);
-void output_result(string filename);
+void output_result(string filename, int format);
 
 // ----------------------------------------------------
 //                        disassemble.c

@@ -101,7 +101,7 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
         func.Add(new InstrAlui(RegisterSymbol.registers[destReg++], AluOp.ADD_I, RegisterSymbol.sp, 4));
     }
 
-    private void genCodeGenCall(AstFunction output, AstFunction func, int numParameters) {
+    private static void GenCodeGenCall(AstFunction output, AstFunction func, int numParameters) {
         if (func.virtualMethodNumber==-1) {
             // Not a virtual call, so just call the function
             output.Add(new InstrCall(func, numParameters, func.returnType));
@@ -122,18 +122,20 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
         if (paramTypes.Count>0 && paramTypes.Last() is VariadicType vt) {
             // For variadic functions, we need to generate the arguments in a special way
             CodeGenArgsWithVariadic(output, thisSym, paramTypes.Count-1);
-            genCodeGenCall(output, funcSym.function, numParameters);
+            GenCodeGenCall(output, funcSym.function, numParameters);
             // And then clean up the stack
             output.Add(new InstrAlui(RegisterSymbol.sp, AluOp.ADD_I, RegisterSymbol.sp, 4*(args.Count-paramTypes.Count+2)));
         } else {
             CodeGenArgsNoVariadic(output, thisSym);
-            genCodeGenCall(output, funcSym.function, numParameters);
+            GenCodeGenCall(output, funcSym.function, numParameters);
         }
     }
 
 
-    private void CodeGenIndirectCall(AstFunction func, Symbol funcSym) {
-        throw new NotImplementedException("Indirect calls not yet implemented");
+    private void CodeGenIndirectCall(AstFunction func) {
+        Symbol funcPtr = left.CodeGenRvalue(func);
+        CodeGenArgsNoVariadic(func, null);
+        func.Add(new InstrCallr(funcPtr, args.Count, type));
     }
 
     public override Symbol CodeGenRvalue(AstFunction func) {
@@ -145,8 +147,7 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
                 CodeGenCall(func, funcSym, thisArg);
             } else {
                 // We have a call to a function pointer call
-                Symbol funcPtrSym = mem.CodeGenRvalue(func);
-                CodeGenIndirectCall(func, funcPtrSym);
+                CodeGenIndirectCall(func);
             }
         } else if (left is AstIdentifier id && id.symbol is FunctionSymbol fs) {
             if (fs.function.methodOf != null) {
@@ -157,7 +158,7 @@ class AstFuncCall(Location location, AstExpression left, List<AstExpression> arg
                 CodeGenCall(func, fs, null);
             }
         } else {
-            throw new NotImplementedException("Call to function expression");
+            CodeGenIndirectCall(func);
         }
 
         // Collect the return value

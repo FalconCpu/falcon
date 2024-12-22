@@ -9,12 +9,7 @@
 # Having a (randomly generated) magic number in the header
 # acts as a small guard against buffer overruns
 #
-# Currently allocated chunks have a string as their 
-# descriptor. This could become a vtable or similar later.
 #
-# Plan on using (manual) reference counting to track memory.
-# 
-# possibly look into automating this in the future
 
 class FreeMemChunk
     var magic    : Int
@@ -24,13 +19,16 @@ class FreeMemChunk
 
 class AllocatedMemChunk
     var magic      : Int
-    var size       : Int
-    var descriptor : String
-    var refcount   : Int
+    var size       : Int         # size of chunk in bytes
+    var descriptor : TypeDescriptor
+    var length     : Int         # for arrays or strings - gives the length
+
+class TypeDescriptor
+    var name : String
+    # virtual function table
 
 const MAGIC_FREE = 0x3096506D
 const MAGIC_ALLOCATED = 0x23CAD9B8
-
 
 const ERR_OUT_OF_MEMORY = 0x1000
 const ERR_MEMORY_LIST_CORRUPTED = 0x1001
@@ -80,29 +78,8 @@ fun dumpMemorySystem()
             print("%x %x FREE\n", chunk, chunk.size)
         elsif chunk.magic = MAGIC_ALLOCATED
             val chunkA = (chunk:AllocatedMemChunk)
-            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
-            if chunkA.refcount > 1
-                print(" (*%d)", chunkA.refcount)
-            print("\n")
+            print("%x %x %s\n", chunkA, chunkA.size, chunkA.descriptor.name)
         else
-            print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
-        chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
-
-# ######################################################
-#                     dummpMemoryAllocations
-# ######################################################
-# Dump the memory system for debugging
-fun dummpMemoryAllocations()
-    val sysvars = (0x00000100:SystemVariables)
-    var chunk = (startOfHeap:FreeMemChunk)
-    while (chunk:Int) < (endOfHeap:Int)
-        if chunk.magic = MAGIC_ALLOCATED
-            val chunkA = (chunk:AllocatedMemChunk)
-            print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor)
-            if chunkA.refcount > 1
-                print(" (*%d)", chunkA.refcount)
-            print("\n")
-        elsif chunk.magic != MAGIC_FREE
             print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
         chunk = (((chunk:Int) + chunk.size):FreeMemChunk)
 
@@ -138,7 +115,7 @@ fun addChunkToFreeList(chunk:FreeMemChunk, size:Int)
 # ######################################################
 #                     malloc
 # ######################################################
-fun malloc(size:Int, desc:String) -> Pointer
+fun malloc(size:Int, desc:TypeDescriptor) -> Pointer
     if size = 0
         return null
     var roundedSize = ((size+31)&-16)   # Round up to multiple of 16, and add header
@@ -153,6 +130,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     
     # If we didn't find a chunk, we're out of memory
     if chunk=null
+        print("Out of memory allocating %d",size)
         abort(ERR_OUT_OF_MEMORY)
         return null
 
@@ -162,6 +140,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     else
         prevChunk.next = chunk.next
         if prevChunk.magic != MAGIC_FREE
+            print("Memory list corrupted")
             abort(ERR_MEMORY_LIST_CORRUPTED)
 
     # If the chunk is larger than we need, split it
@@ -172,8 +151,7 @@ fun malloc(size:Int, desc:String) -> Pointer
     chunkA.magic = MAGIC_ALLOCATED
     chunkA.size = roundedSize
     chunkA.descriptor = desc
-    chunkA.refcount = 1
-    # print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
+    print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc.name)
     return ((chunk:Int)+16:Pointer)
 
 # ######################################################
@@ -183,10 +161,11 @@ fun free(ptr:Pointer)
     if ptr=null
         return
     val chunk = ((ptr:Int)-16:FreeMemChunk)
-    # print("Free %x %d\n",ptr, chunk.size)
+    print("Free %x %d\n",ptr, chunk.size)
     if chunk.magic = MAGIC_ALLOCATED
         addChunkToFreeList((chunk:FreeMemChunk), chunk.size)
     elsif chunk.magic = MAGIC_FREE
         abort(ERR_DOUBLE_FREE)
     else
+        print("MEMORY LIST CORRUPTED: Chunk at %x Magic=%x\n", chunk, chunk.magic)
         abort(ERR_MEMORY_LIST_CORRUPTED)

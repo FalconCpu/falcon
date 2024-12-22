@@ -57,7 +57,7 @@ fun Boot()
     val tcb = new TaskControlBlock()  # allocate a new TCB structure
     val stack = new Array<Int>(4096)  # allocate memory for the stack
     tcb.pc    = (_start:Int)          # set PC to the entry point of the program
-    tcb.regSp = (stack:Int)           # 
+    tcb.regSp = (stack:Int)+4096      # Set SP to end of stack
     tcb.reg30 = (Success:Int)         # Set the code's return address
     ResumeTask((tcb:Array<Int>))      # start the task
 

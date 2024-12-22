@@ -9,11 +9,6 @@
 # Having a (randomly generated) magic number in the header
 # acts as a small guard against buffer overruns
 #
-# Currently allocated chunks have a string as their 
-# descriptor. This could become a vtable or similar later.
-#
-# Plan on using (manual) reference counting to track memory.
-# 
 # possibly look into automating this in the future
 
 class FreeMemChunk
@@ -26,7 +21,7 @@ class AllocatedMemChunk
     var magic      : Int
     var size       : Int
     var descriptor : TypeDescriptor
-    var refcount   : Int
+    var length     : Int         # length field for strings/arrays descriptors
 
 class TypeDescriptor
     var name : String
@@ -83,8 +78,6 @@ fun dumpMemorySystem()
         elsif chunk.magic = MAGIC_ALLOCATED
             val chunkA = (chunk:AllocatedMemChunk)
             print("%x %x %s", chunkA, chunkA.size, chunkA.descriptor.name)
-            if chunkA.refcount > 1
-                print(" (*%d)", chunkA.refcount)
             print("\n")
         else
             print("%x %x ERROR: Unknown magic %x\n", chunk, chunk.size, chunk.magic)
@@ -155,7 +148,6 @@ fun malloc(size:Int, desc:TypeDescriptor) -> Pointer
     chunkA.magic = MAGIC_ALLOCATED
     chunkA.size = roundedSize
     chunkA.descriptor = desc
-    chunkA.refcount = 1
     # print("Malloc %x %d %s\n",(chunk:Int)+16, size, desc)
     return ((chunk:Int)+16:Pointer)
 

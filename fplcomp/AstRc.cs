@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 
 class AstRc(Location location, AstExpression astExpr) : AstExpression(location) {
     public AstExpression astExpr = astExpr;
@@ -9,6 +8,7 @@ class AstRc(Location location, AstExpression astExpr) : AstExpression(location) 
     }
 
     public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext)    {
+        Log.Error(location, "Ref counting no longer supported");
         astExpr.TypeCheckRvalue(scope,pathContext);
         SetType(astExpr.type);
         
