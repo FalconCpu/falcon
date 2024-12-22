@@ -1,0 +1,99 @@
+# ##########################################################
+#                      CoommandLine
+# ##########################################################
+# This is a simple command line interpreter.
+
+class CommandLine(val terminal:Terminal)
+    val fs = new FileSystem()
+
+    fun cmdClear(words:List<String>)
+        if words.length=1
+            terminal.clearScreen()
+        else
+            terminal.printString("Usage: clear\n")
+
+    fun cmdVersion(words:List<String>)
+        if words.length=1
+            terminal.printf("Version 0.1\n")
+        else
+            terminal.printf("Usage: version\n")
+
+    fun cmdEcho(words:List<String>)
+        for i=1 to <words.length
+            terminal.printf("%s ",words.get(i))
+        terminal.printf("\n")
+
+    fun cmdHelp(words:List<String>)
+        if words.length=1
+            terminal.printf("Available commands:\n")
+            terminal.printf("  clear\n")
+            terminal.printf("  version\n")
+            terminal.printf("  echo <text>\n")
+            terminal.printf("  help\n")
+            terminal.printf("  ls\n")
+            termianl.printf("  cat <filename>\n")
+
+    fun cmdLs(words:List<String>)
+        # TODO - handle arguments
+        if words.length>1
+            terminal.printf("Usage ls\n")
+            return
+
+        
+
+        val dir = fs.openDirectory("*")
+        if dir=null
+            terminal.printf("Error - File '%s' not found or cannot be opened\n")
+            return
+        
+        repeat
+            if (dir.attributes & FILE_ATTRIBUTE_DIRECTORY) != 0
+                terminal.printf("%-20s    <dir>\n", dir.name)
+            else
+                terminal.printf("%-20s %8d\n", dir.name, dir.length)
+        until not dir.nextEntry()
+        delete dir
+
+    fun cmdCat(words:List<String>)
+        if words.length!=2
+            terminal.printf("Usage: cat <filename>\n")
+            return
+        
+        val file = fs.openFile(words.get(1),'r')
+        if file=null
+            terminal.printf("Error - file '%s' not found\n",  words.get(1))
+            return
+        
+        val buffer = new Array<Char>(1024)
+        var bytesRead = 0
+        repeat
+            bytesRead = file.read(buffer, 1024)
+            for i=0 to <bytesRead
+                terminal.printf("%c", buffer[i])
+        until bytesRead=0
+        delete file
+
+
+    fun processCommand(command: String)
+        val words = splitString(command,' ')
+        if words.length=0
+            return
+        when words.get(0)
+            "clear" -> cmdClear(words)
+            "version" -> cmdVersion(words)
+            "echo" -> cmdEcho(words)
+            "help" -> cmdHelp(words)
+            "ls" -> cmdLs(words)
+            "cat" -> cmdCat(words)
+            "dumpmem" -> dumpMemorySystem()
+            else -> terminal.printf("Unknown command: %s\n", words.get(0))
+        for word in words
+            delete word
+        delete words
+
+    fun run()
+        terminal.printf("> ")
+        val line = terminal.readLine()
+        processCommand(line)
+
+

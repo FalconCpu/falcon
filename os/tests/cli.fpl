@@ -1,0 +1,8 @@
+
+fun main() 
+    val terminal = new Terminal()
+    val cmd = new CommandLine(terminal)
+
+    terminal.printf("FalconOs 0.0.1\n")
+    while true
+        cmd.run()

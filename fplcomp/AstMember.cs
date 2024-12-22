@@ -16,7 +16,9 @@ class AstMember(Location location, AstExpression left, AstIdentifier identifier)
     private FieldSymbol UndefinedField(ClassType classType) {
         Log.Error(location, $"No field named {identifier.name} in class {classType}");
         string s = string.Join(",",classType.fields.Select(f=>f.name));
-        Log.Error(location, "Available fields are:"+s);
+        Log.Note(location, "Available fields are:"+s);
+        string m = string.Join(",",classType.methods.Select(f=>f.name));
+        Log.Note(location, "Available methods are:"+m);
         return new FieldSymbol(identifier.name, ErrorType.Instance, true);
     }
 

@@ -149,6 +149,12 @@ class StringBuilder
                         argIndex += 1
                         inPercent = false
                         delete s
+
+                    'c' -> 
+                        append((args[argIndex]:Char))
+                        argIndex += 1
+                        inPercent = false
+
                     '%' ->
                         append('%')
                         inPercent = false

@@ -16,11 +16,17 @@ class PathContext() {
     }
 
     public void Refine(Symbol? symbol, Type type) {
-        if (symbol!=null) {
-            // Console.WriteLine($"Refining symbol {symbol.name} to type {type}");
-            refinedTypes[symbol] = type;
-        }
+        if (symbol==null)
+            return;
+
+        // TODO - some proper checking that we cannot widen a type here
+        if (type==IntType.Instance && (symbol.type==CharType.Instance || symbol.type==ShortType.Instance))
+            return;
+
+        // Console.WriteLine($"Refining symbol {symbol.name} to type {type}");
+        refinedTypes[symbol] = type;
     }
+
 
     public void Unrefine(Symbol symbol) {
         refinedTypes.Remove(symbol);

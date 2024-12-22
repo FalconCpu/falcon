@@ -210,8 +210,8 @@ class GraphicsContext()
 
             blitter.x1 = screenWidth
             blitter.y1 = (amount:Short)
-            blitter.x2 = (screenHeight-amount:Short)
-            blitter.y2 = 0
+            blitter.x2 = 0
+            blitter.y2 = (screenHeight-amount:Short)
             blitter.x3 = 0
             blitter.cmd = BLIT_CMD_FILL_RECT
         else

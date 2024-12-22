@@ -1,5 +1,8 @@
 Hardware.fpl
 Exception.fpl
+Error.fpl
 FileSystem.fpl
 keyboard.fpl
 graphics.fpl
+Terminal.fpl
+CommandLine.fpl

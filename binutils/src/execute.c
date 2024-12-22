@@ -259,6 +259,9 @@ static int read_hwregs(unsigned int addr) {
         case 0xE0000010:   // UART TX
             return 0x3ff;  // Report the space in the fifo - fake it to always be empty
 
+        case 0xE0000014:
+            return -1;      // UART RX
+
         case 0xE0000030:   // Simulation flag
             return 1;      // Returns 1 in simulations, zero on real hardware
 

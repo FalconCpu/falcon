@@ -7,6 +7,10 @@ static class Log {
         numErrors++;
     }
 
+    public static void Note(Location location, string message) {
+        Console.WriteLine($"{location}: {message}");
+    }
+
     public static void Error(string message) {
         Console.WriteLine(message);
         numErrors++;

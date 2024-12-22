@@ -1,0 +1,25 @@
+# ##################################################################
+#                         Error.fpl
+# ##################################################################
+# This file contains error codes.
+#
+# Some of the error codes come from the Windows API.
+
+const ERROR_NONE = 0
+const ERROR_FILE_NOT_FOUND = 2
+const ERROR_PERMISSION_DENIED = 13
+
+fun getErrorString(errorCode:Int):String
+    when errorCode
+        ERROR_NONE -> return "No error"
+        ERROR_FILE_NOT_FOUND -> return "File not found"
+        ERROR_PERMISSION_DENIED -> return "Permission denied"
+        else -> 
+            val sb = new StringBuilder()
+            sb.append("Unknown error code ")
+            sb.append(errorCode)
+            return sb.toString()
+
+
+class Error()
+    

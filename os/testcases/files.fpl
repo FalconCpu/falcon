@@ -1,0 +1,38 @@
+
+fun main()
+    val fs = new FileSystem()
+
+    print("Opening file 'test.txt'\n")
+    val file = fs.openFile("test.txt", 'r')
+
+    if file=null
+        print("Error %x", fs.error)
+        return
+
+    val buffer = new Array<Char>(1024)
+    val numBytes = file.read(buffer, 1024)
+
+    for i = 0 to <numBytes
+        print("%c", buffer[i])
+
+
+    val file2 = fs.openFile("test2.txt", 'w')
+    if file2=null
+        print("File2: Error %x", fs.error)
+        return
+    file2.writeString("its fleace was white as snow\n")
+    file2.writeString("and everywhere that Mary went\n")
+    file2.writeString("the lamb was sure to go\n")
+    file2.writeString("it followed her to school one day\n")
+    file2.writeString("which was against the rules\n")
+    file2.writeString("it made the children laugh and play\n")
+    file2.writeString("to see a lamb at school\n")
+    file2.writeString("and so the teacher turned it out\n")
+    file2.writeString("but still it lingered near\n")
+    file2.writeString("and waited patiently about\n")
+    file2.writeString("till Mary did appear\n")
+    file2.writeString("why does the lamb love Mary so?\n")
+    file2.writeString("the eager children cry\n")
+    file2.writeString("why, Mary loves the lamb, you know\n")
+    file2.writeString("the teacher did reply\n")
+    delete file2

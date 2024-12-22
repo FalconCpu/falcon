@@ -38,13 +38,43 @@ fun uartTransmitWord(word: Int)
     uartTransmitByte(((word lsr 16) & 0xff : Char))
     uartTransmitByte(((word lsr 24) & 0xff : Char))
 
+
+# ######################################################################
+#                          uartReceiveByte
+# ######################################################################
+# Receive a byte over the UART.
+# Allow about 100us for a timeout
+# Returns -1 on timeout and sets error
+
 fun uartReceiveByte() -> Int
     # fetch a byte from the uart - or -1 if there is a timeout
-    var timeout = 100000
-    while timeout > 0
-        val ret = hwRegs.uart_rx
-        if ret != -1
-            return ret
+    var timeout = 1000
+    var ret = -1
+    while ret = -1 and timeout > 0
+        ret = hwRegs.uart_rx
         timeout -= 1
-    return -1
+    return ret
+
+fun uartReceiveByteLongTimeout() -> Int
+    var timeout = 1000000
+    var ret = -1
+    while ret = -1 and timeout > 0
+        ret = hwRegs.uart_rx
+        timeout -= 1
+    return ret
+
+fun uartReceiveWord() -> Int
+    val byte0 = uartReceiveByteLongTimeout()
+    if byte0 = -1 then return -1
+
+    val byte1 = uartReceiveByte()
+    if byte1 = -1 then return -1
+
+    val byte2 = uartReceiveByte()
+    if byte2 = -1 then return -1
+
+    val byte3 = uartReceiveByte()
+    if byte3 = -1 then return -1
+
+    return (byte0 & 0xff) | ((byte1 & 0xff) lsl 8) | ((byte2&0xff) lsl 16) | ((byte3 & 0xff) lsl 24)
 

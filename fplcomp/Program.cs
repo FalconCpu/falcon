@@ -81,6 +81,17 @@ class Program {
         else if (includeStdlib)
             ret.Add($"{stdLibPath}\\Memory.fpl");
 
+        if (includeStdlib) {
+            // Include the files from the OS
+            string lstFileName = $"{stdLibPath}\\files.lst";
+            string[] filesList = File.ReadAllLines(lstFileName);
+            foreach (string file in filesList) {
+                if (!string.IsNullOrWhiteSpace(file)) {
+                    ret.Add($"{stdLibPath}\\{file.Trim()}");
+                }
+            }
+        }
+
         if (includeOs) {
             // Include the files from the OS
             string lstFileName = $"{osLibPath}\\files.lst";
@@ -92,16 +103,6 @@ class Program {
             }
         }
 
-        if (includeStdlib) {
-            // Include the files from the OS
-            string lstFileName = $"{stdLibPath}\\files.lst";
-            string[] filesList = File.ReadAllLines(lstFileName);
-            foreach (string file in filesList) {
-                if (!string.IsNullOrWhiteSpace(file)) {
-                    ret.Add($"{stdLibPath}\\{file.Trim()}");
-                }
-            }
-        }
 
         ret.AddRange(files);
         return ret;

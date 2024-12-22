@@ -1,6 +1,8 @@
 
-class Terminal (val keyboard:Keyboard)
+class Terminal ()
     val stringBuilder = new StringBuilder()
+    val keyboard = new Keyboard()
+    val gc = new GraphicsContext()
 
     val screenWidth = 80
     val screenHeight = 40
@@ -18,26 +20,26 @@ class Terminal (val keyboard:Keyboard)
     var cursor = 0      
 
     fun clearScreen()
-        fillRect(0, 0, screenWidth*fontWidth, screenHeight*fontHeight, 0)
+        gc.fillRect(0, 0, screenWidth*fontWidth, screenHeight*fontHeight, 0)
         posX = 0
         posY = 0
 
     fun clearToEndOfLine()
-        fillRect(posX*fontWidth, posY*fontHeight, screenWidth*fontWidth, (posY+1)*fontHeight-1, 0)
+        gc.fillRect(posX*fontWidth, posY*fontHeight, screenWidth*fontWidth, (posY+1)*fontHeight-1, 0)
 
     fun printChar(c:Char)
         if c = '\n'
             posX = 0
             posY = posY + 1
         else
-            drawCharBg(posX*fontWidth, posY*fontHeight, c, color, bgColor)
+            gc.drawCharBg(posX*fontWidth, posY*fontHeight, c, color, bgColor)
             posX = posX + 1
             if posX >= screenWidth
                 posX = 0
                 posY = posY + 1
         
         if posY >= screenHeight
-            scrollScreen(fontHeight)
+            gc.scrollVertical(fontHeight)
             posY = posY - 1
             homeY = homeY - 1
 
@@ -115,6 +117,7 @@ class Terminal (val keyboard:Keyboard)
                         stringBuilder.insert(cursor,key)
                         cursor = cursor + 1
         end while
+        return ""   # should never get here
     end fun            
 
     fun printf(format:String, args:Any...)
@@ -122,65 +125,5 @@ class Terminal (val keyboard:Keyboard)
         sb.vsprintf(format,args)
         printString(sb.toString())
         delete sb
-
-
-class CommandLine(keyboard:Keyboard)
-    val terminal = new Terminal(keyboard)
-
-    fun cmdClear(words:List<String>)
-        if words.length=1
-            terminal.clearScreen()
-        else
-            terminal.printString("Usage: clear\n")
-
-    fun cmdVersion(words:List<String>)
-        if words.length=1
-            terminal.printf("Version 0.1\n")
-        else
-            terminal.printf("Usage: version\n")
-
-    fun cmdEcho(words:List<String>)
-        for i=1 to <words.length
-            terminal.printf("%s ",words.get(i))
-        terminal.printf("\n")
-
-    fun cmdHelp(words:List<String>)
-        if words.length=1
-            terminal.printf("Available commands:\n")
-            terminal.printf("  clear\n")
-            terminal.printf("  version\n")
-            terminal.printf("  echo <text>\n")
-            terminal.printf("  help\n")
-            terminal.printf("  ls\n")
-
-    fun cmdLs(words:List<String>)
-        terminal.printf("Need to implement a file system :-)  \n")
-
-    fun processCommand(command: String)
-        val words = splitString(command,' ')
-        if words.length=0
-            return
-        when words.get(0)
-            "clear" -> cmdClear(words)
-            "version" -> cmdVersion(words)
-            "echo" -> cmdEcho(words)
-            "help" -> cmdHelp(words)
-            "ls" -> cmdLs(words)
-            "dumpmem" -> dumpMemorySystem()
-            else -> terminal.printf("Unknown command: %s\n", words.get(0))
-        for word in words
-            delete word
-        delete words
-
-    fun run()
-        terminal.printf("> ")
-        val line = terminal.readLine()
-        processCommand(line)
-
-fun main()
-    val keyboard = new Keyboard()
-    val cmd = new CommandLine(keyboard)
-    while true
-        cmd.run()
 
 

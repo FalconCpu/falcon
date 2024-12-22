@@ -1,0 +1,12 @@
+fun main()
+    val fs = new FileSystem()
+
+    val dir = fs.openDirectory("*")
+    if dir=null
+        print("Error %x", fs.error)
+        return
+    repeat 
+        print("Name: %s  Length=%d attributes=%d\n", dir.name, dir.length, dir.attributes)
+    until not dir.nextEntry()
+
+    delete dir
