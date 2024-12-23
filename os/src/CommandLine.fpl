@@ -153,8 +153,11 @@ class CommandLine(val terminal:Terminal)
             return
 
         # run the program
-        val program = (hunks.get(0) : ()->Unit)
-        program()
+        val program = (hunks.hunkData.get(0) : (Terminal)->Unit)
+        terminal.printf("About to run the program %x\n", program)
+        terminal.printf("terminal = %x\n", terminal)
+        program(terminal)
+        terminal.printf("Program returned\n")
             
         delete hunks
         delete file

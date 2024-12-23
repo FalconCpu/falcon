@@ -1,0 +1,10 @@
+extern class Terminal
+    virtual fun printf(format:String, args:Any...)
+
+class HwRegs
+    var seven_seg : Int #  R/W  6 digit hexadecimal seven segment display
+
+fun main(terminal:Terminal)
+    val hwRegs = (0xE0000000:HwRegs)
+    hwRegs.seven_seg = (terminal:Int)
+    terminal.printf("Hello, world!\n")

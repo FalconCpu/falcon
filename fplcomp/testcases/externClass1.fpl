@@ -1,0 +1,12 @@
+# external classes cannot be instanced, but can be referenced
+
+extern class Animal(val name: String)
+    virtual fun speak()
+
+fun main()
+    val a = new Animal("Dog")   #   error: cannot instantiate external class
+    a.speak()                   #   No error - external class can be referenced
+
+@-----------------
+testcase_outputs/externClass1.fpl:7:78: Cannot create instance of external class Animal
+Failed with 1 errors

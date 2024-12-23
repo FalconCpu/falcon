@@ -415,17 +415,19 @@ class Parser(Lexer lexer)
         ExpectEol();
         AstFunction ret = new(loc.location, name.text, parameters, astReturnType, qualifiers, block);
         block.Add(ret);
-        ParseIndentedBlock(ret);
-        CheckEnd(TokenKind.Fun);
+        if (lookahead.kind == TokenKind.Indent) {
+            ParseIndentedBlock(ret);
+            CheckEnd(TokenKind.Fun);
+        }
     }
 
-    private void ParseClass(AstBlock block) {
+    private void ParseClass(AstBlock block, List<TokenKind> qualifiers) {
         Token loc = Expect(TokenKind.Class);
         AstIdentifier name = ParseIdentifier();
         List<AstIdentifier> typeParameters = lookahead.kind==TokenKind.Lt ? ParseTypeParameterList() : [];
         List<AstParameter> parameters = lookahead.kind==TokenKind.OpenB ? ParseClassParameterList() : [];
         ExpectEol();
-        AstClass ret = new(loc.location, name.name, typeParameters, parameters, block);
+        AstClass ret = new(loc.location, name.name, typeParameters, parameters, qualifiers, block);
         block.Add(ret);
         if (lookahead.kind == TokenKind.Indent)
             ParseIndentedBlock(ret);
@@ -662,7 +664,8 @@ class Parser(Lexer lexer)
 
     private void ParseQualifier(AstBlock block) {
         List<TokenKind> qualifiers = [];
-        while(lookahead.kind==TokenKind.Virtual || lookahead.kind==TokenKind.Private || lookahead.kind==TokenKind.Public) {
+        while(lookahead.kind==TokenKind.Virtual || lookahead.kind==TokenKind.Private || 
+              lookahead.kind==TokenKind.Public || lookahead.kind==TokenKind.Extern) {
             TokenKind kind = NextToken().kind;
             if (qualifiers.Contains(kind))
                 Log.Error(lookahead.location, $"Duplicate qualifier {kind}");
@@ -674,6 +677,8 @@ class Parser(Lexer lexer)
 
         if (lookahead.kind == TokenKind.Fun)
             ParseFunction(block, qualifiers);
+        else if (lookahead.kind == TokenKind.Class)
+            ParseClass(block, qualifiers);
         else
             throw new ParseError(lookahead.location, $"Got {lookahead.text} when expecting fun");
     }
@@ -691,10 +696,13 @@ class Parser(Lexer lexer)
                 case TokenKind.Return: ParseReturn(block); break;
                 case TokenKind.For: ParseFor(block); break;
                 case TokenKind.Print: parsePrint(block); break;
-                case TokenKind.Class: ParseClass(block); break;
+                case TokenKind.Class: ParseClass(block,[]); break;
                 case TokenKind.Const: ParseConst(block); break;
                 case TokenKind.Delete: ParseDelete(block); break;
                 case TokenKind.When: ParseWhen(block); break;
+                case TokenKind.Private:
+                case TokenKind.Public:
+                case TokenKind.Extern:
                 case TokenKind.Virtual: ParseQualifier(block); break;
                 case TokenKind.Identifier:
                 case TokenKind.OpenB: parseAssign(block); break;

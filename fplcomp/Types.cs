@@ -218,6 +218,7 @@ class GenericClassType: Type {
     public readonly List<FunctionSymbol> methods = [];
     public readonly List<FunctionSymbol> virtualMethods = [];
     public readonly List<TypeParameterType> typeParameters;
+    public bool isExternal = false;
 
     public int size;
     
@@ -258,6 +259,7 @@ class ClassType : Type {
     public readonly List<FunctionSymbol> methods = [];
     public readonly List<FunctionSymbol> virtualMethods = [];
     public readonly TypeSymbol typeSymbol;
+    public bool isExternal = false;
 
     public readonly static List<ClassType> allClassTypes = [];
 
@@ -266,7 +268,8 @@ class ClassType : Type {
     {
         this.generic = generic;
         this.typeArguments = typeArguments;
-        this.typeSymbol = new TypeSymbol(name, this);
+        isExternal = generic.isExternal;
+        typeSymbol = new TypeSymbol(name, this);
         allClassTypes.Add(this);
 
         // Build the map to map the generic class types into concrete types
@@ -274,6 +277,7 @@ class ClassType : Type {
             throw new Exception($"Invalid number of type arguments for class {generic.name}");  
         for(int i=0; i<typeArguments.Count; i++)
             typeMap[generic.typeParameters[i]] = typeArguments[i];
+
     }
 
     public static ClassType MakeClassType(GenericClassType generic, List<Type> typeArguments) {

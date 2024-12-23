@@ -84,5 +84,6 @@ enum TokenKind {
     Virtual,
     Public,
     Private,
+    Extern,
     Error
 }

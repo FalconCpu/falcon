@@ -1,0 +1,15 @@
+# Test of using global variables
+
+var counter = double(4)
+
+fun double(x:Int)->Int
+    return x * 2
+
+fun main(x:Int, y:Int)
+    while counter < 10
+        print("%d\n",counter)
+        counter = counter + 1
+
+@------------------
+8
+9

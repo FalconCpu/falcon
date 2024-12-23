@@ -21,7 +21,7 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     public override void TypeCheckRvalue(AstBlock scope, PathContext pathContext) {
         symbol =  Type.predefindedScope.GetSymbol(name) ??
                       scope.GetSymbol(name) ??
-                      new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false, false);
+                      new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false);
         
         if (pathContext.definitelyUninitialized.Contains(symbol))
             Log.Error(location, $"Symbol '{symbol}' is uninitialized");
@@ -39,7 +39,7 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     public override void TypeCheckLvalue(AstBlock scope, PathContext pathContext) {
         symbol =  Type.predefindedScope.GetSymbol(name) ??
                       scope.GetSymbol(name) ??
-                      new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false, false);
+                      new VariableSymbol(name, ErrorType.MakeErrorType(location, $"Unknown symbol '{name}'"), false);
         
         if (symbol is TypeSymbol)
             Log.Error(location, $"Cannot use type '{symbol}' as a variable");
@@ -47,8 +47,6 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
 
         switch(symbol) {
             case VariableSymbol variableSymbol:
-                if (variableSymbol.isGlobal)
-                    throw new NotImplementedException();
                 if (!variableSymbol.isMutable && !pathContext.definitelyUninitialized.Contains(symbol))
                     Log.Error(location, $"Symbol '{symbol}' is immutable");
                 break;
@@ -88,22 +86,30 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     public override int GetKnownIntValue() => (symbol is ConstantSymbol constantSymbol) ? constantSymbol.value : throw new InvalidOperationException(); 
 
     public override Symbol CodeGenRvalue(AstFunction func) {
+        Symbol ret;
         switch (symbol) {
             case VariableSymbol variableSymbol:
-                if (variableSymbol.isGlobal)
-                    throw new NotImplementedException();
                 return variableSymbol;
 
             case FunctionSymbol functionSymbol:
-                Symbol ret = func.NewTemp(type);
+                ret = func.NewTemp(type);
                 func.Add(new InstrLea(ret, functionSymbol));
                 return ret;
 
             case FieldSymbol fieldSymbol:
-                if (func.thisSymbol==null) throw new ArgumentException("Cannot find 'this' symbol");
-                CheckThisHas(func.thisSymbol, fieldSymbol);
+                // Work out what this is a field of
+                Symbol? baseSym;
+                if (fieldSymbol.isGlobal)
+                    baseSym = RegisterSymbol.registers[29];
+                else if (func.thisSymbol == null) 
+                    throw new ArgumentException("Cannot find 'this' symbol");
+                else {
+                    baseSym = func.thisSymbol;
+                    CheckThisHas(baseSym, fieldSymbol);
+                }
+
                 ret = func.NewTemp(type);
-                func.Add(new InstrLoadField(type.GetSize(), ret, func.thisSymbol, fieldSymbol));
+                func.Add(new InstrLoadField(type.GetSize(), ret, baseSym, fieldSymbol));
                 return ret;
 
             case ConstantSymbol isymbol:
@@ -124,8 +130,6 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     public override void CodeGenLvalue(AstFunction func, AluOp op,Symbol value) {
         switch (symbol) {
             case VariableSymbol variableSymbol:
-                if (variableSymbol.isGlobal)
-                    throw new NotImplementedException();
                 if (op==AluOp.UNDEFINED)
                     func.Add(new InstrMov(variableSymbol, value));
                 else {
@@ -136,16 +140,25 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
                 break;
 
             case FieldSymbol fieldSymbol:
-                if (func.thisSymbol==null) throw new ArgumentException("Cannot find 'this' symbol");
-                CheckThisHas(func.thisSymbol, fieldSymbol);
+                // Work out what the symbol is based on
+                Symbol? baseSym;
+                if (fieldSymbol.isGlobal)
+                    baseSym = RegisterSymbol.registers[29];
+                else if (func.thisSymbol == null) 
+                    throw new ArgumentException("Cannot find 'this' symbol");
+                else {
+                    baseSym = func.thisSymbol;
+                    CheckThisHas(baseSym, fieldSymbol);
+                }
+
                 if (op==AluOp.UNDEFINED)
-                    func.Add(new InstrStoreField(type.GetSize(), value, func.thisSymbol, fieldSymbol));
+                    func.Add(new InstrStoreField(type.GetSize(), value, baseSym, fieldSymbol));
                 else {
                     Symbol temp1 = func.NewTemp(type);
                     Symbol temp2 = func.NewTemp(type);
-                    func.Add(new InstrLoadField(type.GetSize(), temp1, func.thisSymbol, fieldSymbol));
+                    func.Add(new InstrLoadField(type.GetSize(), temp1, baseSym, fieldSymbol));
                     func.Add(new InstrAlu(temp2, op, temp1, value));
-                    func.Add(new InstrStoreField(type.GetSize(), temp2, func.thisSymbol, fieldSymbol));
+                    func.Add(new InstrStoreField(type.GetSize(), temp2, baseSym, fieldSymbol));
                 }
             break;
 
@@ -155,7 +168,6 @@ class AstIdentifier (Location location,string name) : AstExpression(location) {
     }
 }
 
-class VariableSymbol(string name, Type type, bool isGlobal, bool isMutable) : Symbol(name, type) {
-    public readonly bool isGlobal = isGlobal;
+class VariableSymbol(string name, Type type, bool isMutable) : Symbol(name, type) {
     public readonly bool isMutable = isMutable;
 }

@@ -37,7 +37,7 @@ class AstForIn(Location location, AstIdentifier astId, AstExpression astList, As
 
         astList.TypeCheckRvalue(scope, pathContext);
         Type type = VerifyIterator();
-        Symbol sym = new VariableSymbol(astId.name, type, false, false);
+        Symbol sym = new VariableSymbol(astId.name, type, false);
         AddSymbol(location, sym);
         astId.SetSymbol(sym);
 

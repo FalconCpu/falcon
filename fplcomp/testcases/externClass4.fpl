@@ -1,0 +1,9 @@
+# Eyeball test to make sure that extern classes can be used as parameters and referenced
+
+extern class Animal(val name: String)
+    virtual fun speak()
+
+fun main(a:Animal)
+    a.speak()
+
+@-----------------

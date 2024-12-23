@@ -3,8 +3,9 @@ class AstClass : AstFunction {
     public GenericClassType classType;
     public ClassType instanceClassType;
 
-    public AstClass(Location location, string name, List<AstIdentifier> astTypeParameters, List<AstParameter> astParams, AstBlock parent)
-    : base(location, name, astParams, null, [], parent) {
+public AstClass(Location location, string name, List<AstIdentifier> astTypeParameters, 
+                List<AstParameter> astParams, List<TokenKind> qualifiers, AstBlock parent)
+    : base(location, name, astParams, null, qualifiers, parent) {
 
         // Build the type parameters
         List<TypeParameterType> typeParameters = [];
@@ -16,16 +17,20 @@ class AstClass : AstFunction {
         }
 
         classType = new GenericClassType(name, this, typeParameters);
+        isExternal = qualifiers.Contains(TokenKind.Extern);
+        classType.isExternal = isExternal;
         instanceClassType = ClassType.MakeClassType(classType, typeParameters.Select(it => it as Type).ToList());
         TypeSymbol symbol = new TypeSymbol(name, classType);
         parent.AddSymbol(location, symbol);
 
-        thisSymbol = new VariableSymbol("this", instanceClassType, false, false);
+        thisSymbol = new VariableSymbol("this", instanceClassType, false);
         AddSymbol(location, thisSymbol);
     }
 
     public override void IdentifyFunctions(AstBlock scope) {
-        allFunctions.Add(this);
+        // unless this is an extern class, add its constructor to the list of functions for code generation
+        if (!isExternal)
+            allFunctions.Add(this);
 
         // Generate the parameter symbols
         foreach(AstParameter param in astParameters) {
@@ -42,6 +47,20 @@ class AstClass : AstFunction {
     }
 
     public override PathContext TypeCheck(AstBlock scope, PathContext pathContext) {
+        // Extern classes do not have constructors. Therefore their bodies are only allowed
+        // to contain virtual functions and declarations with no initializers.
+        if (qualifiers.Contains(TokenKind.Extern)) {
+            foreach(AstStatement stmt in statements)
+                if ((stmt is AstDeclaration decl && decl.initializer==null) ||
+                     (stmt is AstFunction func && func.qualifiers.Contains(TokenKind.Virtual))) 
+                     continue;
+                else {
+                    Log.Error(stmt.location, $"Extern class {name} cannot have a constructors or non-virtual methods");
+                    break;
+                }
+        }
+
+
         // Type check the body
         foreach(AstStatement stmt in statements) {
             pathContext = stmt.TypeCheck(this, pathContext);

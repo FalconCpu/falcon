@@ -1,0 +1,13 @@
+# fields in extern classes can be defined but not initialized
+
+extern class Animal(val name: String)
+    val age: Int            #   OK - field can be defined
+    val weight: Int = 4     #   error: cannot initialize field
+    virtual fun speak()
+
+fun main(a:Animal)          #   OK - external class can be used as parameter
+    a.speak()               #   No error - external class can be referenced
+
+@-----------------
+testcase_outputs/externClass2.fpl:5:9: Extern class Animal cannot have a constructors or non-virtual methods
+Failed with 1 errors

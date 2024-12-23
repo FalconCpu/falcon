@@ -246,7 +246,8 @@ static void handle_open() {
     }
 
     mode_string[0] = mode & 0xff;
-    mode_string[1] = 0;
+    mode_string[1] = 'b';
+    mode_string[2] = 0;
 
     FILE* fh = fopen(file_name, mode_string);
     int packet[2];
@@ -276,7 +277,7 @@ static void handle_read() {
     int length = read_word_from_com_port();
     char* buffer = (char*)malloc(length+8);
     int num_read = fread(buffer+8, 1, length, fh);
-    // print_host("Read %d bytes from file\n", num_read);
+    print_host("Read %d bytes from file (request %d) %d\n", num_read, length, errno);
 
     ((int*)buffer)[0] = FILESYSPKT_DATA;
     ((int*)buffer)[1] = num_read;

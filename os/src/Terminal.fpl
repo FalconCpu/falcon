@@ -120,7 +120,7 @@ class Terminal ()
         return ""   # should never get here
     end fun            
 
-    fun printf(format:String, args:Any...)
+    virtual fun printf(format:String, args:Any...)
         val sb = new StringBuilder()
         sb.vsprintf(format,args)
         printString(sb.toString())

@@ -1,0 +1,10 @@
+# methods defined in external class must be virtual
+extern class Animal(val name: String)
+    fun speak()             #   ERROR - external class must be virtual
+
+fun main(a:Animal)          #   OK - external class can be used as parameter
+    a.speak()               #   No error - external class can be referenced
+
+@-----------------
+testcase_outputs/externClass3.fpl:3:5: Extern class Animal cannot have a constructors or non-virtual methods
+Failed with 1 errors

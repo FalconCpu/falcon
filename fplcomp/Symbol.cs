@@ -7,7 +7,7 @@ abstract class Symbol(string name, Type type) {
     public int reg;
     public int useCount;
 
-    public static Symbol undefined = new VariableSymbol("<undefined>", UndefinedType.Instance, false, false);
+    public static Symbol undefined = new VariableSymbol("<undefined>", UndefinedType.Instance, false);
 
     public override string ToString() {
         return name;
@@ -26,9 +26,10 @@ class FunctionSymbol(string name, Type type, AstFunction function) : Symbol(name
     public readonly AstFunction function = function;
 }
 
-class FieldSymbol(string name, Type type, bool isMutable) : Symbol(name, type) {
+class FieldSymbol(string name, Type type, bool isMutable, bool isGlobal=false) : Symbol(name, type) {
     public readonly bool isMutable = isMutable;
     public int offset = 0;
+    public bool isGlobal = isGlobal;
     public static new FieldSymbol undefined = new FieldSymbol("<undefined>", UndefinedType.Instance, false);
 }
 

@@ -35,7 +35,7 @@ class HunkFile(filehandle:File)
             val data = new Array<Char>(len)
             val read = file.read(data,len)
             if read!=len    
-                print("Hunk read %d bytes when expecting %d\n", len, read)
+                print("Hunk read %d bytes when expecting %d\n", read, len)
                 return ERROR_DATA_CORRUPT
             hunkId.add(magic)
             hunkLength.add(len)

@@ -78,6 +78,7 @@ class Lexer (string fileName) {
         {"virtual", TokenKind.Virtual},
         {"public", TokenKind.Public},
         {"private", TokenKind.Private},
+        {"extern", TokenKind.Extern},
         {"@-",    TokenKind.EndOfFile},
     };
 

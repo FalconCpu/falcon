@@ -9,7 +9,7 @@ class AstDeclaration(
     private readonly TokenKind      kind        = kind;
     private readonly AstIdentifier  identifier  = identifier;
     private readonly AstType?       astType     = astType;
-    private readonly AstExpression? initializer = initializer;
+    public  readonly AstExpression? initializer = initializer;
 
     public override void Print(int indent) {
         Console.WriteLine(new string(' ', indent * 2) + $"DECLARATION {kind}");
@@ -32,11 +32,17 @@ class AstDeclaration(
 
         Symbol sym;
         if (scope is AstClass astClass) {
+            // declaring a field of a class
             sym = new FieldSymbol(identifier.name, type, isMutable);
             astClass.classType.AddField((FieldSymbol)sym);
+        } else if (scope is AstTop) {
+            // declaring a global variable
+            FieldSymbol fs = new FieldSymbol(identifier.name, type, isMutable, true);
+            AstTop.AddGlobalVariable(fs);
+            sym = fs;   
         } else {
-            bool isGlobal  = scope is AstTop;
-            sym = new VariableSymbol(identifier.name, type, isGlobal, isMutable);
+            // declaring a local variable
+            sym = new VariableSymbol(identifier.name, type, isMutable);
         }
         scope.AddSymbol(location, sym);
         identifier.SetSymbol(sym);

@@ -14,7 +14,7 @@ class AstParameter(Location location, TokenKind kind, AstIdentifier name, AstTyp
         Type type = astType.ResolveAsType(scope);
         if (isVariadic)
             type = ArrayType.MakeArrayType(type);
-        Symbol sym = new VariableSymbol(name.name, type, false, false);
+        Symbol sym = new VariableSymbol(name.name, type, false);
         return sym;
     }
 
@@ -25,7 +25,7 @@ class AstParameter(Location location, TokenKind kind, AstIdentifier name, AstTyp
         if (kind==TokenKind.Var || kind==TokenKind.Val)
             sym = new FieldSymbol(name.name, astType.ResolveAsType(scope), kind==TokenKind.Var);
         else
-            sym = new VariableSymbol(name.name, astType.ResolveAsType(scope), false, false);
+            sym = new VariableSymbol(name.name, astType.ResolveAsType(scope), false);
 
         return sym;
     }

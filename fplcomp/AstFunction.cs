@@ -10,6 +10,7 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
     public readonly string qualifiedName = (parent==null || parent is AstTop) ? $"/{name}" : $"{((AstFunction)parent).qualifiedName}/{name}";
     public static readonly List<AstFunction> allFunctions = [];
     public int virtualMethodNumber = -1; // populated when the function is added into a class
+    public bool isExternal = false;
 
     // Filled in by the type checker
     public          List<Symbol> parameters = [];
@@ -40,8 +41,11 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
     }
 
     public override void IdentifyFunctions(AstBlock scope) {
-        // Add this function to the list of all functions
-        allFunctions.Add(this);
+        // Add this function to the list of all functions to have code generation, unless its external
+        if (instanceOf!=null && instanceOf.isExternal)
+            isExternal = true;
+        else
+            allFunctions.Add(this);
 
         // Generate the parameter symbols.
         // For a variadic types - we use the variadic type for the function type, but convert to an array 
@@ -59,12 +63,19 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
         }
 
         if (instanceOf!=null) {
-            thisSymbol = new VariableSymbol("this", instanceOf, false, false);
+            thisSymbol = new VariableSymbol("this", instanceOf, false);
             AddSymbol(location, thisSymbol);
         }
 
         // Resolve the return type
         returnType = astReturnType?.ResolveAsType(scope) ?? UnitType.Instance;
+
+        // Check the function has a body, unless it is in an extern class
+        bool isMemberOfExternClass = (parent is AstClass classAst && classAst.qualifiers.Contains(TokenKind.Extern));
+        if (statements.Count==0 && !isMemberOfExternClass)
+            Log.Error(location, $"Function {name} does not have a body");
+        if (statements.Count!=0 && isMemberOfExternClass)
+            Log.Error(location, $"Function {name} is defined in an extern class");
 
         // Create the function symbol
         functionType = FunctionType.MakeFunctionType(paramTypes, returnType);
@@ -118,9 +129,11 @@ class AstFunction(Location location, string name, List<AstParameter> astParamete
                 stmt.CodeGen(this);
 
         Add(new InstrLabel(endLabel) );
-        if (this is AstTop) {
+        if (this is AstTop astTop) {
             AstFunction funcMain = allFunctions.Find(it => it.name == "main") ?? throw new Exception("No main function");
-            Add( new InstrCall(funcMain, 0, IntType.Instance) );
+            Add(new InstrMov(RegisterSymbol.registers[1], astTop.arg1) );
+            Add(new InstrMov(RegisterSymbol.registers[2], astTop.arg2) );
+            Add( new InstrCall(funcMain, 2, IntType.Instance) );
         }
         Add(new InstrEnd(returnType) );
     }

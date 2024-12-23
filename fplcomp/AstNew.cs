@@ -43,7 +43,6 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
             SetError(location, "new class with initializer list not supported");
 
         // Get the types of the arguments
-
         List<Type> parameterTypes = classType.GetConstrutorParameters();
 
         if (astArgs.Count != parameterTypes.Count) {
@@ -54,6 +53,10 @@ class AstNew(Location location, AstType astType, List<AstExpression> astArgs, bo
         for (int i = 0; i < astArgs.Count; i++)
             if (!parameterTypes[i].IsAssignableFrom(astArgs[i]))
                 Log.Error(location, $"Expected argument {i+1} to be type {parameterTypes[i]}, got {astArgs[i].type}");
+
+        // Check the class is not external
+        if (classType.isExternal)
+            Log.Error(location, $"Cannot create instance of external class {classType.name}");
     }
 
     private void TypeCheckStringNoInitializerList() {

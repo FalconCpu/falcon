@@ -21,7 +21,7 @@ class AstFor(Location location, AstIdentifier astId, AstExpression astStart, Ast
 
         IntType.Instance.CheckAssignableFrom(astStart);
         astStart.type.CheckAssignableFrom(astEnd);
-        Symbol sym = new VariableSymbol(astId.name, astStart.type, false, false);
+        Symbol sym = new VariableSymbol(astId.name, astStart.type, false);
         AddSymbol(location, sym);
         astId.SetSymbol(sym);
 

@@ -3,19 +3,16 @@
 HWREGS_BASE = 0xE0000000
 SEVEN_SEG   = 0x0000
 
-ld $1,HWREGS_BASE
+ld $4,HWREGS_BASE
 ld $2,0
 ld $3, 0xFFFFFF
+
+stw $1, $4[SEVEN_SEG]
+ret
 
 loop:
     stw $2, $1[SEVEN_SEG]
     add $2, 1
-
-    ld $4, 100000
-delay:
-    add $4, -1
-    bne $4, 0, delay
-
     bne $2, $3, loop
 
     ret

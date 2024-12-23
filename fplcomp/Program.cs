@@ -142,8 +142,6 @@ class Program {
     }
 
     static int Main(string[] args) {
-        
-
         // Parse the arguments
         parseArgs(args);
 
