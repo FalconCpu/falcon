@@ -1,7 +1,3 @@
-
-using System.Runtime.CompilerServices;
-using System.Xml.Serialization;
-
 class Parser(Lexer lexer)
 {
     private readonly Lexer lexer = lexer;
